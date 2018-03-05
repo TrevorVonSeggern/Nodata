@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using NoData.Internal.TreeParser.Tokenizer;
-using NoData.Internal.TreeParser.BinaryTreeParser;
+using NoData.Internal.TreeParser.FilterExpressionParser;
+using NoData.Internal.TreeParser.FilterExpressionParser.Nodes;
 
 namespace BinaryExpressionParserTests
 {
@@ -14,7 +15,6 @@ namespace BinaryExpressionParserTests
             public string region_code { get; set; }
         }
 
-
         [TestCase("gt")]
         [TestCase("ge")]
         [TestCase("lt")]
@@ -24,7 +24,8 @@ namespace BinaryExpressionParserTests
         public void Test_id_comparedTo_1(string comparison)
         {
             // id gt 1
-            FilterTree<Dto> ft = new FilterTree<Dto>($"id {comparison} 1");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree($"id {comparison} 1");
             Assert.NotNull(ft?.Root);
             Assert.AreEqual(ft.Root.GetType(), typeof(ComparitorNode));
             Assert.AreEqual(ft.Root.Token.Value, comparison);
@@ -37,7 +38,8 @@ namespace BinaryExpressionParserTests
         public void Test_Name_EqualsOrNot_String(string comparison)
         {
             // id eq 'George'
-            FilterTree<Dto> ft = new FilterTree<Dto>($"Name {comparison} 'George'");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree($"Name {comparison} 'George'");
             Assert.NotNull(ft?.Root);
             Assert.AreEqual(ft.Root.GetType(), typeof(ComparitorNode));
             Assert.AreEqual(ft.Root.Token.Value, comparison);
@@ -48,7 +50,8 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Test_MultipleComparisons_1()
         {
-            FilterTree<Dto> ft = new FilterTree<Dto>("id gt 1 and Name eq 'George'");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree("id gt 1 and Name eq 'George'");
             Assert.NotNull(ft?.Root);
             Assert.AreEqual(ft.Root.GetType(), typeof(LogicalOperatorNode));
             Assert.AreEqual(ft.Root.Children[0].GetType(), typeof(ComparitorNode));
@@ -58,7 +61,8 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Test_MultipleComparisons_2()
         {
-            FilterTree<Dto> ft = new FilterTree<Dto>("region_code ne 'george' and Name eq 'ES'");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree("region_code ne 'george' and Name eq 'ES'");
             Assert.NotNull(ft?.Root);
             Assert.AreEqual(ft.Root.GetType(), typeof(LogicalOperatorNode));
             Assert.AreEqual(ft.Root.Children[0].GetType(), typeof(ComparitorNode));
@@ -68,7 +72,8 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Test_MultipleComparisons_3()
         {
-            FilterTree<Dto> ft = new FilterTree<Dto>("region_code eq 'george' or Name eq 'ES'");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree($"region_code eq 'george' or Name eq 'ES'");
             Assert.NotNull(ft?.Root);
             Assert.AreEqual(ft.Root.GetType(), typeof(LogicalOperatorNode));
             Assert.AreEqual(ft.Root.Children[0].GetType(), typeof(ComparitorNode));
@@ -78,7 +83,8 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Test_MultipleComparisons_4()
         {
-            FilterTree<Dto> ft = new FilterTree<Dto>("id le 1 or id ge 1");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree("id le 1 or id ge 1");
             Assert.NotNull(ft?.Root);
             Assert.AreEqual(ft.Root.GetType(), typeof(LogicalOperatorNode));
             Assert.AreEqual(ft.Root.Children[0].GetType(), typeof(ComparitorNode));
@@ -88,7 +94,8 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Test_MultipleComparisons_5()
         {
-            FilterTree<Dto> ft = new FilterTree<Dto>("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1");
             Assert.NotNull(ft?.Root);
             Assert.AreEqual(ft.Root.GetType(), typeof(LogicalOperatorNode));
         }
@@ -96,14 +103,16 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Test_MultipleComparisons_fail_1()
         {
-            FilterTree<Dto> ft = new FilterTree<Dto>("id le 1 and or id ge 1");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree("id le 1 and or id ge 1");
             Assert.Null(ft.Root);
         }
 
         [Test]
         public void Test_MultipleComparisons_fail_2()
         {
-            FilterTree<Dto> ft = new FilterTree<Dto>("id Name le 1 and id ge 1");
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree("id Name le 1 and id ge 1");
             Assert.Null(ft.Root);
         }
 

@@ -34,6 +34,9 @@ namespace NoData.Internal.TreeParser.Tokenizer
             lexer.AddDefinition(new TokenDefinition(@"ge", TokenTypes.greaterThanOrEqual));
             lexer.AddDefinition(new TokenDefinition(@"le", TokenTypes.lessThanOrEqual));
 
+            lexer.AddDefinition(new TokenDefinition(@"/", TokenTypes.forwardSlash));
+            lexer.AddDefinition(new TokenDefinition(@",", TokenTypes.comma));
+
             foreach (var prop in classProperties)
             {
                 if (!Regex.IsMatch(prop, "^[a-zA-Z_]+$"))

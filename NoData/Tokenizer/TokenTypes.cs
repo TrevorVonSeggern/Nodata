@@ -23,5 +23,8 @@ namespace NoData.Internal.TreeParser.Tokenizer
         lessThan,
         greaterThanOrEqual,
         lessThanOrEqual,
+
+        forwardSlash,
+        comma,
     }
 }

@@ -12,7 +12,7 @@ namespace nodata.Controllers
     {
         // GET api/values
         [HttpGet]
-        public IQueryable<MyDto> Get([FromQuery] Filter<MyDto> f)
+        public IQueryable<MyDto> Get([FromQuery] NoDataQuery<MyDto> f)
         {
             var result = new List<MyDto>{
                 new MyDto{id = 1, Name = "one"},

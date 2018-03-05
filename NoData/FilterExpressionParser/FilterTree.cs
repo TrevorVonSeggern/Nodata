@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using NoData.Internal.TreeParser.Tokenizer;
-using System.Reflection;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace NoData.Internal.TreeParser.BinaryTreeParser
+namespace NoData.Internal.TreeParser.FilterExpressionParser
 {
+    using Tokenizer;
+    using Nodes;
+    using NoData.Internal.TreeParser.Nodes;
+    using NoData.Utility;
+
     internal static class NodeExtensions
     {
         private static readonly TokenTypes[] _ValueTokenTypes = new TokenTypes[]
@@ -94,10 +96,12 @@ namespace NoData.Internal.TreeParser.BinaryTreeParser
             return false;
         }
 
-        public FilterTree(string sourceFilter)
+        public FilterTree() { }
+
+        public Node ParseTree(string sourceFilter)
         {
             Type type = typeof(TDto);
-            var sourceTokenizer = new Tokenizer.Tokenizer(type.GetProperties().Select(x => x.Name));
+            var sourceTokenizer = new Tokenizer(type.GetProperties().Select(x => x.Name));
 
             // add tokens
             var queue = new List<Node>(sourceTokenizer.Tokenize(sourceFilter).Select(x => new NodePlaceHolder(' ', x)));
@@ -115,10 +119,10 @@ namespace NoData.Internal.TreeParser.BinaryTreeParser
             while (queue.Count() > 1)
             {
                 var foundMatch = false;
-                var token = nodeTokenizer.Tokenize(GetQueueRepresentationalString(queue));
+                var token = nodeTokenizer.Tokenize(NodeGrouper.GetQueueRepresentationalString(queue));
                 if (token is null)
                     break;
-                var one = token.Position.Column;
+                var one = token.Position.Index;
                 var two = one + 1;
                 var three = one + 2;
                 if (token?.Value == null)
@@ -158,60 +162,22 @@ namespace NoData.Internal.TreeParser.BinaryTreeParser
                     }
                 }
                 if (!foundMatch)
-                    return;
+                    return null;
             }
             if (queue.Count == 1)
-                Root = queue[0];
-        }
-
-        private string GetQueueRepresentationalString(List<Node> queue)
-            => string.Join("", queue.Select(x => GetNodeRepresentation(x)));
-
-        private string GetNodeRepresentation(Node n)
-        {
-            if (n.GetType() == typeof(NodePlaceHolder))
             {
-                var t = n?.Token?.Type;
-                if (t == null)
-                    return " ";
-                if (t == TokenTypes.equals.ToString() ||
-                    t == TokenTypes.notEquals.ToString() ||
-                    t == TokenTypes.greaterThan.ToString() ||
-                    t == TokenTypes.greaterThanOrEqual.ToString() ||
-                    t == TokenTypes.lessThan.ToString() ||
-                    t == TokenTypes.lessThanOrEqual.ToString())
-                    return "c";
-                if (t == TokenTypes.not.ToString())
-                    return "!";
-                if (t == TokenTypes.number.ToString() ||
-                    t == TokenTypes.quotedString.ToString())
-                    return "v";
-                if (t == TokenTypes.subtract.ToString() ||
-                    t == TokenTypes.add.ToString())
-                    return "o";
-                if (t == TokenTypes.and.ToString() ||
-                    t == TokenTypes.or.ToString())
-                    return "l";
-                if (t == TokenTypes.parenthesis.ToString())
-                    return n.Token.Value;
-                if (t == TokenTypes.whitespace.ToString())
-                    return " ";
+                Root = queue[0];
+                return Root;
             }
-            return n?.Representation.ToString() ?? "#";
+            return null;
         }
 
         public IQueryable<TDto> ApplyFilter(IQueryable<TDto> query)
         {
             var parameter = Expression.Parameter(typeof(TDto));
-            var expression = Root?.GetExpression(parameter) ?? throw new ArgumentNullException("Root filter node or resulting expression is null");
+            var body = Root?.GetExpression(parameter) ?? throw new ArgumentNullException("Root filter node or resulting expression is null");
 
-            var expr = Expression.Call(
-                typeof(Queryable),
-                "Where",
-                new[] { typeof(TDto) },
-                query.Expression,
-                Expression.Lambda(expression, parameter)
-            );
+            var expr = ExpressionBuilder.BuildWhereExpression(query, parameter, body);
 
             return query.Provider.CreateQuery<TDto>(expr);
         }

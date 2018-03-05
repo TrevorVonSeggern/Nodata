@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using NoData.Internal.TreeParser.Nodes;
+using System;
 using System.Linq.Expressions;
-using System.Text;
 
-namespace NoData.Internal.TreeParser.BinaryTreeParser
+namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
 {
     /// <summary>
     /// Inverse Operator Node. Applies the inverse of a boolean property or value.

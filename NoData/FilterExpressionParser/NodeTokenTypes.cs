@@ -1,4 +1,4 @@
-﻿namespace NoData.Internal.TreeParser.BinaryTreeParser
+﻿namespace NoData.Internal.TreeParser.FilterExpressionParser
 {
     public enum NodeTokenTypes
     {

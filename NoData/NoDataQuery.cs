@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System;
-using NoData.Internal.TreeParser.BinaryTreeParser;
 using Newtonsoft.Json;
+using NoData.Internal.TreeParser.FilterExpressionParser;
 
 namespace NoData
 {
-    public class Filter<TDto> where TDto : class, new()
+    public class NoDataQuery<TDto> where TDto : class, new()
     {
         [JsonProperty("$count")]
         public bool count { get; set; }
@@ -22,24 +21,28 @@ namespace NoData
 
         internal IQueryable<TDto> query;
 
-        internal Filter<TDto> ApplyTop()
+        internal NoDataQuery<TDto> ApplyTop()
         {
             if(top.HasValue)
                 query = query.Take(top.Value);
             return this;
         }
 
-        internal Filter<TDto> ApplySkip()
+        internal NoDataQuery<TDto> ApplySkip()
         {
             if(skip.HasValue)
                 query = query.Skip(skip.Value);
             return this;
         }
 
-        internal Filter<TDto> ApplyFilter()
+        internal NoDataQuery<TDto> ApplyFilter()
         {
             if(!string.IsNullOrEmpty(filter))
-                query = new FilterTree<TDto>(filter).ApplyFilter(query);
+            {
+                var tree = new FilterTree<TDto>();
+                tree.ParseTree(filter);
+                query = tree.ApplyFilter(query);
+            }
             return this;
         }
 
