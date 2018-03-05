@@ -28,7 +28,8 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser
             while (foundMatch)
             {
                 foundMatch = false;
-                var token = nodeTokenizer.Tokenize(NodeGrouper.GetQueueRepresentationalString(queue));
+                var representation = NodeGrouper.GetQueueRepresentationalString(queue);
+                var token = nodeTokenizer.Tokenize(representation);
                 if (token is null)
                     break;
                 var one = token.Position.Index;
@@ -53,10 +54,10 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser
                         itemList.Add(queue[two]);
                         queue.RemoveAt(two);
                     }
-                    var item = new NodeExpandProperty<TDto>(itemList);
+                    var item = NodeExpandProperty<TDto>.FromLinearPropertyList(itemList);
                     queue[one] = item;
                 }
-                if(type == NodeTokenTypes.ExpandCollection)
+                else if(type == NodeTokenTypes.ExpandCollection)
                 {
                     foundMatch = true;
                     var itemList = new List<NodeExpandProperty<TDto>>();

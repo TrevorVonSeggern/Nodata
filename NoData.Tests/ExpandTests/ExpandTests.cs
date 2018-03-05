@@ -132,9 +132,6 @@ namespace BinaryExpressionParserTests
             }
         }
         
-
-
-
         [TestCase("", 1, 2, 3, 4, 5, 6)] // returns everything.
         [TestCase("partner", 1, 2, 3, 4, 5, 6, 1, 2)] // one expand
         [TestCase("children", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60)]
@@ -146,8 +143,8 @@ namespace BinaryExpressionParserTests
         [TestCase("partner/children,partner/favorite", 
             1, 2, 3, 4, 5, 6, // root
             1, 2, // partner
-            30, // partner/children
-            40 // partner/favorite
+            10, // partner/children
+            10 // partner/favorite
             )]
         public void Expand_Expression(string expression, params int[] expectedIds)
         {

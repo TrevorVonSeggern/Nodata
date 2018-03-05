@@ -27,8 +27,10 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
             if(left?.Children == null || right?.Children == null)
                 return;
 
+            if (left.Token?.Value == right.Token?.Value)
+                Token = left.Token;
+
             Children = new List<Node>(left.Children);
-            Token = new Token(TokenTypes.classProperties.ToString(), new TokenPosition(0, 0));
 
             // merge right into self.
             for (var i = 0; i < Children.Count; ++i)
@@ -46,25 +48,32 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
             }
         }
 
-        public NodeExpandProperty(IEnumerable<Node> itemList) : this()
+        public static NodeExpandProperty<TDto> FromLinearPropertyList(IEnumerable<Node> itemList)
         {
             if (itemList is null)
                 throw new ArgumentException(nameof(itemList));
 
-            var list = itemList.Where(x => x.Token.Type == TokenTypes.classProperties.ToString()).ToList();
+            var node = new NodeExpandProperty<TDto>();
 
+            var list = itemList.Where(x => x.Token.Type == TokenTypes.classProperties.ToString()).ToList();
             if (list.Count() == 0)
-                return;
+                return node;
 
             // build child dependency chain.
             var childRoot = list[0];
             Node previous = childRoot;
-            for(int i = 1; i < list.Count(); ++i)
+            for (int i = 1; i < list.Count(); ++i)
             {
                 previous.Children.Add(list[i]);
                 previous = list[i];
             }
-            Children.Add(childRoot);
+            node.Children.Add(childRoot);
+            return node;
+        }
+
+        public NodeExpandProperty(IEnumerable<Node> itemList) : this()
+        {
+            Children = new List<Node>(itemList);
         }
 
         internal IEnumerable<MemberBinding> GetNonExpandMemberBindings(Expression dto)
@@ -90,18 +99,20 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
 
                 var methodInfo = selectPropertyType.GetMethod(nameof(GetExpression), new[] { typeof(Expression) });
 
-                var subSelectExpression = (Expression)methodInfo.Invoke(subExpandObject, new[] { Expression.PropertyOrField(dto as Expression, prop.Name) });
+                var subSelectExpression = (Expression)methodInfo.Invoke(subExpandObject, new[] { Expression.PropertyOrField(dto, prop.Name) });
 
                 yield return (Expression.Bind(prop, subSelectExpression));
             }
         }
 
-        internal IEnumerable<MemberBinding> GetCollectionMemberBindings(ParameterExpression dto)
+        internal IEnumerable<MemberBinding> GetCollectionMemberBindings(Expression dto)
         {
             foreach (var prop in ClassPropertiesUtility<TDto>.GetCollections.Where(x => Children.Any(c => c.Token.Value == x.Name)))
             {
                 if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Count() != 1)
                     continue;
+
+                var child = Children.Single(x => x.Token.Value == prop.Name);
 
                 var genericType = prop.PropertyType.GenericTypeArguments[0];
                 // Need to get the expression of a select without all the expandable child properties.
@@ -110,7 +121,7 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
                     new[] { genericType },
                     nameof(NodeExpandPropertyHelper.GetCollectionBinding),
                     new[] { typeof(Expression), typeof(PropertyInfo), typeof(IEnumerable<Node>) },
-                    new object[] { dto, prop, Children }
+                    new object[] { dto, prop, child.Children }
                     );
 
                 yield return expr;
@@ -118,20 +129,13 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
         }
 
 
-        public override Expression GetExpression(ParameterExpression dto)
-        {
-            var memberBindings = new List<MemberBinding>();
-            memberBindings.AddRange(GetNonExpandMemberBindings(dto));
-            memberBindings.AddRange(GetNavigationPropertyMemberBindings(dto as Expression));
-            memberBindings.AddRange(GetCollectionMemberBindings(dto));
-            return BindingExpression(dto, memberBindings);
-        }
-
+        public override Expression GetExpression(ParameterExpression dto) => GetExpression(dto as Expression);
         public Expression GetExpression(Expression dto)
         {
             var memberBindings = new List<MemberBinding>();
             memberBindings.AddRange(GetNonExpandMemberBindings(dto));
             memberBindings.AddRange(GetNavigationPropertyMemberBindings(dto));
+            memberBindings.AddRange(GetCollectionMemberBindings(dto));
             return BindingExpression(dto, memberBindings);
         }
 
