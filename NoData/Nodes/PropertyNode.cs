@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
+﻿using System.Linq.Expressions;
 
-namespace NoData.Internal.TreeParser.BinaryTreeParser
+namespace NoData.Internal.TreeParser.Nodes
 {
     /// <summary>
     /// Property Node. Represents a single property.

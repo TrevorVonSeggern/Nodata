@@ -6,15 +6,13 @@ namespace NoData.Internal.TreeParser.Tokenizer
 {
     public class TokenPosition
     {
-        public int Column { get; set; }
         public int Index { get; set; }
-        public int Line { get; set; }
+        public int EndIndex { get; set; }
 
-        public TokenPosition(int column, int index, int line)
+        public TokenPosition(int index, int endIndex)
         {
-            Column = column;
             Index = index;
-            Line = line;
+            EndIndex = endIndex;
         }
     }
 }

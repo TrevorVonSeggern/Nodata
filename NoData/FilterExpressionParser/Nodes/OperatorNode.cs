@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using NoData.Internal.TreeParser.Nodes;
+using System;
 using System.Linq.Expressions;
-using System.Text;
 
-namespace NoData.Internal.TreeParser.BinaryTreeParser
+namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
 {
     /// <summary>
     /// Operator node. An operator is a symbol that combines to two values or properties.
@@ -13,7 +12,6 @@ namespace NoData.Internal.TreeParser.BinaryTreeParser
     {
         public OperatorNode() : base('v')
         {
-
         }
 
         public override Expression GetExpression(ParameterExpression dto)

@@ -51,7 +51,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
                     var value = source.Substring(currentIndex, matchLength);
 
                     if (!matchedDefinition.IsIgnored)
-                        yield return new Token(matchedDefinition.Type, value, new TokenPosition(currentIndex, currentLine, currentColumn));
+                        yield return new Token(matchedDefinition.Type, value, new TokenPosition(currentIndex, currentIndex + value.Length - 1));
 
                     var endOfLineMatch = endOfLineRegex.Match(value);
                     if (endOfLineMatch.Success)

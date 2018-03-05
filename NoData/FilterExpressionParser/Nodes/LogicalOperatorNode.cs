@@ -1,7 +1,8 @@
-﻿using System;
+﻿using NoData.Internal.TreeParser.Nodes;
+using System;
 using System.Linq.Expressions;
 
-namespace NoData.Internal.TreeParser.BinaryTreeParser
+namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
 {
     /// <summary>
     /// Logical Operator Node. This does a binary comparison on two values that will evaluate to a boolean.

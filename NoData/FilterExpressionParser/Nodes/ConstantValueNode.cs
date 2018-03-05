@@ -1,8 +1,9 @@
-﻿using NoData.Internal.TreeParser.Tokenizer;
+﻿using NoData.Internal.TreeParser.Nodes;
+using NoData.Internal.TreeParser.Tokenizer;
 using System;
 using System.Linq.Expressions;
 
-namespace NoData.Internal.TreeParser.BinaryTreeParser
+namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
 {
     /// <summary>
     /// Property Node. Represents a single property.

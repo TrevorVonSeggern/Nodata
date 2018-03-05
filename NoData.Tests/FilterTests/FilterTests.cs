@@ -1,6 +1,5 @@
+using NoData.Internal.TreeParser.FilterExpressionParser;
 using NUnit.Framework;
-using NoData.Internal.TreeParser.Tokenizer;
-using NoData.Internal.TreeParser.BinaryTreeParser;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -47,27 +46,14 @@ namespace BinaryExpressionParserTests
         [TestCase("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1", 1)] // duplication doesn't matter.
         public void Filter_Expression(string expression, params int[] expectedIds)
         {
-            FilterTree<Dto> ft = new FilterTree<Dto>(expression);
+            var ft = new FilterTree<Dto>();
+            ft.ParseTree(expression);
             var result = ft.ApplyFilter(new List<Dto>(SampleCollection).AsQueryable());
 
             Assert.AreEqual(result.Count(), expectedIds.Count());
             foreach (var resultId in result.Select(x => x.id))
                 Assert.True(expectedIds.Contains(resultId));
         }
-
-        //[Test]
-        //public void Test_MultipleComparisons_fail_1()
-        //{
-        //    FilterTree<Dto> ft = new FilterTree<Dto>("id le 1 and or id ge 1");
-        //    Assert.Null(ft.Root);
-        //}
-
-        //[Test]
-        //public void Test_MultipleComparisons_fail_2()
-        //{
-        //    FilterTree<Dto> ft = new FilterTree<Dto>("id Name le 1 and id ge 1");
-        //    Assert.Null(ft.Root);
-        //}
 
         //[Test]
         //public void TestMethod1()
