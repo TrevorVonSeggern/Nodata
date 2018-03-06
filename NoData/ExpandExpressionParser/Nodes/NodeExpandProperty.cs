@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
 {
@@ -7,19 +10,45 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
     using NoData.Internal.TreeParser.Tokenizer;
     using NoData.Internal.Utility;
     using NoData.Utility;
-    using System;
-    using System.Linq;
-    using System.Reflection;
 
-    public class NodeExpandProperty<TDto> : Node where TDto : class
+    public class NodeExpandProperty<TDto> : NodeExpandPropertyAbstract where TDto : class
     {
+        private static NodeExpandPropertyAbstract CreateFromGeneric(string property, params object[] ctorArguments)
+        {
+            var propertyType = ClassPropertiesUtility<TDto>.GetPropertiesAndType[property];
+            if (ClassPropertiesUtility<TDto>.GetCollections.Any(c => c.PropertyType.Name == propertyType.Name))
+                propertyType = propertyType.GenericTypeArguments[0];
+            var classGenericType = typeof(NodeExpandProperty<>).MakeGenericType(propertyType);
+            return Activator.CreateInstance(classGenericType, ctorArguments) as NodeExpandPropertyAbstract;
+        }
+
         protected NodeExpandProperty(char representation) : base(representation) { }
-        public NodeExpandProperty() : base(NodeTokenUtilities.GetCharacterFromType(NodeTokenTypes.ExpandProperty)) { }
+        public NodeExpandProperty() : this(NodeTokenUtilities.GetCharacterFromType(NodeTokenTypes.ExpandProperty)) { }
         public NodeExpandProperty(Node node) : this()
         {
             if (node.Token?.Type != TokenTypes.classProperties.ToString())
                 throw new ArgumentException(nameof(node) + " is not representative of a class property.");
-            Children.Add(node);
+            Token = node.Token;
+
+            if (typeof(NodeExpandPropertyAbstract).IsAssignableFrom(node.GetType()))
+            {
+                Children = node.Children;
+                return;
+            }
+            // if it's not type of expand property - then we need to convert the children to expand properties also.
+            foreach(var c in node.Children)
+            {
+                var nExpand = CreateFromGeneric(c.Token.Value, c) as NodeExpandPropertyAbstract;
+                Children.Add(nExpand);
+            }
+        }
+        public NodeExpandProperty(IEnumerable<Node> itemList) : this()
+        {
+            foreach (var c in itemList)
+            {
+                var nExpand = CreateFromGeneric(c.Token.Value, c) as NodeExpandPropertyAbstract;
+                Children.Add(nExpand);
+            }
         }
 
         public NodeExpandProperty(Node left, Node right) : this()
@@ -30,7 +59,12 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
             if (left.Token?.Value == right.Token?.Value)
                 Token = left.Token;
 
-            Children = new List<Node>(left.Children);
+            // if it's not type of expand property - then we need to convert the children to expand properties also.
+            foreach (var c in left.Children)
+            {
+                var nExpand = CreateFromGeneric(c.Token.Value, c) as NodeExpandPropertyAbstract;
+                Children.Add(nExpand);
+            }
 
             // merge right into self.
             for (var i = 0; i < Children.Count; ++i)
@@ -38,14 +72,63 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
                 // get a node from the right children that matches the current child. If they match, then merge.
                 var rChildNode = right.Children.FirstOrDefault(x => x.Token.Value == Children[i].Token.Value);
                 if (rChildNode != null) // match. Merge children.
-                    Children[i] = new NodeExpandProperty<TDto>(Children[i], rChildNode);
+                {
+                    Children[i] = CreateFromGeneric(rChildNode.Token.Value, Children[i], rChildNode);
+                    //Children[i] = new NodeExpandProperty<TDto>(Children[i] as NodeExpandPropertyAbstract, rChildNode as NodeExpandPropertyAbstract);
+                }
             }
             // add right where not in children.
             foreach(var r in right.Children)
             {
                 if (!Children.Any(x => x.Token.Value == r.Token.Value))
-                    Children.Add(r);
+                {
+                    Children.Add(CreateFromGeneric(r.Token.Value, r));
+                }
             }
+        }
+
+        protected override IEnumerable<MemberBinding> GetNonExpandMemberBindings(Expression dto) => GetNonExpandMemberBindings<TDto>(dto);
+        protected override IEnumerable<MemberBinding> GetNavigationPropertyMemberBindings(Expression dto)
+        {
+            foreach (var prop in ClassPropertiesUtility<TDto>.GetNavigationProperties.Where(x => Children.Any(c => c.Token.Value == x.Name)))
+            {
+                var child = Children.FirstOrDefault(x => x.Token.Value == prop.Name) as NodeExpandPropertyAbstract;
+                yield return (Expression.Bind(prop, child.GetExpression(Expression.PropertyOrField(dto, prop.Name))));
+            }
+        }
+        protected override IEnumerable<MemberBinding> GetCollectionMemberBindings(Expression dto)
+        {
+            foreach (var prop in ClassPropertiesUtility<TDto>.GetCollections.Where(x => Children.Any(c => c.Token.Value == x.Name)))
+            {
+                if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Count() != 1)
+                    continue;
+
+                var child = Children.Single(x => x.Token.Value == prop.Name) as NodeExpandPropertyAbstract;
+                yield return child.GetExpressionAsCollection(dto, prop);
+            }
+        }
+
+        internal override MemberAssignment GetExpressionAsCollection(Expression dto, PropertyInfo property)
+        {
+            var parameter = Expression.Parameter(typeof(TDto), Token.Value);
+            var dtoCollectionProperty = Expression.Property(dto, Token.Value);
+            var select = ExpressionBuilder.BuildSelectExpression<TDto>(dtoCollectionProperty, parameter, GetExpression(parameter));            var list = Expression.Condition(
+                Expression.Equal(dtoCollectionProperty, Expression.Constant(null)),
+                Expression.New(typeof(List<TDto>).GetConstructor(new Type[] { }), new Expression[] { }),
+                Expression.New(typeof(List<TDto>).GetConstructor(new Type[] { typeof(IEnumerable<TDto>) }), select)
+                );
+            return (Expression.Bind(property, list));
+        }
+
+        protected override Expression BindingExpression(Expression dto, IEnumerable<MemberBinding> bindings)
+        {
+            // TODO: might need for EF
+            //var newDto = Expression.New(typeof(TDto).GetConstructors().Single(), new[] { dto }, members: memberBindings);
+            var newDto = Expression.New(typeof(TDto));
+            var selectExpression = Expression.MemberInit(newDto, bindings);
+
+            return Expression.Condition(Expression.Equal(dto, Expression.Constant(null)),
+                Expression.Constant(null, selectExpression.Type), selectExpression);
         }
 
         public static NodeExpandProperty<TDto> FromLinearPropertyList(IEnumerable<Node> itemList)
@@ -67,126 +150,9 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
                 previous.Children.Add(list[i]);
                 previous = list[i];
             }
-            node.Children.Add(childRoot);
+            
+            node.Children.Add(CreateFromGeneric(childRoot.Token.Value, childRoot) as NodeExpandPropertyAbstract);
             return node;
-        }
-
-        public NodeExpandProperty(IEnumerable<Node> itemList) : this()
-        {
-            Children = new List<Node>(itemList);
-        }
-
-        internal IEnumerable<MemberBinding> GetNonExpandMemberBindings(Expression dto)
-        {
-            // Bind all the non-expandable types.
-            foreach (var prop in ClassPropertiesUtility<TDto>.GetNonExpandableProperties)
-                yield return (Expression.Bind(prop, Expression.PropertyOrField(dto, prop.Name)));
-        }
-
-        internal IEnumerable<MemberBinding> GetNavigationPropertyMemberBindings(Expression dto)
-        {
-            foreach (var prop in ClassPropertiesUtility<TDto>.GetNavigationProperties.Where(x => Children.Any(c => c.Token.Value == x.Name)))
-            {
-                // Need to get the expression of a select without all the expandable child properties.
-                var selectPropertyType = typeof(NodeExpandProperty<>).MakeGenericType(prop.PropertyType);
-                object subExpandObject;
-
-                var child = Children.FirstOrDefault(x => x.Token.Value == prop.Name);
-                if (child != null)
-                    subExpandObject = Activator.CreateInstance(selectPropertyType, child.Children);
-                else
-                    subExpandObject = Activator.CreateInstance(selectPropertyType);
-
-                var methodInfo = selectPropertyType.GetMethod(nameof(GetExpression), new[] { typeof(Expression) });
-
-                var subSelectExpression = (Expression)methodInfo.Invoke(subExpandObject, new[] { Expression.PropertyOrField(dto, prop.Name) });
-
-                yield return (Expression.Bind(prop, subSelectExpression));
-            }
-        }
-
-        internal IEnumerable<MemberBinding> GetCollectionMemberBindings(Expression dto)
-        {
-            foreach (var prop in ClassPropertiesUtility<TDto>.GetCollections.Where(x => Children.Any(c => c.Token.Value == x.Name)))
-            {
-                if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Count() != 1)
-                    continue;
-
-                var child = Children.Single(x => x.Token.Value == prop.Name);
-
-                var genericType = prop.PropertyType.GenericTypeArguments[0];
-                // Need to get the expression of a select without all the expandable child properties.
-                var expr = (MemberBinding)GenericHelper.CreateAndCallMethodOnStaticClass(
-                    typeof(NodeExpandPropertyHelper),
-                    new[] { genericType },
-                    nameof(NodeExpandPropertyHelper.GetCollectionBinding),
-                    new[] { typeof(Expression), typeof(PropertyInfo), typeof(IEnumerable<Node>) },
-                    new object[] { dto, prop, child.Children }
-                    );
-
-                yield return expr;
-            }
-        }
-
-
-        public override Expression GetExpression(ParameterExpression dto) => GetExpression(dto as Expression);
-        public Expression GetExpression(Expression dto)
-        {
-            var memberBindings = new List<MemberBinding>();
-            memberBindings.AddRange(GetNonExpandMemberBindings(dto));
-            memberBindings.AddRange(GetNavigationPropertyMemberBindings(dto));
-            memberBindings.AddRange(GetCollectionMemberBindings(dto));
-            return BindingExpression(dto, memberBindings);
-        }
-
-        private Expression BindingExpression(Expression dto, IEnumerable<MemberBinding> bindings)
-        {
-            // TODO: might need for EF
-            //var newDto = Expression.New(typeof(TDto).GetConstructors().Single(), new[] { dto }, members: memberBindings);
-            var newDto = Expression.New(typeof(TDto));
-            var selectExpression = Expression.MemberInit(newDto, bindings);
-
-            return Expression.Condition(Expression.Equal(dto, Expression.Constant(null)),
-                Expression.Constant(null, selectExpression.Type), selectExpression);
-        }
-    }
-
-    static class NodeExpandPropertyHelper
-    {
-        public static MemberBinding GetCollectionBinding<TMember>(Expression dto, PropertyInfo prop, IEnumerable<Node> Children) where TMember : class
-        {
-            var parameter = Expression.Parameter(typeof(TMember), prop.Name);
-            var dtoCollectionProperty = Expression.Property(dto, prop.Name);
-            var nullExpression = Expression.Constant(null);
-
-            NodeExpandProperty<TMember> node;
-            if (Children.Any())
-                node = new NodeExpandProperty<TMember>(Children);
-            else
-                node = new NodeExpandProperty<TMember>(new NodePlaceHolder(' ', new Token(TokenTypes.classProperties, "", new TokenPosition(0, 0))));
-
-            var body = node.GetExpression(parameter);
-
-            var expr = ExpressionBuilder.BuildSelectExpression<TMember>(dtoCollectionProperty, parameter, body);
-
-            var list = Expression.Condition(
-                Expression.Equal(dtoCollectionProperty, nullExpression),
-                Expression.New(typeof(List<TMember>).GetConstructor(new Type[] { }), new Expression[] { }),
-                Expression.New(typeof(List<TMember>).GetConstructor(new Type[] { typeof(IEnumerable<TMember>) }), expr)
-                );
-            return (Expression.Bind(prop, list));
-        }
-
-        private static Expression AccessMember(Expression obj, string propertyName)
-        {
-            string[] parts = propertyName.Split(new char[] { '.' }, 2);
-            Expression member = Expression.PropertyOrField(obj, parts[0]);
-
-            if (parts.Length > 1)
-                member = AccessMember(member, parts[1]);
-
-            return Expression.Condition(Expression.Equal(obj, Expression.Constant(null)),
-                Expression.Constant(null, member.Type), member);
         }
     }
 }

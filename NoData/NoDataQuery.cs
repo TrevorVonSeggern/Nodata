@@ -3,6 +3,8 @@ using System.Linq;
 using System;
 using Newtonsoft.Json;
 using NoData.Internal.TreeParser.FilterExpressionParser;
+using NoData.Internal.TreeParser.ExpandExpressionParser;
+using Newtonsoft.Json.Serialization;
 
 namespace NoData
 {
@@ -18,6 +20,10 @@ namespace NoData
         public string filter { get; set; }
         [JsonProperty("$select")]
         public string select { get; set; }
+        [JsonProperty("$expand")]
+        public string expand { get; set; }
+
+        private ExpandTree<TDto> expandTree = new ExpandTree<TDto>();
 
         internal IQueryable<TDto> query;
 
@@ -46,6 +52,17 @@ namespace NoData
             return this;
         }
 
+        internal NoDataQuery<TDto> ApplyExpand()
+        {
+            if(!string.IsNullOrEmpty(expand))
+            {
+                var tree = new ExpandTree<TDto>();
+                tree.ParseExpand(expand);
+                query = tree.ApplyExpand(query);
+            }
+            return this;
+        }
+
         private List<string> GetMatchingProperties()
         {
             var selected = select.Split(',').ToList();
@@ -56,12 +73,41 @@ namespace NoData
             return result.ToList();
         }
 
-        public IQueryable<TDto> ApplyTo(IQueryable<TDto> query)
+        public NoDataQuery<TDto> BuildQueryable(IQueryable<TDto> query)
         {
             this.query = query;
+            this.query = ApplyExpand().ApplyFilter().ApplySkip().ApplyTop().query;
+            return this;
+        }
 
-            //GetMatchingProperties();
-            return ApplyFilter().ApplySkip().ApplyTop().query;
+        public string JsonResult(IQueryable<TDto> query)
+        {
+            ApplyQueryable(query);
+            return JsonConvert.SerializeObject(
+                this.query,
+                Formatting.Indented, 
+                new JsonSerializerSettings { ContractResolver = new DynamicContractResolver("ID", "CreatedAt", "LastModified") });
+        }
+
+        public IQueryable<TDto> ApplyQueryable(IQueryable<TDto> query) => BuildQueryable(query).query;
+    }
+
+    internal class DynamicContractResolver : DefaultContractResolver
+    {
+        private readonly string[] props;
+
+        public DynamicContractResolver(params string[] prop)
+        {
+            props = prop;
+        }
+        // TODO: Needs to serialize multiple types. Not just the root.
+        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+        {
+            IList<JsonProperty> retval = base.CreateProperties(type, memberSerialization);
+            
+            retval = retval.Where(p => !props.Contains(p.PropertyName)).ToList();
+
+            return retval;
         }
     }
 }
