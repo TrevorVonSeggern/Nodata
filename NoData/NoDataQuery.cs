@@ -23,9 +23,9 @@ namespace NoData
         [JsonProperty("$expand")]
         public string expand { get; set; }
 
+        internal IQueryable<TDto> query;
         private ExpandTree<TDto> expandTree = new ExpandTree<TDto>();
 
-        internal IQueryable<TDto> query;
 
         internal NoDataQuery<TDto> ApplyTop()
         {
@@ -56,21 +56,11 @@ namespace NoData
         {
             if(!string.IsNullOrEmpty(expand))
             {
-                var tree = new ExpandTree<TDto>();
-                tree.ParseExpand(expand);
-                query = tree.ApplyExpand(query);
+                expandTree = new ExpandTree<TDto>();
+                expandTree.ParseExpand(expand);
+                query = expandTree.ApplyExpand(query);
             }
             return this;
-        }
-
-        private List<string> GetMatchingProperties()
-        {
-            var selected = select.Split(',').ToList();
-
-            var result = selected.Intersect(typeof(TDto).GetProperties().Select(x => x.Name)).ToList();
-            foreach(var line in result)
-                Console.WriteLine(line);
-            return result.ToList();
         }
 
         public NoDataQuery<TDto> BuildQueryable(IQueryable<TDto> query)
@@ -86,13 +76,13 @@ namespace NoData
             return JsonConvert.SerializeObject(
                 this.query,
                 Formatting.Indented, 
-                new JsonSerializerSettings { ContractResolver = new DynamicContractResolver("ID", "CreatedAt", "LastModified") });
+                new JsonSerializerSettings { ContractResolver = new DynamicContractResolver(expandTree.IgnoredProperties().ToArray()) });
         }
 
         public IQueryable<TDto> ApplyQueryable(IQueryable<TDto> query) => BuildQueryable(query).query;
     }
 
-    internal class DynamicContractResolver : DefaultContractResolver
+    public class DynamicContractResolver : DefaultContractResolver
     {
         private readonly string[] props;
 
@@ -110,4 +100,5 @@ namespace NoData
             return retval;
         }
     }
+
 }

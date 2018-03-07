@@ -34,5 +34,6 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
         }
 
         protected abstract Expression BindingExpression(Expression dto, IEnumerable<MemberBinding> bindings);
+        public abstract IEnumerable<string> IgnoredProperties();
     }
 }

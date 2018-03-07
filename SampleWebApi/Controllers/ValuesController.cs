@@ -22,7 +22,7 @@ namespace nodata.Controllers
                 new MyDto{id = 5, Name = "five"},
             };
 
-            return f.BuildQueryable(result.AsQueryable());
+            return f.ApplyQueryable(result.AsQueryable());
         }
 
         // GET api/values/5

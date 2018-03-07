@@ -40,5 +40,7 @@ namespace NoData.Internal.Utility
 
         public static readonly IEnumerable<PropertyInfo> GetNavigationProperties =
             GetExpandableProperties.Where(x => !typeof(IBaseList).IsAssignableFrom(x.PropertyType));
+
+        public static readonly IEnumerable<string> GetNavigationPropertyNames = GetNavigationProperties.Select(x => x.Name);
     }
 }

@@ -154,5 +154,16 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
             node.Children.Add(CreateFromGeneric(childRoot.Token.Value, childRoot) as NodeExpandPropertyAbstract);
             return node;
         }
+
+        public override IEnumerable<string> IgnoredProperties()
+        {
+            // self
+            foreach (var prop in ClassPropertiesUtility<TDto>.GetExpandablePropertyNames.Where(x => !Children.Any(c => c.Token?.Value == x)))
+                yield return prop;
+            // navigation properties
+            foreach (var child in Children.Where(c => ClassPropertiesUtility<TDto>.GetExpandablePropertyNames.Any(x => c.Token?.Value == x)))
+                foreach (var ignoredChildrenProperties in (child as NodeExpandPropertyAbstract).IgnoredProperties())
+                    yield return $"{child.Token.Value}.{ignoredChildrenProperties}";
+        }
     }
 }
