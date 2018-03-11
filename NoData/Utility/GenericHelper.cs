@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -6,6 +7,7 @@ using System.Text;
 
 namespace NoData.Utility
 {
+
     internal static class GenericHelper
     {
         public static object CreateAndCallMethodOnClass(
@@ -41,5 +43,6 @@ namespace NoData.Utility
             object[] methodArguments
             )
         => (TResult)CreateAndCallMethodOnClass(typeof(TClass), classGenerics, ctorArguments, methodName, methodArgumentTypes, methodArguments);
+        
     }
 }

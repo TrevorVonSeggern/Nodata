@@ -1,5 +1,5 @@
 using NoData.Internal.TreeParser.ExpandExpressionParser;
-using NoData.Internal.Utility;
+using NoData.Utility;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +37,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Utility_GetProperties()
         {
-            var properties = ClassPropertiesUtility<Dto>.GetProperties();
+            var properties = ClassPropertiesUtility<Dto>.GetPropertyNames;
             var expected = new string[] { "id", "Name", "region_code", "partner", "children" };
             Assert.NotNull(properties);
             Assert.AreEqual(expected.Count(), properties.Count());

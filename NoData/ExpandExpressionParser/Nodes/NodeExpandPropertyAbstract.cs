@@ -5,7 +5,7 @@ using System.Reflection;
 namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
 {
     using NoData.Internal.TreeParser.Nodes;
-    using NoData.Internal.Utility;
+    using NoData.Utility;
 
     public abstract class NodeExpandPropertyAbstract : Node
     {

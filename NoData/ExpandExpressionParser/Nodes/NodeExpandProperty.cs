@@ -8,7 +8,6 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
 {
     using NoData.Internal.TreeParser.Nodes;
     using NoData.Internal.TreeParser.Tokenizer;
-    using NoData.Internal.Utility;
     using NoData.Utility;
 
     public class NodeExpandProperty<TDto> : NodeExpandPropertyAbstract where TDto : class
@@ -18,6 +17,7 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
             var propertyType = ClassPropertiesUtility<TDto>.GetPropertiesAndType[property];
             if (ClassPropertiesUtility<TDto>.GetCollections.Any(c => c.PropertyType.Name == propertyType.Name))
                 propertyType = propertyType.GenericTypeArguments[0];
+
             var classGenericType = typeof(NodeExpandProperty<>).MakeGenericType(propertyType);
             return Activator.CreateInstance(classGenericType, ctorArguments) as NodeExpandPropertyAbstract;
         }

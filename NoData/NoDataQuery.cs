@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using NoData.Internal.TreeParser.FilterExpressionParser;
 using NoData.Internal.TreeParser.ExpandExpressionParser;
 using Newtonsoft.Json.Serialization;
+using NoData.Serialization;
 
 namespace NoData
 {
@@ -23,9 +24,19 @@ namespace NoData
         [JsonProperty("$expand")]
         public string expand { get; set; }
 
+        private Graph.Graph graph = Graph.Graph.CreateFromGeneric<TDto>();
+
         internal IQueryable<TDto> query;
         private ExpandTree<TDto> expandTree = new ExpandTree<TDto>();
 
+        public enum FilterSecurityTypes
+        {
+            AllowOnlyVisibleValues,
+            AllowFilteringOnPropertiesThatAreNotDisplayed,
+            AllowFilteringOnNonExplicitlyExpandedExpansions,
+        }
+
+        public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
 
         internal NoDataQuery<TDto> ApplyTop()
         {
@@ -56,6 +67,7 @@ namespace NoData
         {
             if(!string.IsNullOrEmpty(expand))
             {
+                // TODO filter the graph.
                 expandTree = new ExpandTree<TDto>();
                 expandTree.ParseExpand(expand);
                 query = expandTree.ApplyExpand(query);
@@ -63,20 +75,45 @@ namespace NoData
             return this;
         }
 
+        internal NoDataQuery<TDto> ApplySelect()
+        {
+            if(!string.IsNullOrEmpty(select))
+            {
+                // TODO: Select
+            }
+            return this;
+        }
+
         public NoDataQuery<TDto> BuildQueryable(IQueryable<TDto> query)
         {
             this.query = query;
-            this.query = ApplyExpand().ApplyFilter().ApplySkip().ApplyTop().query;
+            switch(FilterSecurity)
+            {
+                default:
+                case FilterSecurityTypes.AllowOnlyVisibleValues:
+                    ApplyExpand().ApplySelect().ApplyFilter().ApplySkip().ApplyTop();
+                    break;
+                case FilterSecurityTypes.AllowFilteringOnPropertiesThatAreNotDisplayed:
+                    ApplyExpand().ApplyFilter().ApplySelect().ApplySkip().ApplyTop();
+                    break;
+                case FilterSecurityTypes.AllowFilteringOnNonExplicitlyExpandedExpansions:
+                    ApplyFilter().ApplyExpand().ApplySelect().ApplySkip().ApplyTop();
+                    break;
+            }
             return this;
         }
 
         public string JsonResult(IQueryable<TDto> query)
         {
             ApplyQueryable(query);
+            var sGraph = new SerializeGraphTraversal().GetSerializationSettings(this.query, graph);
             return JsonConvert.SerializeObject(
                 this.query,
                 Formatting.Indented, 
-                new JsonSerializerSettings { ContractResolver = new DynamicContractResolver(expandTree.IgnoredProperties().ToArray()) });
+                new JsonSerializerSettings {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    ContractResolver = new DynamicContractResolver(sGraph)
+                });
         }
 
         public IQueryable<TDto> ApplyQueryable(IQueryable<TDto> query) => BuildQueryable(query).query;
@@ -84,20 +121,36 @@ namespace NoData
 
     public class DynamicContractResolver : DefaultContractResolver
     {
-        private readonly string[] props;
+        private readonly SerializeGraph Graph;
 
-        public DynamicContractResolver(params string[] prop)
+        public DynamicContractResolver(SerializeGraph graph)
         {
-            props = prop;
+            Graph = graph;
         }
         // TODO: Needs to serialize multiple types. Not just the root.
         protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
         {
             IList<JsonProperty> retval = base.CreateProperties(type, memberSerialization);
             
-            retval = retval.Where(p => !props.Contains(p.PropertyName)).ToList();
+            retval = retval.ToList(); //.Where(p => !props.Contains(p.PropertyName))
 
-            return retval;
+            var vertex = Graph.Vertices.Single(x => x.Value.Type == type);
+            var result = new List<JsonProperty>();
+            foreach(var property in retval)
+            {
+                //if (vertex.Value.PropertyNames.Contains(property.PropertyName))
+                //    continue;
+                property.ShouldSerialize = instance =>
+                {
+                    if (property.Ignored)
+                        return false;
+                    
+                    return Graph.ShouldSerializeProperty(property.DeclaringType, property.PropertyName, property.PropertyType);
+                };
+                result.Add(property);
+            }
+
+            return result;
         }
     }
 
