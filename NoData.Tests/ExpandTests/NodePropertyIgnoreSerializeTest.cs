@@ -89,14 +89,6 @@ namespace BinaryExpressionParserTests
         }
 
         [Test]
-        public void Expand_Ignore_Dto_Success()
-        {
-            var node = new NodeExpandProperty<Dto>();
-            var ignored = node.IgnoredProperties();
-            Assert.AreEqual(new string[] { nameof(Dto.partner), nameof(Dto.children), nameof(Dto.favorite) }, ignored.ToArray());
-        }
-
-        [Test]
         public void Expand_Ignore_Deserialized_Success()
         {
             var filter = new NoData.NoDataQuery<Dto>();
@@ -131,6 +123,7 @@ namespace BinaryExpressionParserTests
             Assert.True(serialized.Contains("2"));
             Assert.True(serialized.Contains("John"));
             Assert.True(serialized.Contains("Jane"));
+            Assert.True(serialized.Contains("partner"));
             Assert.True(serialized.Contains("en")); // basic values
             Assert.False(serialized.Contains("children")); // ignored values
             Assert.False(serialized.Contains("favorite"));
@@ -155,6 +148,58 @@ namespace BinaryExpressionParserTests
             Assert.True(serialized.Contains("child 1"));
             Assert.True(serialized.Contains("en")); // basic values
             Assert.False(serialized.Contains("partner")); // ignored values
+            Assert.False(serialized.Contains("favorite"));
+            Assert.False(serialized.Contains("null"));
+        }
+
+        [Test]
+        public void Expand_Ignore_Deserialized_ExpandChildrenOfChildren_Success()
+        {
+            var filter = new NoData.NoDataQuery<Dto>()
+            {
+                expand = "children/children"
+            };
+            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            Assert.NotNull(serialized);
+            Assert.True(serialized.Contains("["), "is array");// returns list
+            Assert.True(serialized.Contains("id")); // basic properties
+            Assert.True(serialized.Contains("Name"));
+            Assert.True(serialized.Contains("region_code"));
+            Assert.True(serialized.Contains("1"));
+            Assert.True(serialized.Contains("John"));
+            Assert.True(serialized.Contains("child 1"));
+            Assert.True(serialized.Contains("en")); // basic values
+            Assert.True(serialized.Contains("100")); // children of children
+            Assert.True(serialized.Contains("200"));
+            Assert.False(serialized.Contains("partner")); // ignored values
+            Assert.False(serialized.Contains("favorite"));
+            Assert.False(serialized.Contains("null"));
+        }
+
+
+        [Test]
+        public void Expand_Ignore_Deserialized_ExpandPartnerPartner_Success()
+        {
+            var filter = new NoData.NoDataQuery<Dto>()
+            {
+                expand = "partner/partner"
+            };
+            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            Assert.NotNull(serialized);
+            Assert.True(serialized.Contains("["), "is array");// returns list
+            Assert.True(serialized.Contains("id")); // basic properties
+            Assert.True(serialized.Contains("Name"));
+            Assert.True(serialized.Contains("region_code"));
+            Assert.True(serialized.Contains("1"));
+            Assert.True(serialized.Contains("2"));
+            // should appear three times. Once for the root. Once for the partner, once for the partners partner.
+            Assert.AreEqual(3, serialized.Count(x => x == '1'));
+            Assert.AreEqual(3, serialized.Count(x => x == '2'));
+            Assert.True(serialized.Contains("John"));
+            Assert.True(serialized.Contains("Jane"));
+            Assert.True(serialized.Contains("partner"));
+            Assert.True(serialized.Contains("en")); // basic values
+            Assert.False(serialized.Contains("children")); // ignored values
             Assert.False(serialized.Contains("favorite"));
             Assert.False(serialized.Contains("null"));
         }

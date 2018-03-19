@@ -148,7 +148,7 @@ namespace BinaryExpressionParserTests
             )]
         public void Expand_Expression(string expression, params int[] expectedIds)
         {
-            var ft = new ExpandTree<Dto>();
+            var ft = new ExpandParser<Dto>();
             ft.ParseExpand(expression);
             var result = ft.ApplyExpand(new List<Dto>(ParentCollection).AsQueryable());
 

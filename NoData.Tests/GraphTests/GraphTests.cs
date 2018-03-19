@@ -55,7 +55,7 @@ namespace BinaryExpressionParserTests
         [TestCase(typeof(DtoChild), typeof(DtoGrandChild), nameof(DtoChild.children), true)]
         [TestCase(typeof(DtoChild), typeof(DtoGrandChild), nameof(DtoChild.favorite), false)]
         [TestCase(typeof(DtoChild), typeof(DtoChild), nameof(DtoChild.partner), false)]
-        public void Graph_Edges_SingleExists_Success(Type from, Type to, string propertyName, bool collection)
+        public void Graph_Edges_SingleExists_Success(Type from, Type to, string propertyName, bool isCollection)
         {
             var graph = Graph.CreateFromGeneric<Dto>();
 
@@ -64,11 +64,11 @@ namespace BinaryExpressionParserTests
                 var edge = graph.Edges.SingleOrDefault(e =>
                     (e.From.Value as ItemInfo).Type == from &&
                     (e.To.Value as ItemInfo).Type == to &&
-                    e.Name == propertyName &&
-                    e.HasMany == collection
+                    e.Value.PropertyName == propertyName &&
+                    e.Value.IsCollection == isCollection
                 );
 
-                Assert.NotNull(edge , $"Edge must exist: from: {from}, to: {to}, with name: {propertyName}, collection: {collection}");
+                Assert.NotNull(edge , $"Edge must exist: from: {from}, to: {to}, with name: {propertyName}, collection: {isCollection}");
             }, "Exactly one edge expected.");
         }
     }

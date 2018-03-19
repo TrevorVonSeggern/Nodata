@@ -12,5 +12,9 @@ namespace NoData.Graph.Interfaces
 
         IEnumerable<IVertex> ConnectedTo(IGraph g);
         IEnumerable<IVertex> ConnectedFrom(IGraph g);
+        IEnumerable<IEdge> OutgoingEdges(IGraph g);
+        IEnumerable<IEdge> IncomingEdges(IGraph g);
+
+        string ToString();
     }
 }

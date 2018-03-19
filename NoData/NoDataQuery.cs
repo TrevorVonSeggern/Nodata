@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using NoData.Internal.TreeParser.FilterExpressionParser;
 using NoData.Internal.TreeParser.ExpandExpressionParser;
 using Newtonsoft.Json.Serialization;
-using NoData.Serialization;
 
 namespace NoData
 {
@@ -24,10 +23,12 @@ namespace NoData
         [JsonProperty("$expand")]
         public string expand { get; set; }
 
-        private Graph.Graph graph = Graph.Graph.CreateFromGeneric<TDto>();
+        private static Graph.Graph baseGraph = Graph.Graph.CreateFromGeneric<TDto>();
+        private Graph.Graph graph = baseGraph;
+        private Graph.Tree selectionTree = null;
 
         internal IQueryable<TDto> query;
-        private ExpandTree<TDto> expandTree = new ExpandTree<TDto>();
+        private ExpandParser<TDto> expandParser = new ExpandParser<TDto>();
 
         public enum FilterSecurityTypes
         {
@@ -65,16 +66,23 @@ namespace NoData
 
         internal NoDataQuery<TDto> ApplyExpand()
         {
-            if(!string.IsNullOrEmpty(expand))
+            if (!string.IsNullOrEmpty(expand))
             {
-                // TODO filter the graph.
-                expandTree = new ExpandTree<TDto>();
-                expandTree.ParseExpand(expand);
-                query = expandTree.ApplyExpand(query);
+                expandParser = new ExpandParser<TDto>();
+                selectionTree = expandParser.ParseExpand(expand, graph);
+                graph = selectionTree.Flatten() as Graph.Graph;
+                query = expandParser.ApplyExpand(query);
             }
+            else
+                selectionTree = new Graph.Tree(graph.VertexContainingType(typeof(TDto)));
             return this;
         }
 
+        /// <summary>
+        /// Selects a subset of properties
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>Requires that Apply Expand is called first.</remarks>
         internal NoDataQuery<TDto> ApplySelect()
         {
             if(!string.IsNullOrEmpty(select))
@@ -106,12 +114,16 @@ namespace NoData
         public string JsonResult(IQueryable<TDto> query)
         {
             ApplyQueryable(query);
-            var sGraph = new SerializeGraphTraversal().GetSerializationSettings(this.query, graph);
+            var list = this.query.ToList();
+            selectionTree.AddInstances(list);
+            var sGraph = selectionTree.Flatten() as Graph.Graph;
             return JsonConvert.SerializeObject(
-                this.query,
+                list,
                 Formatting.Indented, 
                 new JsonSerializerSettings {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    PreserveReferencesHandling = PreserveReferencesHandling.None,
+                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+                    
                     ContractResolver = new DynamicContractResolver(sGraph)
                 });
         }
@@ -121,12 +133,13 @@ namespace NoData
 
     public class DynamicContractResolver : DefaultContractResolver
     {
-        private readonly SerializeGraph Graph;
+        public readonly Graph.Graph Graph;
 
-        public DynamicContractResolver(SerializeGraph graph)
+        public DynamicContractResolver(Graph.Graph graph)
         {
             Graph = graph;
         }
+
         // TODO: Needs to serialize multiple types. Not just the root.
         protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
         {
@@ -145,7 +158,7 @@ namespace NoData
                     if (property.Ignored)
                         return false;
                     
-                    return Graph.ShouldSerializeProperty(property.DeclaringType, property.PropertyName, property.PropertyType);
+                    return Graph.ShouldSerializeProperty(instance, property.PropertyName, property.PropertyType);
                 };
                 result.Add(property);
             }

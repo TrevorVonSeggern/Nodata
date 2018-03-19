@@ -20,6 +20,8 @@ namespace NoData.Graph.Base
             edges = new List<IEdge>();
         }
 
+        public IVertex VertexOfValue(object value) => vertices.FirstOrDefault(v => v.Value == value);
+
         public Graph(IEnumerable<IVertex> vertices, IEnumerable<IEdge> edges, bool verticesUnique = true, bool edgesUnique = true, bool danglingEdges = false)
         {
             if (verticesUnique && vertices.Count() != vertices.Distinct().Count())
@@ -47,7 +49,7 @@ namespace NoData.Graph.Base
                     new Edge(
                         vertices.Single(v => v.Value == e.From.Value),
                         vertices.Single(v => v.Value == e.From.Value),
-                        e.Name, e.HasMany)
+                        e.Value)
                         )
                     );
             return new Graph(vertices, edges);

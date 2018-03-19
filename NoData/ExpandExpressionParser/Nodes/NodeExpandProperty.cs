@@ -155,15 +155,20 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
             return node;
         }
 
-        public override IEnumerable<string> IgnoredProperties()
+        public override Graph.Tree BuildTree(Graph.Graph graph)
         {
-            // self
-            foreach (var prop in ClassPropertiesUtility<TDto>.GetExpandablePropertyNames.Where(x => !Children.Any(c => c.Token?.Value == x)))
-                yield return prop;
-            // navigation properties
-            foreach (var child in Children.Where(c => ClassPropertiesUtility<TDto>.GetExpandablePropertyNames.Any(x => c.Token?.Value == x)))
-                foreach (var ignoredChildrenProperties in (child as NodeExpandPropertyAbstract).IgnoredProperties())
-                    yield return $"{child.Token.Value}.{ignoredChildrenProperties}";
+            var root = graph.VertexContainingType(typeof(TDto)).Clone() as Graph.Vertex;
+            var treeChildren = new List<Graph.Base.ITuple<Graph.Edge, Graph.Tree>>();
+            
+            foreach(NodeExpandPropertyAbstract child in Children.Where(c => c is NodeExpandPropertyAbstract))
+            {
+                var graphEdge = graph.Edges.Single(e => e.Value.PropertyName == child.Token.Value && e.From.Value.Type == root.Value.Type);
+                var tree = child.BuildTree(graph);
+                var edge = new Graph.Edge(root, tree.Root, graphEdge.Value);
+                treeChildren.Add(Graph.Base.ITuple.Create(edge, tree));
+            }
+            
+            return new Graph.Tree(root, treeChildren);
         }
     }
 }

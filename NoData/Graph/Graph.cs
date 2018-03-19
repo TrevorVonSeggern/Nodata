@@ -10,15 +10,19 @@ namespace NoData.Graph
     public class Graph : Base.Graph
     {
         public new IEnumerable<Vertex> Vertices => base.Vertices.Cast<Vertex>();
+        public new IEnumerable<Edge> Edges => base.Edges.Cast<Edge>();
 
         public Graph() : base() { }
+        public Graph(IEnumerable<Vertex> vertices, IEnumerable<Edge> edges) : base(vertices, edges) { }
+        public Graph(IEnumerable<Vertex> vertices, IEnumerable<Edge> edges, bool verticesUnique = true, bool edgesUnique = true, bool danglingEdges = false)
+            : base(vertices, edges, verticesUnique, edgesUnique, danglingEdges) { }
 
-        public Graph(IEnumerable<Vertex> vertices, IEnumerable<IEdge> edges, bool verticesUnique = true, bool edgesUnique = true, bool danglingEdges = false)
-            : base(vertices, edges, verticesUnique, edgesUnique, danglingEdges)
-        { }
+        public Vertex VertexContainingType(Type type) => Vertices.Single(v => v.Value.Type == type);
 
-        public Graph(IEnumerable<Vertex> vertices, IEnumerable<IEdge> edges) : base(vertices, edges)
+        public virtual bool ShouldSerializeProperty(object instance, string propertyName, Type propertyType)
         {
+            var vertex = Vertices.Single(v => v.Value.Type == instance.GetType());
+            return vertex.Value.ShouldSerializeProperty(instance, propertyName);
         }
 
         public static Graph CreateFromGeneric<TDto>()

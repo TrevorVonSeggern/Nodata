@@ -41,7 +41,12 @@ namespace NoData.Utility
             NonExpandablePropertyNames = GetNames(NonExpandableProperties);
             CollectionNames = GetNames(Collections);
             NavigationPropertyNames = GetNames(NavigationProperties);
+
+            AccessProperties = Properties.Select(p => Graph.Base.ITuple.Create<string, Func<object, object>>(p.Name, p.GetValue))
+                .ToDictionary(x => x.Item1, x => x.Item2);
         }
+
+        public readonly IDictionary<string, Func<object, object>> AccessProperties;
 
         public readonly IEnumerable<PropertyInfo> Properties;
         public readonly IDictionary<string, Type> PropertyAndType;

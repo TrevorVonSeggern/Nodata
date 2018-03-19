@@ -19,16 +19,14 @@ namespace NoData.Graph.Base
         private readonly object value;
         public object Value { get { return value; } }
 
-        public virtual IEnumerable<IVertex> ConnectedTo(IGraph g)
-        {
-            return g.Edges.Where(e => e.From == this).Select(e => e.To).Distinct().ToList();
-        }
+        public virtual IEnumerable<IVertex> ConnectedTo(IGraph g) => OutgoingEdges(g).Select(e => e.To).Distinct().ToList();
+        public virtual IEnumerable<IVertex> ConnectedFrom(IGraph g) => IncomingEdges(g).Select(e => e.From).Distinct().ToList();
 
-        public virtual IEnumerable<IVertex> ConnectedFrom(IGraph g)
-        {
-            return g.Edges.Where(e => e.To == this).Select(e => e.From).Distinct().ToList();
-        }
+        public IEnumerable<IEdge> OutgoingEdges(IGraph g) => g.Edges.Where(e => e.From == this);
+        public IEnumerable<IEdge> IncomingEdges(IGraph g) => g.Edges.Where(e => e.To == this);
 
         public object Clone() => MemberwiseClone();
+        public override string ToString() => value.ToString();
+
     }
 }

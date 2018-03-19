@@ -10,13 +10,11 @@ namespace NoData.Graph.Base
     {
         private readonly IVertex from;
         private readonly IVertex to;
-        private readonly bool hasMany = false;
-        private readonly string name;
+        private readonly object value;
 
         public IVertex From { get { return from; } }
         public IVertex To { get { return to; } }
-        public bool HasMany { get { return hasMany; } }
-        public string Name { get { return name; } }
+        public object Value { get { return value; } }
 
         public Edge(IVertex from, IVertex to)
         {
@@ -24,10 +22,9 @@ namespace NoData.Graph.Base
             this.to = to ?? throw new ArgumentNullException(nameof(to));
         }
 
-        public Edge(IVertex from, IVertex to, string name, bool isCollection) : this(from, to)
+        public Edge(IVertex from, IVertex to, object value) : this(from, to)
         {
-            this.name = name ?? throw new ArgumentNullException(nameof(name));
-            hasMany = isCollection;
+            this.value = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         public bool IsFullyConnected(IGraph g) => IsFullyConnected(g.Vertices);
@@ -46,11 +43,13 @@ namespace NoData.Graph.Base
             if(obj is Edge)
             {
                 var other = obj as Edge;
-                return From == other.From && to == other.to && Name == other.Name /*&& HasMany == other.HasMany*/;
+                return From == other.From && to == other.to && Value == other.Value /*&& HasMany == other.HasMany*/;
             }
             return false;
         }
 
         public object Clone() => MemberwiseClone();
+
+        public override string ToString() => $"{From.ToString()}->{to.ToString()}";
     }
 }

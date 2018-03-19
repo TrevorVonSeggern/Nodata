@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
 {
+    using NoData.Graph.Interfaces;
     using NoData.Internal.TreeParser.Nodes;
     using NoData.Utility;
 
@@ -34,6 +35,8 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
         }
 
         protected abstract Expression BindingExpression(Expression dto, IEnumerable<MemberBinding> bindings);
-        public abstract IEnumerable<string> IgnoredProperties();
+        public abstract Graph.Tree BuildTree(Graph.Graph graph);
+
+        //public abstract Graph.Tree 
     }
 }

@@ -6,5 +6,6 @@ namespace NoData.Graph.Interfaces
     {
         IEnumerable<IVertex> Vertices { get; }
         IEnumerable<IEdge> Edges { get; }
+        IVertex VertexOfValue(object value);
     }
 }

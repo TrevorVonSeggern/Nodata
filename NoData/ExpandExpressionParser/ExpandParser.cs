@@ -10,13 +10,14 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser
     using Tokenizer;
     using NoData.Utility;
 
-    public class ExpandTree<TDto> where TDto : class
+    public class ExpandParser<TDto> where TDto : class
     {
         public Node Root { get; set; }
 
-        public ExpandTree() { }
+        public ExpandParser() { }
+        public Graph.Tree ParseExpand(string expandString) => ParseExpand(expandString, Graph.Graph.CreateFromGeneric<TDto>());
 
-        public Node ParseExpand(string expandString)
+        public Graph.Tree ParseExpand(string expandString, Graph.Graph graph)
         {
             var sourceTokenizer = new Tokenizer(typeof(TDto).GetProperties().Select(x => x.Name));
 
@@ -80,17 +81,16 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser
             else if (queue.Count == 1)
             {
                 Root = queue[0];
-                return Root;
             }
-            return null;
+
+            return BuildTree(graph);
         }
 
-        public IEnumerable<string> IgnoredProperties()
+        public Graph.Tree BuildTree(Graph.Graph graph)
         {
             if (Root != null && typeof(NodeExpandPropertyAbstract).IsAssignableFrom(Root.GetType()))
-                return (Root as NodeExpandPropertyAbstract).IgnoredProperties();
-            var nodeFacade = new NodeExpandProperty<TDto>();
-            return nodeFacade.IgnoredProperties();
+                return (Root as NodeExpandPropertyAbstract).BuildTree(graph);
+            return new Graph.Tree(graph.VertexContainingType(typeof(TDto)), null);
         }
 
         public IQueryable<TDto> ApplyExpand(IQueryable<TDto> query)

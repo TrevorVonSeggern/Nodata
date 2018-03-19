@@ -7,10 +7,11 @@ namespace NoData.Graph.Interfaces
     {
         IVertex From { get; }
         IVertex To { get; }
-        bool HasMany { get; }
-        string Name { get; }
+        object Value { get; }
 
         bool IsFullyConnected(IGraph g);
         bool IsFullyConnected(IEnumerable<IVertex> vertices);
+
+        string ToString();
     }
 }
