@@ -3,6 +3,8 @@ using System.Linq;
 using System;
 using Newtonsoft.Json;
 using NoData.Internal.TreeParser.FilterExpressionParser;
+using NoData.Internal.TreeParser.ExpandExpressionParser;
+using Newtonsoft.Json.Serialization;
 
 namespace NoData
 {
@@ -18,8 +20,24 @@ namespace NoData
         public string filter { get; set; }
         [JsonProperty("$select")]
         public string select { get; set; }
+        [JsonProperty("$expand")]
+        public string expand { get; set; }
+
+        private static Graph.Graph baseGraph = Graph.Graph.CreateFromGeneric<TDto>();
+        private Graph.Graph graph = baseGraph;
+        private Graph.Tree selectionTree = null;
 
         internal IQueryable<TDto> query;
+        private ExpandParser<TDto> expandParser = new ExpandParser<TDto>();
+
+        public enum FilterSecurityTypes
+        {
+            AllowOnlyVisibleValues,
+            AllowFilteringOnPropertiesThatAreNotDisplayed,
+            AllowFilteringOnNonExplicitlyExpandedExpansions,
+        }
+
+        public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
 
         internal NoDataQuery<TDto> ApplyTop()
         {
@@ -46,22 +64,107 @@ namespace NoData
             return this;
         }
 
-        private List<string> GetMatchingProperties()
+        internal NoDataQuery<TDto> ApplyExpand()
         {
-            var selected = select.Split(',').ToList();
-
-            var result = selected.Intersect(typeof(TDto).GetProperties().Select(x => x.Name)).ToList();
-            foreach(var line in result)
-                Console.WriteLine(line);
-            return result.ToList();
+            if (!string.IsNullOrEmpty(expand))
+            {
+                expandParser = new ExpandParser<TDto>();
+                selectionTree = expandParser.ParseExpand(expand, graph);
+                graph = selectionTree.Flatten() as Graph.Graph;
+                query = expandParser.ApplyExpand(query);
+            }
+            else
+                selectionTree = new Graph.Tree(graph.VertexContainingType(typeof(TDto)));
+            return this;
         }
 
-        public IQueryable<TDto> ApplyTo(IQueryable<TDto> query)
+        /// <summary>
+        /// Selects a subset of properties
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>Requires that Apply Expand is called first.</remarks>
+        internal NoDataQuery<TDto> ApplySelect()
+        {
+            if(!string.IsNullOrEmpty(select))
+            {
+                // TODO: Select
+            }
+            return this;
+        }
+
+        public NoDataQuery<TDto> BuildQueryable(IQueryable<TDto> query)
         {
             this.query = query;
+            switch(FilterSecurity)
+            {
+                default:
+                case FilterSecurityTypes.AllowOnlyVisibleValues:
+                    ApplyExpand().ApplySelect().ApplyFilter().ApplySkip().ApplyTop();
+                    break;
+                case FilterSecurityTypes.AllowFilteringOnPropertiesThatAreNotDisplayed:
+                    ApplyExpand().ApplyFilter().ApplySelect().ApplySkip().ApplyTop();
+                    break;
+                case FilterSecurityTypes.AllowFilteringOnNonExplicitlyExpandedExpansions:
+                    ApplyFilter().ApplyExpand().ApplySelect().ApplySkip().ApplyTop();
+                    break;
+            }
+            return this;
+        }
 
-            //GetMatchingProperties();
-            return ApplyFilter().ApplySkip().ApplyTop().query;
+        public string JsonResult(IQueryable<TDto> query)
+        {
+            ApplyQueryable(query);
+            var list = this.query.ToList();
+            selectionTree.AddInstances(list);
+            var sGraph = selectionTree.Flatten() as Graph.Graph;
+            return JsonConvert.SerializeObject(
+                list,
+                Formatting.Indented, 
+                new JsonSerializerSettings {
+                    PreserveReferencesHandling = PreserveReferencesHandling.None,
+                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+                    
+                    ContractResolver = new DynamicContractResolver(sGraph)
+                });
+        }
+
+        public IQueryable<TDto> ApplyQueryable(IQueryable<TDto> query) => BuildQueryable(query).query;
+    }
+
+    public class DynamicContractResolver : DefaultContractResolver
+    {
+        public readonly Graph.Graph Graph;
+
+        public DynamicContractResolver(Graph.Graph graph)
+        {
+            Graph = graph;
+        }
+
+        // TODO: Needs to serialize multiple types. Not just the root.
+        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+        {
+            IList<JsonProperty> retval = base.CreateProperties(type, memberSerialization);
+            
+            retval = retval.ToList(); //.Where(p => !props.Contains(p.PropertyName))
+
+            var vertex = Graph.Vertices.Single(x => x.Value.Type == type);
+            var result = new List<JsonProperty>();
+            foreach(var property in retval)
+            {
+                //if (vertex.Value.PropertyNames.Contains(property.PropertyName))
+                //    continue;
+                property.ShouldSerialize = instance =>
+                {
+                    if (property.Ignored)
+                        return false;
+                    
+                    return Graph.ShouldSerializeProperty(instance, property.PropertyName, property.PropertyType);
+                };
+                result.Add(property);
+            }
+
+            return result;
         }
     }
+
 }

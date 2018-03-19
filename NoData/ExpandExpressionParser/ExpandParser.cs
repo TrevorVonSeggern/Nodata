@@ -10,13 +10,14 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser
     using Tokenizer;
     using NoData.Utility;
 
-    public class ExpandTree<TDto> where TDto : class
+    public class ExpandParser<TDto> where TDto : class
     {
         public Node Root { get; set; }
 
-        public ExpandTree() { }
+        public ExpandParser() { }
+        public Graph.Tree ParseExpand(string expandString) => ParseExpand(expandString, Graph.Graph.CreateFromGeneric<TDto>());
 
-        public Node ParseExpand (string expandString)
+        public Graph.Tree ParseExpand(string expandString, Graph.Graph graph)
         {
             var sourceTokenizer = new Tokenizer(typeof(TDto).GetProperties().Select(x => x.Name));
 
@@ -43,12 +44,12 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser
                 if (!Enum.TryParse(token.Type, out NodeTokenTypes type))
                     break;
 
-                if(type == NodeTokenTypes.ExpandProperty)
+                if (type == NodeTokenTypes.ExpandProperty)
                 {
                     foundMatch = true;
                     var itemList = new List<Node>();
                     itemList.Add(queue[one]);
-                    for(int i = 0; i < token.Value.Length / 2; ++i)
+                    for (int i = 0; i < token.Value.Length / 2; ++i)
                     {
                         queue.RemoveAt(two); // delete the slash.
                         itemList.Add(queue[two]);
@@ -57,12 +58,12 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser
                     var item = NodeExpandProperty<TDto>.FromLinearPropertyList(itemList);
                     queue[one] = item;
                 }
-                else if(type == NodeTokenTypes.ExpandCollection)
+                else if (type == NodeTokenTypes.ExpandCollection)
                 {
                     foundMatch = true;
                     var itemList = new List<NodeExpandProperty<TDto>>();
                     itemList.Add(queue[one] as NodeExpandProperty<TDto>);
-                    for(int i = 0; i < token.Value.Length / 2; ++i)
+                    for (int i = 0; i < token.Value.Length / 2; ++i)
                     {
                         queue.RemoveAt(two); // delete the comma.
                         itemList.Add(queue[two] as NodeExpandProperty<TDto>);
@@ -80,9 +81,16 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser
             else if (queue.Count == 1)
             {
                 Root = queue[0];
-                return Root;
             }
-            return null;
+
+            return BuildTree(graph);
+        }
+
+        public Graph.Tree BuildTree(Graph.Graph graph)
+        {
+            if (Root != null && typeof(NodeExpandPropertyAbstract).IsAssignableFrom(Root.GetType()))
+                return (Root as NodeExpandPropertyAbstract).BuildTree(graph);
+            return new Graph.Tree(graph.VertexContainingType(typeof(TDto)), null);
         }
 
         public IQueryable<TDto> ApplyExpand(IQueryable<TDto> query)

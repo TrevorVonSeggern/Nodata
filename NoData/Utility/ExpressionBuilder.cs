@@ -15,7 +15,6 @@ namespace NoData.Utility
                 query.Expression,
                 Expression.Lambda<Func<TDto, TDto>>(body, parameter)
             );
-            //return BuildSelectExpression(typeof(TDto), query.Expression, parameter, body);
         }
 
         public static Expression BuildSelectExpression<TDto>(Expression enumerable, ParameterExpression parameter, Expression body)
