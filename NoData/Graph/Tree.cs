@@ -22,7 +22,7 @@ namespace NoData.Graph
         {
             Root.Value.Initialize(() =>
             {
-                var list = new List<string>(Root.Value.PropertyNames);
+                var list = new List<string>(Utility.ClassInfoCache.GetOrAdd(Root.Value.Type).NonExpandablePropertyNames);
                 list.AddRange(Children.Select(t => t.Item1.Value.PropertyName));
                 return list;
             });

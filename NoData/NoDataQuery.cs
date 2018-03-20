@@ -23,9 +23,17 @@ namespace NoData
         [JsonProperty("$expand")]
         public string expand { get; set; }
 
-        private static Graph.Graph baseGraph = Graph.Graph.CreateFromGeneric<TDto>();
-        private Graph.Graph graph = baseGraph;
-        private Graph.Tree selectionTree = null;
+        [JsonIgnore]
+        private static readonly Graph.Graph baseGraph = Graph.Graph.CreateFromGeneric<TDto>();
+        [JsonIgnore]
+        private Graph.Graph graph;
+        [JsonIgnore]
+        private Graph.Tree selectionTree;
+
+        public NoDataQuery()
+        {
+            graph = baseGraph.Clone() as Graph.Graph;
+        }
 
         internal IQueryable<TDto> query;
         private ExpandParser<TDto> expandParser = new ExpandParser<TDto>();
@@ -123,6 +131,7 @@ namespace NoData
                 new JsonSerializerSettings {
                     PreserveReferencesHandling = PreserveReferencesHandling.None,
                     ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+                    MaxDepth = 5,
                     
                     ContractResolver = new DynamicContractResolver(sGraph)
                 });
@@ -147,7 +156,6 @@ namespace NoData
             
             retval = retval.ToList(); //.Where(p => !props.Contains(p.PropertyName))
 
-            var vertex = Graph.Vertices.Single(x => x.Value.Type == type);
             var result = new List<JsonProperty>();
             foreach(var property in retval)
             {
