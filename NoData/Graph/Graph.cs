@@ -21,8 +21,23 @@ namespace NoData.Graph
 
         public virtual bool ShouldSerializeProperty(object instance, string propertyName, Type propertyType)
         {
-            var vertex = Vertices.Single(v => v.Value.Type == instance.GetType());
+            var vertex = Vertices.FirstOrDefault(v => v.Value.Type == instance.GetType());
+            if (vertex is null) return false;
             return vertex.Value.ShouldSerializeProperty(instance, propertyName);
+        }
+
+        public override object Clone()
+        {
+            var vertices = new List<Vertex>(Vertices.Select(v => v.Clone() as Vertex));
+            var edges = new List<Edge>(
+                Edges.Select(e =>
+                    new Edge(
+                        vertices.Single(v => v.Value.Type == e.From.Value.Type),
+                        vertices.Single(v => v.Value.Type == e.From.Value.Type),
+                        e.Value)
+                        )
+                    );
+            return new Graph(vertices, edges);
         }
 
         public static Graph CreateFromGeneric<TDto>()

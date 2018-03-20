@@ -26,15 +26,39 @@ namespace NoData.Utility
 
     public struct ClassInfoUtility
     {
+        private static readonly IEnumerable<Type> PrimitiveTypeWhiteList = new[] {
+            typeof(bool),
+            typeof(byte),
+            typeof(Int16),
+            typeof(Int32),
+            typeof(Int64),
+            typeof(float),
+            typeof(double),
+            typeof(decimal),
+            typeof(DateTime),
+            typeof(DateTimeKind),
+            typeof(DateTimeOffset),
+            typeof(string),
+        };
+
         internal ClassInfoUtility(Type t)
         {
             IEnumerable<string> GetNames(IEnumerable<PropertyInfo> infoList) => infoList.Select(p => p.Name);
-            Properties = t.GetProperties();
+            Properties = t.GetProperties().Where(x => x.CanRead);
             PropertyAndType = Properties.ToDictionary(p => p.Name, p => p.PropertyType);
-            ExpandableProperties =      Properties.Where(x => x.CanRead && (x.PropertyType.IsNestedPublic || x.PropertyType.IsInterface));
-            NonExpandableProperties =    Properties.Where(x => x.CanRead && !x.PropertyType.IsNestedPublic && !x.PropertyType.IsInterface);
+
+            NonExpandableProperties = Properties.Where(p => PrimitiveTypeWhiteList.Contains(p.PropertyType));
+            var nonExpandProperties = NonExpandableProperties;
+
+            ExpandableProperties = Properties.Where(p => !nonExpandProperties.Contains(p));
+                //(!x.PropertyType.Assembly.GetName().Name.StartsWith("System.") ||
+                //(x.PropertyType.IsNestedPublic || x.PropertyType.IsInterface))
+                //);
             Collections = ExpandableProperties.Where(x => typeof(IBaseList).IsAssignableFrom(x.PropertyType));
-            NavigationProperties = ExpandableProperties.Where(x => !typeof(IBaseList).IsAssignableFrom(x.PropertyType));
+            
+            var collections = Collections;
+
+            NavigationProperties = ExpandableProperties.Where(p => !collections.Contains(p));
 
             PropertyNames = GetNames(Properties);
             ExpandablePropertyNames = GetNames(ExpandableProperties);

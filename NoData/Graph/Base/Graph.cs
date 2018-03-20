@@ -41,7 +41,7 @@ namespace NoData.Graph.Base
             this.edges = new List<IEdge>(edges.Where(e => e.IsFullyConnected(vertices)).Distinct());
         }
 
-        public object Clone()
+        public virtual object Clone()
         {
             var vertices = new List<IVertex>(this.vertices.Select(v => v.Clone() as IVertex));
             var edges = new List<IEdge>(
