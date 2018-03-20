@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 
 namespace NoData.Internal.TreeParser.Nodes
 {
@@ -14,9 +15,12 @@ namespace NoData.Internal.TreeParser.Nodes
             Token = token;
         }
 
-        public override Expression GetExpression(ParameterExpression dto)
+        public override Expression GetExpression(Expression dto)
         {
-            return Expression.Property(dto, Token.Value);
+            var propertyExpression = Expression.PropertyOrField(dto, Token.Value);
+            if (Children != null && Children.Count == 1)
+                return Children[0].GetExpression(propertyExpression);
+            return propertyExpression;
         }
     }
 }

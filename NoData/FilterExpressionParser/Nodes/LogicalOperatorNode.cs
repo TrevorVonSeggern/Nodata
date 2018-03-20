@@ -19,7 +19,7 @@ namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
                 throw new ArgumentNullException(nameof(binaryOperator));
         }
 
-        public override Expression GetExpression(ParameterExpression dto)
+        public override Expression GetExpression(Expression dto)
         {
             bool compare(string expected) => Token.Value.ToLowerInvariant() == expected.ToLower();
             var left = Children[0].GetExpression(dto);

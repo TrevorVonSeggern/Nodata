@@ -14,7 +14,7 @@ namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
 
         }
 
-        public override Expression GetExpression(ParameterExpression dto)
+        public override Expression GetExpression(Expression dto)
         {
             throw new NotImplementedException();
         }
