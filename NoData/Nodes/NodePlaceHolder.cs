@@ -8,7 +8,7 @@ namespace NoData.Internal.TreeParser.Nodes
     /// </summary>
     public class NodePlaceHolder : Node
     {
-        public override Expression GetExpression(ParameterExpression dto)
+        public override Expression GetExpression(Expression dto)
         {
             throw new NotImplementedException();
         }

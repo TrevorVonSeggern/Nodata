@@ -24,8 +24,8 @@ namespace NoData.Internal.TreeParser.ExpandExpressionParser.Nodes
 
         internal abstract MemberAssignment GetExpressionAsCollection(Expression dto, PropertyInfo property);
 
-        public override Expression GetExpression(ParameterExpression dto) => GetExpression(dto as Expression);
-        public Expression GetExpression(Expression dto)
+        //public override Expression GetExpression(Expression dto) => GetExpression(dto as Expression);
+        public override Expression GetExpression(Expression dto)
         {
             var memberBindings = new List<MemberBinding>();
             memberBindings.AddRange(GetNonExpandMemberBindings(dto));

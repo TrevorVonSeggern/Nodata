@@ -14,7 +14,7 @@ namespace NoData.Internal.TreeParser.Nodes
 
         public Tokenizer.Token Token { get; set; }
 
-        public abstract Expression GetExpression(ParameterExpression dto);
+        public abstract Expression GetExpression(Expression dto);
 
         public Node(char v, Tokenizer.Token token): this (v)
         {

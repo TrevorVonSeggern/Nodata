@@ -31,7 +31,7 @@ namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
             throw new NotImplementedException();
         }
 
-        public override Expression GetExpression(ParameterExpression ignored)
+        public override Expression GetExpression(Expression ignored)
         {
             if (Token.Type == TokenTypes.quotedString.ToString())
                 return Expression.Constant(Token.Value.Substring(1, Token.Value.Length - 2));

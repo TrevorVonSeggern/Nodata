@@ -19,26 +19,54 @@ namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
                 throw new ArgumentNullException(nameof(comparitor));
         }
 
-        public override Expression GetExpression(ParameterExpression dto)
+        private Expression IsChildPropertyAccessNull(Node child, Expression argument)
         {
-            bool compare(string expected) => Token.Value.ToLowerInvariant() == expected.ToLower();
+            if(child.GetType() == typeof(PropertyNode) && child.Children.Count == 1)
+            {
+                var propertyExpression = Expression.PropertyOrField(argument, child.Token.Value);
+                var conditional = Expression.Condition(Expression.NotEqual(propertyExpression, Expression.Constant(null)), Expression.Constant(true), Expression.Constant(false));
+                var childNullCheck = IsChildPropertyAccessNull(child.Children[0], propertyExpression);
+                if (childNullCheck == null)
+                    return conditional;
+                return Expression.And(conditional, childNullCheck);
+            }
+            return null;
+        }
+
+        public override Expression GetExpression(Expression dto)
+        {
             var left = Children[0].GetExpression(dto);
             var right = Children[1].GetExpression(dto);
-            // eq, ne, gt, ge, lt ,le
-            if (compare("eq"))
-                return Expression.Equal(left, right);
-            else if (compare("ne"))
-                return Expression.NotEqual(left, right);
-            else if (compare("gt"))
-                return Expression.GreaterThan(left, right);
-            else if (compare("ge"))
-                return Expression.GreaterThanOrEqual(left, right);
-            else if (compare("lt"))
-                return Expression.LessThan(left, right);
-            else if (compare("le"))
-                return Expression.LessThanOrEqual(left, right);
 
-            throw new NotImplementedException();
+            Expression doComparison()
+            {
+                bool compare(string expected) => Token.Value.ToLowerInvariant() == expected.ToLower();
+                // eq, ne, gt, ge, lt ,le
+                if (compare("eq"))
+                    return Expression.Equal(left, right);
+                else if (compare("ne"))
+                    return Expression.NotEqual(left, right);
+                else if (compare("gt"))
+                    return Expression.GreaterThan(left, right);
+                else if (compare("ge"))
+                    return Expression.GreaterThanOrEqual(left, right);
+                else if (compare("lt"))
+                    return Expression.LessThan(left, right);
+                else if (compare("le"))
+                    return Expression.LessThanOrEqual(left, right);
+                throw new NotImplementedException();
+            }
+
+            var leftNullCheck = IsChildPropertyAccessNull(Children[0], dto);
+            var rightNullCheck = IsChildPropertyAccessNull(Children[1], dto);
+
+            if (leftNullCheck == null && rightNullCheck == null)
+                return doComparison();
+            if (leftNullCheck != null && rightNullCheck == null)
+                return Expression.AndAlso(Expression.IsTrue(leftNullCheck), doComparison());
+            if (leftNullCheck == null && rightNullCheck != null)
+                return Expression.AndAlso(Expression.IsTrue(rightNullCheck), doComparison());
+            return Expression.AndAlso(Expression.AndAlso(Expression.IsTrue(leftNullCheck), Expression.IsTrue(rightNullCheck)), doComparison());
         }
     }
 }

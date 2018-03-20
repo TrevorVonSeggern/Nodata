@@ -110,7 +110,23 @@ namespace NoData.Internal.TreeParser.FilterExpressionParser
             for (int p = 0; p < queue.Count(); ++p)
             {
                 if (queue[p].Token.Type == TokenTypes.classProperties.ToString())
-                    queue[p] = new PropertyNode(queue[p]);
+                {
+                    PropertyNode rootProperty = new PropertyNode(queue[p]);
+                    PropertyNode property = rootProperty;
+                    var i = p;
+                    do
+                    {
+                        if (i + 1 >= queue.Count()) break;
+                        ++i;
+                        if (queue[i].Token.Type != TokenTypes.forwardSlash.ToString() ||
+                            queue[i + 1].Token.Type != TokenTypes.classProperties.ToString()) break;
+                        queue.RemoveAt(i);
+                        property.Children.Add(new PropertyNode(queue[i]));
+                        queue.RemoveAt(i);
+                    } while (true);
+
+                    queue[p] = rootProperty;
+                }
                 else if (queue[p].Token.Type == TokenTypes.quotedString.ToString() || queue[p].Token.Type == TokenTypes.number.ToString())
                     queue[p] = new ConstantValueNode(queue[p]);
             }
