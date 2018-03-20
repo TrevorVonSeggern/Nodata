@@ -52,7 +52,7 @@ namespace nodata.Controllers
                 var result = new List<Dto>
                 {
                     new Dto{ id = 1, Name = "John", region_code = "en", children = ChildCollection.Where(x => x.id == 10).ToList() },
-                    new Dto{ id = 2, Name = "John", region_code = "en", favorite = ChildCollection.Single(x => x.id == 10) },
+                    new Dto{ id = 2, Name = "Jane", region_code = "en", favorite = ChildCollection.Single(x => x.id == 10) },
                     new Dto{ id = 3, Name = "George", region_code = "de", children = ChildCollection.Where(x => x.id == 30).ToList() },
                     new Dto{ id = 4, Name = "George", region_code = "en", children = ChildCollection.Where(x => x.id == 40).ToList(), favorite = ChildCollection.Single(x => x.id == 40) },
                     new Dto{ id = 5, Name = "George", region_code = "es", children = ChildCollection.Where(x => x.id == 50).ToList() },

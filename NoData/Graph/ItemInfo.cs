@@ -13,7 +13,6 @@ namespace NoData.Graph
         public ItemInfo(Type type) : this(type, new[] { new SerializeInfo() }) { }
         public ItemInfo(Type type, IEnumerable<SerializeInfo> enumerable)
         {
-            //PropertyNames = Utility.ClassInfoCache.GetOrAdd(type).NonExpandablePropertyNames.ToList();
             Type = type;
             SerializeList.AddRange(enumerable);
         }

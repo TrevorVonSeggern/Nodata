@@ -30,7 +30,7 @@ namespace NoData.Graph
         public void AddInstances(IEnumerable<object> instances)
         {
             if (instances == null)
-                throw new ArgumentNullException(nameof(instances));
+                return;
             _Add_Initialize();
             var info = Utility.ClassInfoCache.GetOrAdd(instances.GetType().GenericTypeArguments[0]);
             foreach (var instance in instances)
@@ -40,7 +40,7 @@ namespace NoData.Graph
         public void AddInstance(object instance)
         {
             if (instance == null)
-                throw new ArgumentNullException(nameof(instance));
+                return;
             _Add_Initialize();
             var info = Utility.ClassInfoCache.GetOrAdd(instance.GetType());
             _addInstance(instance, info);
