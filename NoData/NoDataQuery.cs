@@ -29,20 +29,14 @@ namespace NoData
         private Graph.Graph graph;
         [JsonIgnore]
         private Graph.Tree selectionTree;
+        [JsonIgnore]
+        internal IQueryable<TDto> query;
+        [JsonIgnore]
+        private ExpandParser<TDto> expandParser = new ExpandParser<TDto>();
 
         public NoDataQuery()
         {
             graph = baseGraph.Clone() as Graph.Graph;
-        }
-
-        internal IQueryable<TDto> query;
-        private ExpandParser<TDto> expandParser = new ExpandParser<TDto>();
-
-        public enum FilterSecurityTypes
-        {
-            AllowOnlyVisibleValues,
-            AllowFilteringOnPropertiesThatAreNotDisplayed,
-            AllowFilteringOnNonExplicitlyExpandedExpansions,
         }
 
         public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
