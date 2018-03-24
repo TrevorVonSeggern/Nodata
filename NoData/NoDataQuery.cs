@@ -5,22 +5,23 @@ using Newtonsoft.Json;
 using NoData.Internal.TreeParser.FilterExpressionParser;
 using NoData.Internal.TreeParser.ExpandExpressionParser;
 using Newtonsoft.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace NoData
 {
     public class NoDataQuery<TDto> where TDto : class, new()
     {
-        [JsonProperty("$count")]
+        [FromQuery(Name = "$count")]
         public bool count { get; set; }
-        [JsonProperty("$top")]
+        [FromQuery(Name = "$top")]
         public int? top { get; set; }
-        [JsonProperty("$skip")]
+        [FromQuery(Name = "$skip")]
         public int? skip { get; set; }
-        [JsonProperty("$filter")]
+        [FromQuery(Name = "$filter")]
         public string filter { get; set; }
-        [JsonProperty("$select")]
+        [FromQuery(Name = "$select")]
         public string select { get; set; }
-        [JsonProperty("$expand")]
+        [FromQuery(Name = "$expand")]
         public string expand { get; set; }
 
         [JsonIgnore]
