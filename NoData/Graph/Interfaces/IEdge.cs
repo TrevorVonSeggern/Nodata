@@ -3,14 +3,15 @@ using System.Collections.Generic;
 
 namespace NoData.Graph.Interfaces
 {
-    public interface IEdge : ICloneable
+    public interface IEdge<TEdgeValue, TVertex, TVertexValue> : ICloneable
+        where TVertex : IVertex<TVertexValue>
+        where TVertexValue : IMergable<TVertexValue>
     {
-        IVertex From { get; }
-        IVertex To { get; }
-        object Value { get; }
+        TVertex From { get; }
+        TVertex To { get; }
+        TEdgeValue Value { get; }
 
-        bool IsFullyConnected(IGraph g);
-        bool IsFullyConnected(IEnumerable<IVertex> vertices);
+        IEdge<TEdgeValue, TVertex, TVertexValue> CloneWithNewReferences(TVertex from, TVertex to);
 
         string ToString();
     }

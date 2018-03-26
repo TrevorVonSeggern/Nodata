@@ -1,5 +1,3 @@
-using NoData.Internal.TreeParser.ExpandExpressionParser;
-using NoData.Internal.TreeParser.ExpandExpressionParser.Nodes;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,10 +107,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Expand_Ignore_Deserialized_ExpandPartner_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>()
-            {
-                expand = "partner"
-            };
+            var filter = new NoData.NoDataQuery<Dto>("partner", null, null);
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is array");// returns list
@@ -133,10 +128,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Expand_Ignore_Deserialized_ExpandChildren_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>()
-            {
-                expand = "children"
-            };
+            var filter = new NoData.NoDataQuery<Dto>("children", null, null);
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is array");// returns list
@@ -155,10 +147,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Expand_Ignore_Deserialized_ExpandChildrenOfChildren_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>()
-            {
-                expand = "children/children"
-            };
+            var filter = new NoData.NoDataQuery<Dto>("children/children", null, null);
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is array");// returns list
@@ -180,10 +169,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Expand_Ignore_Deserialized_ExpandPartnerPartner_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>()
-            {
-                expand = "partner/partner"
-            };
+            var filter = new NoData.NoDataQuery<Dto>("partner/partner", null, null);
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is array");// returns list

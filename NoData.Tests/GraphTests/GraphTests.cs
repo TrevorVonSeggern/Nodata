@@ -41,7 +41,7 @@ namespace BinaryExpressionParserTests
         {
             var graph = Graph.CreateFromGeneric<Dto>();
 
-            var types = graph.Vertices.Select(v => (v.Value as ItemInfo)?.Type).ToList();
+            var types = graph.Vertices.Select(v => (v.Value as ClassInfo)?.Type).ToList();
             Assert.Contains(typeof(Dto), types, "must contain dto vertex");
             Assert.Contains(typeof(DtoChild), types, "must contain child dto vertex");
             Assert.Contains(typeof(DtoGrandChild), types, "must contain grand child dto vertex");
@@ -62,8 +62,8 @@ namespace BinaryExpressionParserTests
             Assert.DoesNotThrow(() =>
             {
                 var edge = graph.Edges.SingleOrDefault(e =>
-                    (e.From.Value as ItemInfo).Type == from &&
-                    (e.To.Value as ItemInfo).Type == to &&
+                    (e.From.Value as ClassInfo).Type == from &&
+                    (e.To.Value as ClassInfo).Type == to &&
                     e.Value.PropertyName == propertyName &&
                     e.Value.IsCollection == isCollection
                 );

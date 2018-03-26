@@ -1,4 +1,3 @@
-using NoData.Internal.TreeParser.ExpandExpressionParser;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -135,9 +134,8 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Select_Blank_AllPropertiesArePresent()
         {
-            var ft = new ExpandParser<Dto>();
-            ft.ParseExpand("");
-            var result = ft.ApplyExpand(new List<Dto>(ParentCollection).AsQueryable());
+            var ft = new NoData.NoDataQuery<Dto>(null, null, null);
+            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
@@ -160,9 +158,8 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Select_id_OnlyReturnsId_Success()
         {
-            var ft = new ExpandParser<Dto>();
-            ft.ParseExpand("id");
-            var result = ft.ApplyExpand(new List<Dto>(ParentCollection).AsQueryable());
+            var ft = new NoData.NoDataQuery<Dto>(null, null, "id");
+            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
@@ -185,9 +182,8 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Select_Name_OnlyReturnsName_Success()
         {
-            var ft = new ExpandParser<Dto>();
-            ft.ParseExpand("Name");
-            var result = ft.ApplyExpand(new List<Dto>(ParentCollection).AsQueryable());
+            var ft = new NoData.NoDataQuery<Dto>(null, null, "Name");
+            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 

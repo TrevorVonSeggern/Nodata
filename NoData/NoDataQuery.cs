@@ -2,28 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using Newtonsoft.Json;
-using NoData.Internal.TreeParser.FilterExpressionParser;
-using NoData.Internal.TreeParser.ExpandExpressionParser;
 using Newtonsoft.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
+using NoData.QueryParser;
 
 namespace NoData
 {
-    public class NoDataQuery<TDto> where TDto : class, new()
+    public class NoDataQuery<TDto> : QueryParameters where TDto : class, new()
     {
-        [FromQuery(Name = "$count")]
-        public bool count { get; set; }
-        [FromQuery(Name = "$top")]
-        public int? top { get; set; }
-        [FromQuery(Name = "$skip")]
-        public int? skip { get; set; }
-        [FromQuery(Name = "$filter")]
-        public string filter { get; set; }
-        [FromQuery(Name = "$select")]
-        public string select { get; set; }
-        [FromQuery(Name = "$expand")]
-        public string expand { get; set; }
-
         [JsonIgnore]
         private static readonly Graph.Graph baseGraph = Graph.Graph.CreateFromGeneric<TDto>();
         [JsonIgnore]
@@ -33,51 +18,70 @@ namespace NoData
         [JsonIgnore]
         internal IQueryable<TDto> query;
         [JsonIgnore]
-        private ExpandParser<TDto> expandParser = new ExpandParser<TDto>();
+        QueryParser.QueryParser QueryParser;
 
-        public NoDataQuery()
+        public NoDataQuery(
+            string expand = null, 
+            string filter = null, 
+            string select = null, 
+            int? top = null, 
+            int? skip = null, 
+            bool count = false)
+            : base(expand, filter, select, top, skip, count)
         {
             graph = baseGraph.Clone() as Graph.Graph;
+            QueryParser = new QueryParser.QueryParser(this as QueryParameters, graph);
         }
 
         public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
 
-        internal NoDataQuery<TDto> ApplyTop()
+        private bool parsed = false;
+        private void ValidateParsed()
         {
-            if(top.HasValue)
-                query = query.Take(top.Value);
-            return this;
-        }
-
-        internal NoDataQuery<TDto> ApplySkip()
-        {
-            if(skip.HasValue)
-                query = query.Skip(skip.Value);
-            return this;
-        }
-
-        internal NoDataQuery<TDto> ApplyFilter()
-        {
-            if(!string.IsNullOrEmpty(filter))
+            if (!parsed)
             {
-                var tree = new FilterTree<TDto>();
-                tree.ParseTree(filter);
-                query = tree.ApplyFilter(query);
+                QueryParser.Parse(typeof(TDto));
+                var type = typeof(TDto);
+                selectionTree = QueryParser.SelectionTree(type);
+                QueryParser.ApplyFilterExpression(type);
+            }
+            parsed = true;
+        }
+
+        private NoDataQuery<TDto> ApplyTop()
+        {
+            if (Top.HasValue)
+                query = query.Take(Top.Value);
+            return this;
+        }
+
+        private NoDataQuery<TDto> ApplySkip()
+        {
+            if (Skip.HasValue)
+                query = query.Skip(Skip.Value);
+            return this;
+        }
+
+        private NoDataQuery<TDto> ApplyFilter()
+        {
+            ValidateParsed();
+            if(!string.IsNullOrEmpty(Filter))
+            {
+                query = selectionTree.ApplyFilter(query);
+
+                //var tree = new FilterTree<TDto>();
+                //tree.ParseTree(Filter);
+                //query = tree.ApplyFilter(query);
             }
             return this;
         }
 
-        internal NoDataQuery<TDto> ApplyExpand()
+        private NoDataQuery<TDto> ApplyExpand()
         {
-            if (!string.IsNullOrEmpty(expand))
-            {
-                expandParser = new ExpandParser<TDto>();
-                selectionTree = expandParser.ParseExpand(expand, graph);
-                graph = selectionTree.Flatten() as Graph.Graph;
-                query = expandParser.ApplyExpand(query);
-            }
-            else
+            ValidateParsed();
+            if (string.IsNullOrEmpty(Expand) || selectionTree is null)
                 selectionTree = new Graph.Tree(graph.VertexContainingType(typeof(TDto)));
+            query = selectionTree.ApplyExpand(query);
             return this;
         }
 
@@ -86,9 +90,9 @@ namespace NoData
         /// </summary>
         /// <returns></returns>
         /// <remarks>Requires that Apply Expand is called first.</remarks>
-        internal NoDataQuery<TDto> ApplySelect()
+        private NoDataQuery<TDto> ApplySelect()
         {
-            if(!string.IsNullOrEmpty(select))
+            if(!string.IsNullOrEmpty(Select))
             {
                 // TODO: Select
             }
@@ -119,7 +123,7 @@ namespace NoData
             ApplyQueryable(query);
             var list = this.query.ToList();
             selectionTree.AddInstances(list);
-            var sGraph = selectionTree.Flatten() as Graph.Graph;
+            var sGraph = Graph.Utility.TreeUtility.Flatten(selectionTree);
             return JsonConvert.SerializeObject(
                 list,
                 Formatting.Indented, 
@@ -133,41 +137,6 @@ namespace NoData
         }
 
         public IQueryable<TDto> ApplyQueryable(IQueryable<TDto> query) => BuildQueryable(query).query;
-    }
-
-    public class DynamicContractResolver : DefaultContractResolver
-    {
-        public readonly Graph.Graph Graph;
-
-        public DynamicContractResolver(Graph.Graph graph)
-        {
-            Graph = graph;
-        }
-
-        // TODO: Needs to serialize multiple types. Not just the root.
-        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-        {
-            IList<JsonProperty> retval = base.CreateProperties(type, memberSerialization);
-            
-            retval = retval.ToList(); //.Where(p => !props.Contains(p.PropertyName))
-
-            var result = new List<JsonProperty>();
-            foreach(var property in retval)
-            {
-                //if (vertex.Value.PropertyNames.Contains(property.PropertyName))
-                //    continue;
-                property.ShouldSerialize = instance =>
-                {
-                    if (property.Ignored)
-                        return false;
-                    
-                    return Graph.ShouldSerializeProperty(instance, property.PropertyName, property.PropertyType);
-                };
-                result.Add(property);
-            }
-
-            return result;
-        }
     }
 
 }

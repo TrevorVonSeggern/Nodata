@@ -1,17 +1,20 @@
-﻿using System;
+﻿using NoData.Graph.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace NoData.Graph
 {
-    public class ItemInfo : ICloneable
+    public class ClassInfo : ICloneable, IMergable<ClassInfo>
     {
         public readonly Type Type;
         protected List<SerializeInfo> SerializeList = new List<SerializeInfo>();
+        public Expression FilterExpression { get; set; }
 
-        public ItemInfo() { }
-        public ItemInfo(Type type) : this(type, new[] { new SerializeInfo() }) { }
-        public ItemInfo(Type type, IEnumerable<SerializeInfo> enumerable)
+        public ClassInfo() { }
+        public ClassInfo(Type type) : this(type, new[] { new SerializeInfo() }) { }
+        public ClassInfo(Type type, IEnumerable<SerializeInfo> enumerable)
         {
             Type = type;
             SerializeList.AddRange(enumerable);
@@ -20,7 +23,7 @@ namespace NoData.Graph
         public bool IsInitialized => SerializeList.Count != 1 || SerializeList[0].IsInitialized;
         public override string ToString() => Type.Name;
 
-        internal ItemInfo Initialize(Func<IEnumerable<string>> propertyNameFunc)
+        internal ClassInfo Initialize(Func<IEnumerable<string>> propertyNameFunc)
         {
             if (!IsInitialized)
                 SerializeList[0] = SerializeList[0].Initialize(propertyNameFunc());
@@ -33,15 +36,6 @@ namespace NoData.Graph
                 throw new ArgumentException("Too many serialize settings to add an item to.");
             var info = SerializeList.Single();
             info.AddItem(t);
-        }
-
-        public void Merge(ItemInfo other)
-        {
-            if (!IsInitialized && !other.IsInitialized)
-                return;
-            if (this == other)
-                return;
-            SerializeList.AddRange(other.SerializeList);
         }
 
         public bool ShouldSerializeProperty(object instance, string propertyName)
@@ -58,7 +52,26 @@ namespace NoData.Graph
             return false;
         }
 
-        public object Clone() => new ItemInfo(Type, SerializeList.Select(s => (SerializeInfo)s.Clone()));
+        public object Clone() => new ClassInfo(Type, SerializeList.Select(s => (SerializeInfo)s.Clone()));
+
+        public void Merge(ClassInfo other)
+        {
+            if (!IsInitialized && !other.IsInitialized)
+                return;
+            if (this == other)
+                return;
+            SerializeList.AddRange(other.SerializeList);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if(obj is ClassInfo)
+            {
+                var other = obj as ClassInfo;
+                return Type == other.Type;
+            }
+            return false;
+        }
     }
 
 }

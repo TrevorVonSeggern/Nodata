@@ -1,4 +1,3 @@
-using NoData.Internal.TreeParser.ExpandExpressionParser;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -148,9 +147,8 @@ namespace BinaryExpressionParserTests
             )]
         public void Expand_Expression(string expression, params int[] expectedIds)
         {
-            var ft = new ExpandParser<Dto>();
-            ft.ParseExpand(expression);
-            var result = ft.ApplyExpand(new List<Dto>(ParentCollection).AsQueryable());
+            var ft = new NoData.NoDataQuery<Dto>(expression, null, null);
+            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 

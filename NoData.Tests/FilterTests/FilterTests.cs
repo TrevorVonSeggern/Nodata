@@ -1,4 +1,3 @@
-using NoData.Internal.TreeParser.FilterExpressionParser;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -57,9 +56,8 @@ namespace BinaryExpressionParserTests
         [TestCase("partner/id eq 10", 1, 10)] // duplication doesn't matter.
         public void Filter_Expression(string expression, params int[] expectedIds)
         {
-            var ft = new FilterTree<Dto>();
-            ft.ParseTree(expression);
-            var result = ft.ApplyFilter(new List<Dto>(SampleCollection).AsQueryable());
+            var ft = new NoData.NoDataQuery<Dto>(null, expression, null);
+            var result = ft.ApplyQueryable(new List<Dto>(SampleCollection).AsQueryable());
 
             var ids = result.SelectMany(r => r.GetIds());
 
