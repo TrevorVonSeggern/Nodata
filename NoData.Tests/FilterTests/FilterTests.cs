@@ -61,7 +61,7 @@ namespace BinaryExpressionParserTests
 
             var ids = result.SelectMany(r => r.GetIds());
 
-            Assert.AreEqual(ids.Count(), expectedIds.Count());
+            Assert.AreEqual(expectedIds.Count(), ids.Count());
             foreach (var resultId in ids)
                 Assert.True(expectedIds.Contains(resultId));
         }

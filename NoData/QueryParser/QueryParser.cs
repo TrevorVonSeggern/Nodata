@@ -219,7 +219,7 @@ namespace NoData.QueryParser
                 }), 2);
             }
 
-            string valueComparisonPattern(string a, string b) => Regex.Escape(a + Graph.TextInfo.ValueComparison + b);
+            string valueComparisonPattern(string a, string b) => a + Graph.TextInfo.ValueComparison + b;
             grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.BooleanValue, Graph.TextInfo.BooleanValue), valueItemValue);
             grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.TextValue, Graph.TextInfo.TextValue), valueItemValue);
             grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.NumberValue, Graph.TextInfo.NumberValue), valueItemValue);

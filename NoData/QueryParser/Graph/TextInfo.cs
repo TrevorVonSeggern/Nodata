@@ -20,36 +20,36 @@ namespace NoData.QueryParser.Graph
         }
 
         // value types
-        public static readonly string RawTextRepresentation = Regex.Escape("[RawText]");
-        public static readonly string ClassProperty = Regex.Escape("[ClassProperty]");
-        public static readonly string TextValue = Regex.Escape("[Text]");
-        public static readonly string BooleanValue = Regex.Escape("[Bool]");
-        public static readonly string NumberValue = Regex.Escape("[Number]");
-        public static readonly string DateValue = Regex.Escape("[Date]");
+        public static readonly string RawTextRepresentation = Regex.Escape("<RawText>");
+        public static readonly string ClassProperty = Regex.Escape("<ClassProperty>");
+        public static readonly string TextValue = Regex.Escape("<Text>");
+        public static readonly string BooleanValue = Regex.Escape("<Bool>");
+        public static readonly string NumberValue = Regex.Escape("<Number>");
+        public static readonly string DateValue = Regex.Escape("<Date>");
 
         // grouping
-        public static readonly string LogicalComparison = Regex.Escape("[and_or]");
-        public static readonly string ValueComparison = Regex.Escape("[value_comparison]");
-        public static readonly string BooleanFunction = Regex.Escape("[func_bool]");
-        public static readonly string IntFunction = Regex.Escape("[func_int]");
-        public static readonly string Add = Regex.Escape("[+]");
-        public static readonly string MathSymbols = Regex.Escape("[+-/*]");
-        public static readonly string Inverse = Regex.Escape("[!]");
+        public static readonly string LogicalComparison = Regex.Escape("<and_or>");
+        public static readonly string ValueComparison = Regex.Escape("<value_comparison>");
+        public static readonly string BooleanFunction = Regex.Escape("<func_bool>");
+        public static readonly string IntFunction = Regex.Escape("<func_int>");
+        public static readonly string Add = Regex.Escape("<+>");
+        public static readonly string MathSymbols = Regex.Escape("<+-/*>");
+        public static readonly string Inverse = Regex.Escape("<!>");
 
         // Expansion
-        public static readonly string ExpandProperty = Regex.Escape("[expandProperty]");
-        public static readonly string ListOfExpands = Regex.Escape("[ListOfExpand]");
+        public static readonly string ExpandProperty = Regex.Escape("<expandProperty>");
+        public static readonly string ListOfExpands = Regex.Escape("<ListOfExpand>");
 
         // text symbols
-        public static readonly string ForwardSlash = Regex.Escape("[/]");
-        public static readonly string Comma = Regex.Escape("[,]");
-        public static readonly string OpenParenthesis = Regex.Escape("[(]");
-        public static readonly string CloseParenthesis = Regex.Escape("[)]");
+        public static readonly string ForwardSlash = Regex.Escape("</>");
+        public static readonly string Comma = Regex.Escape("<,>");
+        public static readonly string OpenParenthesis = Regex.Escape("<(>");
+        public static readonly string CloseParenthesis = Regex.Escape("<)>");
 
         // sub-parameters
-        public static readonly string SelectClause = Regex.Escape("[select]");
-        public static readonly string ExpandClause = Regex.Escape("[expand]");
-        public static readonly string FilterClause = Regex.Escape("[filter]");
+        public static readonly string SelectClause = Regex.Escape("<select>");
+        public static readonly string ExpandClause = Regex.Escape("<expand>");
+        public static readonly string FilterClause = Regex.Escape("<filter>");
 
         public TextInfo() { }
         public TextInfo(Token token)
