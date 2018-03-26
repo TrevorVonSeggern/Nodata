@@ -29,7 +29,7 @@ namespace NoData.QueryParser.Graph
 
         // grouping
         public static readonly string LogicalComparison = Regex.Escape("[and_or]");
-        public static readonly string ValueComparison = Regex.Escape("[< > <=_>=_==_!=]");
+        public static readonly string ValueComparison = Regex.Escape("[value_comparison]");
         public static readonly string BooleanFunction = Regex.Escape("[func_bool]");
         public static readonly string IntFunction = Regex.Escape("[func_int]");
         public static readonly string Add = Regex.Escape("[+]");

@@ -45,7 +45,7 @@ namespace NoData.QueryParser.ParsingTools
         /// <param name="handleGrouping">Given the enumerable, it should return a tuple with the item replaces, and in int for the number of items to replace.</param>
         public void AddGroupingTerm(string pattern, Func<IList<T>, Tuple<T, int>> handleGrouping)
         {
-            patternDictionary.Add(new Regex(pattern, RegexOptions.Compiled), handleGrouping);
+            patternDictionary.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.Multiline), handleGrouping);
         }
 
         public T Reduce()
@@ -66,6 +66,8 @@ namespace NoData.QueryParser.ParsingTools
                     if (i == -1 || i >= list.Count())
                         continue;
                     var groupInfo = func(list.GetRange(i, list.Count() - i));
+                    if (groupInfo is null)
+                        return default(T);
                     var toRemove = groupInfo.Item2 - 1;
                     list[i] = groupInfo.Item1;
                     for(var r = 0; r <= toRemove; ++r)

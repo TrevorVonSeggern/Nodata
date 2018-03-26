@@ -8,6 +8,7 @@ namespace NoData.QueryParser.Graph
     public class EdgeInfo : ICloneable
     {
         public object Clone() => default(object);
+        public string PropertyName { get; set; }
     }
 
     public class Edge : NoData.Graph.Base.Edge<EdgeInfo, Vertex, TextInfo>

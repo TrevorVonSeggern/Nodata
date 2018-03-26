@@ -147,16 +147,20 @@ namespace BinaryExpressionParserTests
             )]
         public void Expand_Expression(string expression, params int[] expectedIds)
         {
-            var ft = new NoData.NoDataQuery<Dto>(expression, null, null);
-            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
+            foreach (var i in Enumerable.Range(1, 10))
+            {
+                var ft = new NoData.NoDataQuery<Dto>(expression, null, null);
+                var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
-            var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
+                var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
-            Assert.NotNull(result);
+                Assert.NotNull(result);
 
-            Assert.AreEqual(expectedIds.Count(), resultIds.Count());
-            foreach (var resultId in resultIds)
-                Assert.True(expectedIds.Contains(resultId));
+                Assert.AreEqual(expectedIds.Count(), resultIds.Count());
+                foreach (var resultId in resultIds)
+                    Assert.True(expectedIds.Contains(resultId));
+            }
+
         }
 
         //[Test]
