@@ -6,7 +6,6 @@ using QueueItem = NoData.QueryParser.Graph.Tree;
 using QueueGrouper = NoData.QueryParser.ParsingTools.QueueGrouper<NoData.QueryParser.Graph.Tree>;
 using NoData.Graph.Base;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 
 namespace NoData.QueryParser
 {
@@ -67,11 +66,11 @@ namespace NoData.QueryParser
             return NoData.Graph.Tree.CreateFromPathsTree(rootQueryVertex, ExpandPaths.Where(p => p.Edges.Count() > 0));
         }
 
-        public Expression ApplyFilterExpression(Type rootQueryType)
+        public Expression ApplyFilterExpression(Type rootQueryType, ParameterExpression parameter)
         {
             if (FilterTree is null)
                 return null;
-            var expression = FilterTree.Root.FilterExpression(Expression.Parameter(rootQueryType));
+            var expression = FilterTree.FilterExpression(parameter);
             return _Graph.VertexContainingType(rootQueryType).Value.FilterExpression = expression;
         }
 
@@ -163,40 +162,33 @@ namespace NoData.QueryParser
             grouper.AddGroupingTerm(Graph.TextInfo.ExpandProperty, list =>
             {
                 var item = list[0];
-                var properyNameList = new List<string>();
+                var propertyNameList = new List<string>();
+
                 item.Traverse((Graph.Vertex e) =>
                 {
-                    properyNameList.Add(e.Value.Value);
+                    propertyNameList.Add(e.Value.Value);
                 });
-                var path = string.Join("/", properyNameList);
 
-                var propInfo = NoData.Graph.Utility.GraphUtility.GetPropertyFromPathString(path, rootQueryType, _Graph);
+                var propInfo = NoData.Graph.Utility.GraphUtility.GetPropertyFromPathString(string.Join("/", propertyNameList), rootQueryType, _Graph);
                 if(propInfo is null) return null;
                 var rep = Graph.TextInfo.RawTextRepresentation;
                 var type = propInfo.PropertyType;
-                if (
-                    type == typeof(Int16) ||
+                if (type == typeof(Int16) ||
                     type == typeof(Int32) ||
                     type == typeof(long) ||
                     type == typeof(double) ||
                     type == typeof(float) ||
-                    type == typeof(decimal)
-                )
+                    type == typeof(decimal))
                     rep = Graph.TextInfo.NumberValue;
-                else if (
-                    type == typeof(DateTime) ||
-                    type == typeof(DateTimeOffset)
-                )
+                else if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
                     rep = Graph.TextInfo.DateValue;
-                else if (
-                    type == typeof(string)
-                )
+                else if (type == typeof(string))
                     rep = Graph.TextInfo.TextValue;
 
-                var root = new Graph.Vertex(new Graph.TextInfo { Value = propInfo.PropertyType.Name, Representation = rep });
+                var root = new Graph.Vertex(new Graph.TextInfo { Value = propInfo.PropertyType.Name, Text = propInfo.Name, Representation = rep, Type = type });
                 var child = item;
                 var edge = new Graph.Edge(root, child.Root);
-                return new Tuple<QueueItem, int>(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 0);
+                return new Tuple<QueueItem, int>(new QueueItem(root, new[] { ITuple.Create(edge, child) }), 0);
             });
 
             grouper.AddGroupingTerm(Graph.TextInfo.Inverse + Graph.TextInfo.BooleanValue, list =>
@@ -208,9 +200,9 @@ namespace NoData.QueryParser
             });
 
             Tuple<QueueItem, int> valueItemValue(IList<QueueItem> list) {
-                var root = new Graph.Vertex(new Graph.TextInfo { Value = list[1].Root.Value.Representation, Representation = Graph.TextInfo.BooleanValue });
+                var root = new Graph.Vertex(new Graph.TextInfo { Value = list[1].Root.Value.Representation, Text = list[1].Root.Value.Text, Representation = Graph.TextInfo.BooleanValue });
                 var left = list[0];
-                var right = list[0];
+                var right = list[2];
                 var edgeLeft = new Graph.Edge(root, left.Root);
                 var edgeRight = new Graph.Edge(root, right.Root);
                 return new Tuple<QueueItem, int>(new QueueItem(root, new[] {
@@ -225,15 +217,15 @@ namespace NoData.QueryParser
             grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.NumberValue, Graph.TextInfo.NumberValue), valueItemValue);
             grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.DateValue, Graph.TextInfo.DateValue), valueItemValue);
 
+            Tuple<QueueItem, int> undoGrouping(IList<QueueItem> list)
+            {
+                return new Tuple<QueueItem, int>(list[1], 2);
+            }
+            string anyValueTypeRegex = $"({Graph.TextInfo.BooleanValue}|{Graph.TextInfo.NumberValue}|{Graph.TextInfo.TextValue}|{Graph.TextInfo.DateValue})";
+            grouper.AddGroupingTerm(Graph.TextInfo.OpenParenthesis + anyValueTypeRegex + Graph.TextInfo.CloseParenthesis, undoGrouping);
+
             string logicComparisonPattern(string a, string b) => $"{a}{Graph.TextInfo.LogicalComparison}{b}";
-            grouper.AddGroupingTerm(logicComparisonPattern(Graph.TextInfo.DateValue, Graph.TextInfo.DateValue), valueItemValue);
-            //    else if (token.Type == NodeTokenTypes.GroupValueGroup.ToString())
-            //    {
-            //        foundMatch = true;
-            //        queue.RemoveAt(three);
-            //        queue.RemoveAt(one);
-            //    }
-            //}
+            grouper.AddGroupingTerm(logicComparisonPattern(Graph.TextInfo.BooleanValue, Graph.TextInfo.BooleanValue), valueItemValue);
         }
 
         private void ParseExpand(string querystring, Type rootQueryType)
@@ -279,10 +271,10 @@ namespace NoData.QueryParser
             AddTermsForFilter(queueGrouper, rootQueryType);
 
             var filter = queueGrouper.Reduce();
-            if (tokens.Count != 0)
+            if (tokens.Count != 1)
                 return;
 
-            FilterTree = filter;;
+            FilterTree = filter;
         }
 
         private void ParseSelect(string querystring, Type rootQueryType)

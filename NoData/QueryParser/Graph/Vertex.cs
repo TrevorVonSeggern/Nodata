@@ -14,14 +14,5 @@ namespace NoData.QueryParser.Graph
 
         public Vertex(TextInfo info) : base(info) { }
         public Vertex(Token token) : base(new TextInfo(token)) { }
-
-        #region Filtering Expressions
-
-        public Expression FilterExpression(Expression dto)
-        {
-            return dto;
-        }
-
-        #endregion
     }
 }

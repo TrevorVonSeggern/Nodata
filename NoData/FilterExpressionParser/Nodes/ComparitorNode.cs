@@ -19,19 +19,7 @@ namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
                 throw new ArgumentNullException(nameof(comparitor));
         }
 
-        private Expression IsChildPropertyAccessNull(Node child, Expression argument)
-        {
-            if(child.GetType() == typeof(PropertyNode) && child.Children.Count == 1)
-            {
-                var propertyExpression = Expression.PropertyOrField(argument, child.Token.Value);
-                var conditional = Expression.Condition(Expression.NotEqual(propertyExpression, Expression.Constant(null)), Expression.Constant(true), Expression.Constant(false));
-                var childNullCheck = IsChildPropertyAccessNull(child.Children[0], propertyExpression);
-                if (childNullCheck == null)
-                    return conditional;
-                return Expression.And(conditional, childNullCheck);
-            }
-            return null;
-        }
+         
 
         public override Expression GetExpression(Expression dto)
         {
@@ -55,6 +43,19 @@ namespace NoData.Internal.TreeParser.FilterExpressionParser.Nodes
                 else if (compare("le"))
                     return Expression.LessThanOrEqual(left, right);
                 throw new NotImplementedException();
+            }
+            Expression IsChildPropertyAccessNull(Node child, Expression argument)
+            {
+                if (child.GetType() == typeof(PropertyNode) && child.Children.Count == 1)
+                {
+                    var propertyExpression = Expression.PropertyOrField(argument, child.Token.Value);
+                    var conditional = Expression.Condition(Expression.NotEqual(propertyExpression, Expression.Constant(null)), Expression.Constant(true), Expression.Constant(false));
+                    var childNullCheck = IsChildPropertyAccessNull(child.Children[0], propertyExpression);
+                    if (childNullCheck == null)
+                        return conditional;
+                    return Expression.And(conditional, childNullCheck);
+                }
+                return null;
             }
 
             var leftNullCheck = IsChildPropertyAccessNull(Children[0], dto);

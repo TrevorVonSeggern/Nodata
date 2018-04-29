@@ -89,7 +89,7 @@ namespace NoData.Graph
         #region building queryables
         public IQueryable<TDto> ApplyExpand<TDto>(IQueryable<TDto> query)
         {
-            var parameter = Expression.Parameter(typeof(TDto));
+            var parameter = Expression.Parameter(typeof(TDto), "Dto");
             var body = Root?.GetExpandExpression(parameter, this) ?? throw new ArgumentNullException("Root filter node or resulting expression is null");
 
             var expr = ExpressionBuilder.BuildSelectExpression(query, parameter, body);
@@ -97,9 +97,8 @@ namespace NoData.Graph
             return query.Provider.CreateQuery<TDto>(expr);
         }
 
-        public IQueryable<TDto> ApplyFilter<TDto>(IQueryable<TDto> query) where TDto : class, new()
+        public IQueryable<TDto> ApplyFilter<TDto>(IQueryable<TDto> query, ParameterExpression parameter) where TDto : class, new()
         {
-            var parameter = Expression.Parameter(typeof(TDto));
             var body = Root?.Value.FilterExpression;
 
             if (body is null)

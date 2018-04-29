@@ -19,18 +19,19 @@ namespace NoData.Graph.Utility
             var split = path.Split('/');
             var info = NoData.Utility.ClassInfoCache.GetOrAdd(root);
             var vertex = graph.VertexContainingType(root);
-            for(int i = 0; i < split.Length; ++i)
+            for(int i = 0; i < split.Length - 1; ++i)
             {
                 if (vertex == null) return null;
                 if (info.NonExpandablePropertyNames.Contains(split[0]))
                     return info.NonExpandableProperties.Single(x => x.Name == split[0]);
-                vertex = graph.OutgoingEdges(vertex).FirstOrDefault(e => e.Value.PropertyName == split[i]).To;
+                var v = graph.OutgoingEdges(vertex).FirstOrDefault(e => e.Value.PropertyName == split[i])?.To;
+                if (v is null)
+                    break;
+                vertex = v;
                 info = NoData.Utility.ClassInfoCache.GetOrAdd(vertex.Value.Type);
             }
-            if (split.Length == 1)
-            {
-            }
-            return null;
+
+            return info.NonExpandableProperties.FirstOrDefault(p => p.Name == split[split.Length-1]) ?? throw new ArgumentOutOfRangeException();
         }
     }
 }

@@ -2,6 +2,7 @@
 using NoData.Internal.TreeParser.Tokenizer;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -9,8 +10,11 @@ namespace NoData.QueryParser.Graph
 {
     public class TextInfo : IMergable<TextInfo>
     {
+        public string Text { get; set; }
         public string Value { get; set; }
         public string Representation { get; set; }
+        public Type Type { get; set; }
+        public object Parsed { get; set; }
 
         public override string ToString() => $"{Value}: {Representation}";
 
@@ -43,8 +47,8 @@ namespace NoData.QueryParser.Graph
         // text symbols
         public static readonly string ForwardSlash = Regex.Escape("</>");
         public static readonly string Comma = Regex.Escape("<,>");
-        public static readonly string OpenParenthesis = Regex.Escape("<(>");
-        public static readonly string CloseParenthesis = Regex.Escape("<)>");
+        public static readonly string OpenParenthesis = Regex.Escape("<open_grouping>");
+        public static readonly string CloseParenthesis = Regex.Escape("<close_grouping>");
 
         // sub-parameters
         public static readonly string SelectClause = Regex.Escape("<select>");
@@ -52,9 +56,11 @@ namespace NoData.QueryParser.Graph
         public static readonly string FilterClause = Regex.Escape("<filter>");
 
         public TextInfo() { }
+        public TextInfo(Token token, Type type) : this(token) { Type = type; }
         public TextInfo(Token token)
         {
             Value = token.Value;
+            Text = Value;
             if (!Enum.TryParse(token.Type, out TokenTypes type))
                 Representation = RawTextRepresentation;
             else
@@ -88,7 +94,25 @@ namespace NoData.QueryParser.Graph
                     case TokenTypes.quotedString:
                         Representation = TextValue;
                         break;
+                    case TokenTypes.parenthesis:
+                        if (Text == "(")
+                            Representation = OpenParenthesis;
+                        else if (Text == ")")
+                            Representation = CloseParenthesis;
+                        else
+                            Representation = RawTextRepresentation;
+                        break;
                     case TokenTypes.number:
+                        if (Text.Contains("."))
+                        {
+                            Type = typeof(double);
+                            Parsed = double.Parse(Text);
+                        }
+                        else
+                        {
+                            Type = typeof(long);
+                            Parsed = long.Parse(Text);
+                        }
                         Representation = NumberValue;
                         break;
                     default:

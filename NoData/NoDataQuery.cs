@@ -4,6 +4,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NoData.QueryParser;
+using System.Linq.Expressions;
 
 namespace NoData
 {
@@ -19,6 +20,13 @@ namespace NoData
         internal IQueryable<TDto> query;
         [JsonIgnore]
         QueryParser.QueryParser QueryParser;
+        
+        [JsonIgnore]
+        private ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
+        [JsonIgnore]
+        private Expression FilterExpression = Expression.Empty();
+
+
 
         public NoDataQuery(
             string expand = null, 
@@ -43,7 +51,7 @@ namespace NoData
                 QueryParser.Parse(typeof(TDto));
                 var type = typeof(TDto);
                 selectionTree = QueryParser.SelectionTree(type);
-                QueryParser.ApplyFilterExpression(type);
+                QueryParser.ApplyFilterExpression(type, ParameterDtoExpression);
             }
             parsed = true;
         }
@@ -67,7 +75,7 @@ namespace NoData
             ValidateParsed();
             if(!string.IsNullOrEmpty(Filter))
             {
-                query = selectionTree.ApplyFilter(query);
+                query = selectionTree.ApplyFilter(query, ParameterDtoExpression);
 
                 //var tree = new FilterTree<TDto>();
                 //tree.ParseTree(Filter);
