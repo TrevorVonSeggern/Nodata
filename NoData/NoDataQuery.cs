@@ -23,10 +23,6 @@ namespace NoData
         private ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
         [JsonIgnore]
         private Expression FilterExpression = null;
-        [JsonIgnore]
-        private Expression SelectExpression = null;
-
-
 
         public NoDataQuery(
             string expand = null, 
@@ -50,7 +46,6 @@ namespace NoData
             {
                 QueryParser.Parse();
                 FilterExpression = QueryParser.ApplyFilterExpression(ParameterDtoExpression);
-                SelectExpression = QueryParser.ApplySelectExpression(ParameterDtoExpression);
             }
             parsed = true;
         }

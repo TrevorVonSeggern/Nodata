@@ -9,7 +9,7 @@ namespace NoData.QueryParser.Graph
     public class Tree : Tree<Vertex, Edge, TextInfo, EdgeInfo>
     {
         public new Vertex Root => base.Root as Vertex;
-        public new IEnumerable<Tuple<Edge, Tree>> Children => base.Children?.Cast<Tuple<Edge, Tree>>();
+        public new IEnumerable<ITuple<Edge, Tree>> Children => base.Children?.Cast<ITuple<Edge, Tree>>();
 
         public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }
         public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children) : base(root, children) { }
@@ -44,7 +44,7 @@ namespace NoData.QueryParser.Graph
 
         private Expression ComparisonExpression(Expression dto)
         {
-            var children = new List<Tuple<Edge, Tree>>(Children);
+            var children = new List<ITuple<Edge, Tree>>(Children);
             if (children.Count() != 2)
                 return null;
 
@@ -121,7 +121,7 @@ namespace NoData.QueryParser.Graph
 
         private Expression LogicalExpression(Expression dto)
         {
-            var children = new List<Tuple<Edge, Tree>>(Children);
+            var children = new List<ITuple<Edge, Tree>>(Children);
             if (children.Count() != 2) return null;
 
             var left = children[0].Item2.FilterExpression(dto);

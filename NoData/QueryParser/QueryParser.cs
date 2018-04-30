@@ -6,6 +6,7 @@ using QueueItem = NoData.QueryParser.Graph.Tree;
 using QueueGrouper = NoData.QueryParser.ParsingTools.QueueGrouper<NoData.QueryParser.Graph.Tree>;
 using NoData.Graph.Base;
 using System.Linq.Expressions;
+using TInfo = NoData.QueryParser.Graph.TextInfo;
 
 namespace NoData.QueryParser
 {
@@ -98,16 +99,10 @@ namespace NoData.QueryParser
             return FilterTree.FilterExpression(parameter);
         }
 
-        public Expression ApplySelectExpression(ParameterExpression parameter)
-        {
-            AssertParsed();
-            var tree = SelectionTree;
-            return null;
-        }
 
         private void AddExpandProperty(QueueGrouper grouper)
         {
-            grouper.AddGroupingTerm($"{Graph.TextInfo.ClassProperty}({Graph.TextInfo.ForwardSlash}{Graph.TextInfo.ClassProperty})*", list =>
+            grouper.AddGroupingTerm($"{TInfo.ClassProperty}({TInfo.ForwardSlash}{TInfo.ClassProperty})*", list =>
             {
                 var itemList = new Stack<Graph.Vertex>();
                 itemList.Push(list[0].Root);
@@ -116,8 +111,8 @@ namespace NoData.QueryParser
                 while (toRemove + 2 < list.Count)
                 {
                     var representation = list[toRemove + 1].Root.Value.Representation;
-                    if (list[toRemove + 1].Root.Value.Representation == Graph.TextInfo.ForwardSlash &&
-                        list[toRemove + 2].Root.Value.Representation == Graph.TextInfo.ClassProperty)
+                    if (list[toRemove + 1].Root.Value.Representation == TInfo.ForwardSlash &&
+                        list[toRemove + 2].Root.Value.Representation == TInfo.ClassProperty)
                     {
                         itemList.Push(list[toRemove + 2].Root);
                         toRemove += 2;
@@ -130,7 +125,7 @@ namespace NoData.QueryParser
                 while (itemList.Count() != 0)
                 {
                     var temp = itemList.Pop();
-                    temp.Value.Representation = Graph.TextInfo.ExpandProperty;
+                    temp.Value.Representation = TInfo.ExpandProperty;
                     if (item == null)
                         item = new QueueItem(temp);
                     else
@@ -140,13 +135,43 @@ namespace NoData.QueryParser
                     }
                 }
 
-                return new Tuple<QueueItem, int>(item, toRemove);
+                return ITuple.Create(item, toRemove);
             });
         }
         private void AddCollectionOfExpandProperty(QueueGrouper grouper)
         {
-            // expand property grouper
-            grouper.AddGroupingTerm($"{Graph.TextInfo.ExpandProperty}(\\/{Graph.TextInfo.ExpandProperty})*", list =>
+            grouper.AddGroupingTerm(TInfo.ListOfExpands + TInfo.Comma + TInfo.ExpandProperty, list =>
+            {
+                var grouped = list[0];
+                var expand = list[2];
+                var children = new List<ITuple<Graph.Edge, QueueItem>>(grouped.Children);
+                children.Add(ITuple.Create(new Graph.Edge(grouped.Root, expand.Root), expand));
+                grouped = new QueueItem(grouped.Root, children);
+                return ITuple.Create(grouped, 2);
+            });
+
+            grouper.AddGroupingTerm(TInfo.ExpandProperty + TInfo.Comma + TInfo.ListOfExpands, list =>
+            {
+                var grouped = list[2];
+                var expand = list[0];
+                var children = new List<ITuple<Graph.Edge, QueueItem>>(grouped.Children);
+                children.Add(ITuple.Create(new Graph.Edge(grouped.Root, expand.Root), expand));
+                grouped = new QueueItem(grouped.Root, children);
+                return ITuple.Create(grouped, 2);
+            });
+
+            grouper.AddGroupingTerm(TInfo.ListOfExpands + TInfo.Comma + TInfo.ListOfExpands, list =>
+            {
+                var grouped = list[0];
+                var otherGrouped = list[1];
+                var children = new List<ITuple<Graph.Edge, QueueItem>>(grouped.Children);
+                foreach(var child in otherGrouped.Children)
+                    children.Add(child);
+                grouped = new QueueItem(grouped.Root, children);
+                return ITuple.Create(grouped, 2);
+            });
+
+            grouper.AddGroupingTerm($"{TInfo.ExpandProperty}(\\/{TInfo.ExpandProperty})*", list =>
             {
                 var children = new Queue<QueueItem>();
                 children.Enqueue(list[0]);
@@ -155,8 +180,8 @@ namespace NoData.QueryParser
                 while (toRemove + 2 < list.Count)
                 {
                     var representation = list[toRemove + 1].Root.Value.Representation;
-                    if (list[toRemove + 1].Root.Value.Representation == Graph.TextInfo.Comma &&
-                        list[toRemove + 2].Root.Value.Representation == Graph.TextInfo.ExpandProperty)
+                    if (list[toRemove + 1].Root.Value.Representation == TInfo.Comma &&
+                        list[toRemove + 2].Root.Value.Representation == TInfo.ExpandProperty)
                     {
                         children.Enqueue(list[toRemove + 2]);
                         toRemove += 2;
@@ -164,7 +189,7 @@ namespace NoData.QueryParser
                     else break;
                 }
 
-                var root = new Graph.Vertex(new Graph.TextInfo { Representation = Graph.TextInfo.ListOfExpands });
+                var root = new Graph.Vertex(new TInfo { Representation = TInfo.ListOfExpands });
                 var edges = children.Select(t => new Graph.Edge(root, t.Root));
                 var childrenItems = new List<ITuple<Graph.Edge, QueueItem>>();
                 foreach (var child in children)
@@ -172,12 +197,21 @@ namespace NoData.QueryParser
 
                 QueueItem item = new QueueItem(root, childrenItems);
 
-                return new Tuple<QueueItem, int>(item, toRemove);
+                return ITuple.Create(item, toRemove);
             });
         }
 
         private void AddTermsForExpand(QueueGrouper grouper)
         {
+            grouper.AddGroupingTerm(TInfo.ListOfExpands + TInfo.OpenParenthesis + TInfo.SelectClause + TInfo.ListOfExpands + TInfo.CloseParenthesis, list =>
+            {
+                var returnedRoot = list[0];
+                var expandItem = list[0].Children.Last();
+                
+                return ITuple.Create<QueueItem, int>(returnedRoot, 4);
+            });
+
+
             AddExpandProperty(grouper);
             AddCollectionOfExpandProperty(grouper);
         }
@@ -187,7 +221,7 @@ namespace NoData.QueryParser
             AddExpandProperty(grouper);
 
             // Take an expand property, and make it a value type.
-            grouper.AddGroupingTerm(Graph.TextInfo.ExpandProperty, list =>
+            grouper.AddGroupingTerm(TInfo.ExpandProperty, list =>
             {
                 var item = list[0];
                 var propertyNameList = new List<string>();
@@ -199,7 +233,7 @@ namespace NoData.QueryParser
 
                 var propInfo = NoData.Graph.Utility.GraphUtility.GetPropertyFromPathString(string.Join("/", propertyNameList), RootQueryType, _Graph);
                 if (propInfo is null) return null;
-                var rep = Graph.TextInfo.RawTextRepresentation;
+                var rep = TInfo.RawTextRepresentation;
                 var type = propInfo.PropertyType;
                 if (type == typeof(Int16) ||
                     type == typeof(Int32) ||
@@ -207,54 +241,51 @@ namespace NoData.QueryParser
                     type == typeof(double) ||
                     type == typeof(float) ||
                     type == typeof(decimal))
-                    rep = Graph.TextInfo.NumberValue;
+                    rep = TInfo.NumberValue;
                 else if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
-                    rep = Graph.TextInfo.DateValue;
+                    rep = TInfo.DateValue;
                 else if (type == typeof(string))
-                    rep = Graph.TextInfo.TextValue;
+                    rep = TInfo.TextValue;
 
-                var root = new Graph.Vertex(new Graph.TextInfo { Value = propInfo.PropertyType.Name, Text = propInfo.Name, Representation = rep, Type = type });
+                var root = new Graph.Vertex(new TInfo { Value = propInfo.PropertyType.Name, Text = propInfo.Name, Representation = rep, Type = type });
                 var child = item;
                 var edge = new Graph.Edge(root, child.Root);
-                return new Tuple<QueueItem, int>(new QueueItem(root, new[] { ITuple.Create(edge, child) }), 0);
+                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(edge, child) }), 0);
             });
 
-            grouper.AddGroupingTerm(Graph.TextInfo.Inverse + Graph.TextInfo.BooleanValue, list =>
+            grouper.AddGroupingTerm(TInfo.Inverse + TInfo.BooleanValue, list =>
             {
-                var root = new Graph.Vertex(new Graph.TextInfo { Value = "!", Representation = Graph.TextInfo.BooleanValue });
+                var root = new Graph.Vertex(new TInfo { Value = "!", Representation = TInfo.BooleanValue });
                 var child = list[1];
                 var edge = new Graph.Edge(root, child.Root);
-                return new Tuple<QueueItem, int>(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 1);
+                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 1);
             });
 
-            Tuple<QueueItem, int> valueItemValue(IList<QueueItem> list)
+            ITuple<QueueItem, int> valueItemValue(IList<QueueItem> list)
             {
-                var root = new Graph.Vertex(new Graph.TextInfo { Value = list[1].Root.Value.Representation, Text = list[1].Root.Value.Text, Representation = Graph.TextInfo.BooleanValue });
+                var root = new Graph.Vertex(new TInfo { Value = list[1].Root.Value.Representation, Text = list[1].Root.Value.Text, Representation = TInfo.BooleanValue });
                 var left = list[0];
                 var right = list[2];
                 var edgeLeft = new Graph.Edge(root, left.Root);
                 var edgeRight = new Graph.Edge(root, right.Root);
-                return new Tuple<QueueItem, int>(new QueueItem(root, new[] {
+                return ITuple.Create(new QueueItem(root, new[] {
                     ITuple.Create(edgeLeft, left),
                     ITuple.Create(edgeRight, right),
                 }), 2);
             }
 
-            string valueComparisonPattern(string a, string b) => a + Graph.TextInfo.ValueComparison + b;
-            grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.BooleanValue, Graph.TextInfo.BooleanValue), valueItemValue);
-            grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.TextValue, Graph.TextInfo.TextValue), valueItemValue);
-            grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.NumberValue, Graph.TextInfo.NumberValue), valueItemValue);
-            grouper.AddGroupingTerm(valueComparisonPattern(Graph.TextInfo.DateValue, Graph.TextInfo.DateValue), valueItemValue);
+            string valueComparisonPattern(string a, string b) => a + TInfo.ValueComparison + b;
+            grouper.AddGroupingTerm(valueComparisonPattern(TInfo.BooleanValue, TInfo.BooleanValue), valueItemValue);
+            grouper.AddGroupingTerm(valueComparisonPattern(TInfo.TextValue, TInfo.TextValue), valueItemValue);
+            grouper.AddGroupingTerm(valueComparisonPattern(TInfo.NumberValue, TInfo.NumberValue), valueItemValue);
+            grouper.AddGroupingTerm(valueComparisonPattern(TInfo.DateValue, TInfo.DateValue), valueItemValue);
 
-            Tuple<QueueItem, int> undoGrouping(IList<QueueItem> list)
-            {
-                return new Tuple<QueueItem, int>(list[1], 2);
-            }
-            string anyValueTypeRegex = $"({Graph.TextInfo.BooleanValue}|{Graph.TextInfo.NumberValue}|{Graph.TextInfo.TextValue}|{Graph.TextInfo.DateValue})";
-            grouper.AddGroupingTerm(Graph.TextInfo.OpenParenthesis + anyValueTypeRegex + Graph.TextInfo.CloseParenthesis, undoGrouping);
+            ITuple<QueueItem, int> undoGrouping(IList<QueueItem> list) => ITuple.Create(list[1], 2);
+            string anyValueTypeRegex = $"({TInfo.BooleanValue}|{TInfo.NumberValue}|{TInfo.TextValue}|{TInfo.DateValue})";
+            grouper.AddGroupingTerm(TInfo.OpenParenthesis + anyValueTypeRegex + TInfo.CloseParenthesis, undoGrouping);
 
-            string logicComparisonPattern(string a, string b) => $"{a}{Graph.TextInfo.LogicalComparison}{b}";
-            grouper.AddGroupingTerm(logicComparisonPattern(Graph.TextInfo.BooleanValue, Graph.TextInfo.BooleanValue), valueItemValue);
+            string logicComparisonPattern(string a, string b) => $"{a}{TInfo.LogicalComparison}{b}";
+            grouper.AddGroupingTerm(logicComparisonPattern(TInfo.BooleanValue, TInfo.BooleanValue), valueItemValue);
         }
 
         private void AddTermsForSelect(QueueGrouper grouper)
@@ -271,8 +302,8 @@ namespace NoData.QueryParser
             var queueGrouper = new QueueGrouper(tokens, QueueItem.GetRepresentationValue);
             AddTermsForExpand(queueGrouper);
             var parsed = queueGrouper.Reduce();
-            if(parsed.Root.Value.Representation != Graph.TextInfo.ListOfExpands && 
-                parsed.Root.Value.Representation != Graph.TextInfo.ExpandProperty)
+            if(parsed.Root.Value.Representation != TInfo.ListOfExpands && 
+                parsed.Root.Value.Representation != TInfo.ExpandProperty)
                 throw new ArgumentException("invalid query");
 
             var groupOfExpansions = parsed?.Children;
@@ -286,7 +317,7 @@ namespace NoData.QueryParser
                 var edges = new List<NoData.Graph.Edge>();
                 void traverseExpandTree(NoData.Graph.Vertex from, QueueItem tree)
                 {
-                    if (tree?.Root?.Value.Representation != Graph.TextInfo.ExpandProperty) return;
+                    if (tree?.Root?.Value.Representation != TInfo.ExpandProperty) return;
                     // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
                     var edge = _Graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == tree.Root.Value.Value);
                     edges.Add(edge);
@@ -323,8 +354,8 @@ namespace NoData.QueryParser
                 throw new Exception("Unexped output from parsing.");
 
             var parsed = queueGrouper.Reduce();
-            if (parsed.Root.Value.Representation != Graph.TextInfo.ListOfExpands &&
-                parsed.Root.Value.Representation != Graph.TextInfo.ExpandProperty)
+            if (parsed.Root.Value.Representation != TInfo.ListOfExpands &&
+                parsed.Root.Value.Representation != TInfo.ExpandProperty)
                 throw new ArgumentException("invalid query");
 
             var groupOfSelects = parsed?.Children;
@@ -339,7 +370,7 @@ namespace NoData.QueryParser
                 string propertyName = null;
                 void traverseExpandTree(NoData.Graph.Vertex from, QueueItem parsedSelection)
                 {
-                    if (parsedSelection?.Root?.Value.Representation != Graph.TextInfo.ExpandProperty) return;
+                    if (parsedSelection?.Root?.Value.Representation != TInfo.ExpandProperty) return;
                     if(!parsedSelection.Children.Any())
                     {
                         propertyName = parsedSelection.Root.Value.Text;

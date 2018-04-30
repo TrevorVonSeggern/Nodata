@@ -94,6 +94,15 @@ namespace NoData.QueryParser.Graph
                     case TokenTypes.quotedString:
                         Representation = TextValue;
                         break;
+                    case TokenTypes.filterClause:
+                        Representation = FilterClause;
+                        break;
+                    case TokenTypes.selectClause:
+                        Representation = SelectClause;
+                        break;
+                    case TokenTypes.expandClause:
+                        Representation = ExpandClause;
+                        break;
                     case TokenTypes.parenthesis:
                         if (Text == "(")
                             Representation = OpenParenthesis;

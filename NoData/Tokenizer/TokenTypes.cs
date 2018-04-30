@@ -7,17 +7,23 @@ namespace NoData.Internal.TreeParser.Tokenizer
     public enum TokenTypes
     {
         classProperties,
+
         quotedString,
-        number,
+        whitespace,
+
         parenthesis,
+
         not,
+
         and,
         or,
+
         add,
         subtract,
         equals,
         notEquals,
-        whitespace,
+
+        number,
 
         greaterThan,
         lessThan,
@@ -26,5 +32,9 @@ namespace NoData.Internal.TreeParser.Tokenizer
 
         forwardSlash,
         comma,
+
+        filterClause,
+        expandClause,
+        selectClause,
     }
 }

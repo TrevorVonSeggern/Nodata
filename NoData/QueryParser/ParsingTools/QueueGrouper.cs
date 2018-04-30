@@ -11,7 +11,7 @@ namespace NoData.QueryParser.ParsingTools
     {
         private readonly List<T> list;
         private readonly Func<T, string> getRepresnetationalValueFunc;
-        private readonly Dictionary<Regex, Func<List<T>, Tuple<T, int>>> patternDictionary = new Dictionary<Regex, Func<List<T>, Tuple<T, int>>>();
+        private readonly Dictionary<Regex, Func<List<T>, ITuple<T, int>>> patternDictionary = new Dictionary<Regex, Func<List<T>, ITuple<T, int>>>();
 
         public QueueGrouper(List<T> list, Func<T, string> getRepresnetationalValueFunc)
         {
@@ -43,7 +43,7 @@ namespace NoData.QueryParser.ParsingTools
         /// </summary>
         /// <param name="pattern">a regex pattern to match on.</param>
         /// <param name="handleGrouping">Given the enumerable, it should return a tuple with the item replaces, and in int for the number of items to replace.</param>
-        public void AddGroupingTerm(string pattern, Func<IList<T>, Tuple<T, int>> handleGrouping)
+        public void AddGroupingTerm(string pattern, Func<IList<T>, ITuple<T, int>> handleGrouping)
         {
             patternDictionary.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.Multiline), handleGrouping);
         }

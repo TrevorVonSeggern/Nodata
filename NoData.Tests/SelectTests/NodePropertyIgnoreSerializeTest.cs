@@ -188,5 +188,32 @@ namespace BinaryExpressionParserTests
             Assert.False(serialized.Contains("favorite"), "not expanded on favorite");
             Assert.False(serialized.Contains("null"), "Correlates to navigation properties that are serialized, but have a null value when they should not be serialized.");
         }
+
+        [Test]
+        public void SelectExpand_Deserialized_SelectNameAndNameOfPartner_SelectInsideExpand_Success()
+        {
+            var filter = new NoData.NoDataQuery<Dto>("partner($select=Name)", null, "Name");
+            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            Assert.NotNull(serialized);
+            Assert.True(serialized.Contains("["), "is an array");
+            Assert.True(serialized.Contains("]"), "is an array");
+
+            Assert.True(serialized.Contains("Name"));
+            Assert.True(serialized.Contains("John"), "Name is selected and should appear.");
+            Assert.True(serialized.Contains("Jane"), "Name is selected and should appear.");
+
+            Assert.False(serialized.Contains("id"), "id ");
+            Assert.False(serialized.Contains("1"));
+            Assert.False(serialized.Contains("2"));
+
+            Assert.False(serialized.Contains("region_code"), "region_code is not selected");
+            Assert.False(serialized.Contains("en"), "region_code is not selected");
+            Assert.False(serialized.Contains("en"), "region_code is not selected");
+
+            Assert.True(serialized.Contains("partner"), "Expanded on partner");
+            Assert.False(serialized.Contains("children"), "not expanded on children");
+            Assert.False(serialized.Contains("favorite"), "not expanded on favorite");
+            Assert.False(serialized.Contains("null"), "Correlates to navigation properties that are serialized, but have a null value when they should not be serialized.");
+        }
     }
 }
