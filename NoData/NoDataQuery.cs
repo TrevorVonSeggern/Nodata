@@ -15,16 +15,16 @@ namespace NoData
         [JsonIgnore]
         private Graph.Graph graph;
         [JsonIgnore]
-        private Graph.Tree selectionTree;
-        [JsonIgnore]
         internal IQueryable<TDto> query;
         [JsonIgnore]
-        QueryParser.QueryParser QueryParser;
+        QueryParser<TDto> QueryParser;
         
         [JsonIgnore]
         private ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
         [JsonIgnore]
-        private Expression FilterExpression = Expression.Empty();
+        private Expression FilterExpression = null;
+        [JsonIgnore]
+        private Expression SelectExpression = null;
 
 
 
@@ -38,7 +38,7 @@ namespace NoData
             : base(expand, filter, select, top, skip, count)
         {
             graph = baseGraph.Clone() as Graph.Graph;
-            QueryParser = new QueryParser.QueryParser(this as QueryParameters, graph);
+            QueryParser = new QueryParser<TDto>(this as QueryParameters, graph);
         }
 
         public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
@@ -48,10 +48,9 @@ namespace NoData
         {
             if (!parsed)
             {
-                QueryParser.Parse(typeof(TDto));
-                var type = typeof(TDto);
-                selectionTree = QueryParser.SelectionTree(type);
-                QueryParser.ApplyFilterExpression(type, ParameterDtoExpression);
+                QueryParser.Parse();
+                FilterExpression = QueryParser.ApplyFilterExpression(ParameterDtoExpression);
+                SelectExpression = QueryParser.ApplySelectExpression(ParameterDtoExpression);
             }
             parsed = true;
         }
@@ -72,45 +71,33 @@ namespace NoData
 
         private NoDataQuery<TDto> ApplyFilter()
         {
-            ValidateParsed();
             if(!string.IsNullOrEmpty(Filter))
-            {
-                query = selectionTree.ApplyFilter(query, ParameterDtoExpression);
-
-                //var tree = new FilterTree<TDto>();
-                //tree.ParseTree(Filter);
-                //query = tree.ApplyFilter(query);
-            }
+                query = QueryParser.SelectionTree.ApplyFilter(query, ParameterDtoExpression, FilterExpression);
             return this;
         }
 
         private NoDataQuery<TDto> ApplyExpand()
         {
-            ValidateParsed();
-            if (string.IsNullOrEmpty(Expand) || selectionTree is null)
-                selectionTree = new Graph.Tree(graph.VertexContainingType(typeof(TDto)));
-            query = selectionTree.ApplyExpand(query);
+            query = QueryParser.SelectionTree.ApplyExpand(query, ParameterDtoExpression);
             return this;
         }
 
         /// <summary>
         /// Selects a subset of properties
         /// </summary>
-        /// <returns></returns>
         /// <remarks>Requires that Apply Expand is called first.</remarks>
         private NoDataQuery<TDto> ApplySelect()
         {
             if(!string.IsNullOrEmpty(Select))
-            {
-                // TODO: Select
-            }
+                query = QueryParser.SelectionTree.ApplySelect(query, ParameterDtoExpression);
             return this;
         }
 
         public NoDataQuery<TDto> BuildQueryable(IQueryable<TDto> query)
         {
             this.query = query;
-            switch(FilterSecurity)
+            ValidateParsed();
+            switch (FilterSecurity)
             {
                 default:
                 case FilterSecurityTypes.AllowOnlyVisibleValues:
@@ -130,8 +117,8 @@ namespace NoData
         {
             ApplyQueryable(query);
             var list = this.query.ToList();
-            selectionTree.AddInstances(list);
-            var sGraph = Graph.Utility.TreeUtility.Flatten(selectionTree);
+            QueryParser.SelectionTree.AddInstances(list);
+            var sGraph = Graph.Utility.TreeUtility.Flatten(QueryParser.SelectionTree);
             return JsonConvert.SerializeObject(
                 list,
                 Formatting.Indented, 

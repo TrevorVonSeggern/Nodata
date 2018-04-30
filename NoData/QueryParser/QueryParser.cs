@@ -9,13 +9,20 @@ using System.Linq.Expressions;
 
 namespace NoData.QueryParser
 {
-    class QueryParser
+    internal class QueryParser<TRootVertex>
     {
-        private string Filter { get; set; }
-        private string Select { get; set; }
-        private string Expand { get; set; }
+        public bool IsParsed { get; private set; }
+        private static readonly Type RootQueryType = typeof(TRootVertex);
+
+        private string filter { get; set; }
+        private string select { get; set; }
+        private string expand { get; set; }
+        private string Filter { get { return filter; } set { if (IsParsed) throw new Exception("Cannot change after parsed"); filter = value; } }
+        private string Select { get { return select; } set { if (IsParsed) throw new Exception("Cannot change after parsed"); select = value; } }
+        private string Expand { get { return expand; } set { if (IsParsed) throw new Exception("Cannot change after parsed"); expand = value; } }
 
         private List<NoData.Graph.Path> ExpandPaths { get; set; }
+        private List<ITuple<NoData.Graph.Path, string>> SelectionPaths { get; set; }
         private QueueItem FilterTree { get; set; }
 
         private readonly IEnumerable<string> ClassProperties;
@@ -23,12 +30,13 @@ namespace NoData.QueryParser
 
         public QueryParser(QueryParameters parameters, NoData.Graph.Graph graph)
         {
-            //graph = _graph;
+            IsParsed = false;
             Filter = parameters.Filter;
             Select = parameters.Select;
             Expand = parameters.Expand;
 
             ExpandPaths = new List<NoData.Graph.Path>();
+            SelectionPaths = new List<ITuple<NoData.Graph.Path, string>>();
             ClassProperties = graph.Vertices
                 .Select(v => Utility.ClassInfoCache.GetOrAdd(v.Value.Type))
                 .SelectMany(cp => cp.PropertyNames)
@@ -40,7 +48,7 @@ namespace NoData.QueryParser
         private IEnumerable<QueueItem> GetTokens(string parmeter)
             => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new Graph.Vertex(t)));
 
-        public void Parse(Type root)
+        public void Parse()
         {
             do
             {
@@ -51,32 +59,50 @@ namespace NoData.QueryParser
                 Filter = null;
                 Select = null;
 
-                if(expand != null)
-                    ParseExpand(expand, root);
-                if(filter != null)
-                    ParseFilter(filter, root);
-                if(select != null)
-                    ParseSelect(select, root);
+                if (expand != null)
+                    ParseExpand(expand);
+                if (filter != null)
+                    ParseFilter(filter);
+                if (select != null)
+                    ParseSelect(select);
             } while (Expand != null || Filter != null || Select != null);
+            IsParsed = true;
         }
 
-        public NoData.Graph.Tree SelectionTree(Type rootQueryType)
+        private void AssertParsed()
         {
-            var rootQueryVertex = _Graph.VertexContainingType(rootQueryType);
-            return NoData.Graph.Tree.CreateFromPathsTree(rootQueryVertex, ExpandPaths.Where(p => p.Edges.Count() > 0));
+            if (!IsParsed)
+                throw new Exception("Need to parse before the this is available.");
         }
 
-        public Expression ApplyFilterExpression(Type rootQueryType, ParameterExpression parameter)
+        private NoData.Graph.Tree _selectionTree { get; set; }
+        public NoData.Graph.Tree SelectionTree
         {
+            get
+            {
+                AssertParsed();
+                if (_selectionTree is null)
+                {
+                    var rootQueryVertex = _Graph.VertexContainingType(RootQueryType);
+                    _selectionTree = NoData.Graph.Tree.CreateFromPathsTree(rootQueryVertex, ExpandPaths.Where(p => p.Edges.Count() > 0), SelectionPaths);
+                }
+                return _selectionTree;
+            }
+        }
+
+        public Expression ApplyFilterExpression(ParameterExpression parameter)
+        {
+            AssertParsed();
             if (FilterTree is null)
                 return null;
-            var expression = FilterTree.FilterExpression(parameter);
-            return _Graph.VertexContainingType(rootQueryType).Value.FilterExpression = expression;
+            return FilterTree.FilterExpression(parameter);
         }
 
-        private void AddCommonTerms(QueueGrouper grouper)
+        public Expression ApplySelectExpression(ParameterExpression parameter)
         {
-            
+            AssertParsed();
+            var tree = SelectionTree;
+            return null;
         }
 
         private void AddExpandProperty(QueueGrouper grouper)
@@ -116,13 +142,9 @@ namespace NoData.QueryParser
 
                 return new Tuple<QueueItem, int>(item, toRemove);
             });
-
         }
-
-        private void AddTermsForExpand(QueueGrouper grouper)
+        private void AddCollectionOfExpandProperty(QueueGrouper grouper)
         {
-            AddExpandProperty(grouper);
-
             // expand property grouper
             grouper.AddGroupingTerm($"{Graph.TextInfo.ExpandProperty}(\\/{Graph.TextInfo.ExpandProperty})*", list =>
             {
@@ -130,7 +152,7 @@ namespace NoData.QueryParser
                 children.Enqueue(list[0]);
 
                 var toRemove = 0;
-                while(toRemove + 2 < list.Count)
+                while (toRemove + 2 < list.Count)
                 {
                     var representation = list[toRemove + 1].Root.Value.Representation;
                     if (list[toRemove + 1].Root.Value.Representation == Graph.TextInfo.Comma &&
@@ -145,7 +167,7 @@ namespace NoData.QueryParser
                 var root = new Graph.Vertex(new Graph.TextInfo { Representation = Graph.TextInfo.ListOfExpands });
                 var edges = children.Select(t => new Graph.Edge(root, t.Root));
                 var childrenItems = new List<ITuple<Graph.Edge, QueueItem>>();
-                foreach(var child in children)
+                foreach (var child in children)
                     childrenItems.Add(ITuple.Create(edges.First(e => e.To == child.Root), child));
 
                 QueueItem item = new QueueItem(root, childrenItems);
@@ -154,7 +176,13 @@ namespace NoData.QueryParser
             });
         }
 
-        private void AddTermsForFilter(QueueGrouper grouper, Type rootQueryType)
+        private void AddTermsForExpand(QueueGrouper grouper)
+        {
+            AddExpandProperty(grouper);
+            AddCollectionOfExpandProperty(grouper);
+        }
+
+        private void AddTermsForFilter(QueueGrouper grouper)
         {
             AddExpandProperty(grouper);
 
@@ -169,8 +197,8 @@ namespace NoData.QueryParser
                     propertyNameList.Add(e.Value.Value);
                 });
 
-                var propInfo = NoData.Graph.Utility.GraphUtility.GetPropertyFromPathString(string.Join("/", propertyNameList), rootQueryType, _Graph);
-                if(propInfo is null) return null;
+                var propInfo = NoData.Graph.Utility.GraphUtility.GetPropertyFromPathString(string.Join("/", propertyNameList), RootQueryType, _Graph);
+                if (propInfo is null) return null;
                 var rep = Graph.TextInfo.RawTextRepresentation;
                 var type = propInfo.PropertyType;
                 if (type == typeof(Int16) ||
@@ -199,7 +227,8 @@ namespace NoData.QueryParser
                 return new Tuple<QueueItem, int>(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 1);
             });
 
-            Tuple<QueueItem, int> valueItemValue(IList<QueueItem> list) {
+            Tuple<QueueItem, int> valueItemValue(IList<QueueItem> list)
+            {
                 var root = new Graph.Vertex(new Graph.TextInfo { Value = list[1].Root.Value.Representation, Text = list[1].Root.Value.Text, Representation = Graph.TextInfo.BooleanValue });
                 var left = list[0];
                 var right = list[2];
@@ -228,7 +257,13 @@ namespace NoData.QueryParser
             grouper.AddGroupingTerm(logicComparisonPattern(Graph.TextInfo.BooleanValue, Graph.TextInfo.BooleanValue), valueItemValue);
         }
 
-        private void ParseExpand(string querystring, Type rootQueryType)
+        private void AddTermsForSelect(QueueGrouper grouper)
+        {
+            AddExpandProperty(grouper);
+            AddCollectionOfExpandProperty(grouper);
+        }
+
+        private void ParseExpand(string querystring)
         {
             var tokens = new List<QueueItem>(GetTokens(querystring));
             if (tokens.Count == 0)
@@ -258,17 +293,17 @@ namespace NoData.QueryParser
                     foreach (var child in tree.Children)
                         traverseExpandTree(edge.To, child.Item2);
                 }
-                var rootQueryVertex = _Graph.VertexContainingType(rootQueryType);
+                var rootQueryVertex = _Graph.VertexContainingType(RootQueryType);
                 traverseExpandTree(rootQueryVertex, expansion);
                 ExpandPaths.Add(new NoData.Graph.Path(edges));
             }
         }
 
-        private void ParseFilter(string querystring, Type rootQueryType)
+        private void ParseFilter(string querystring)
         {
             var tokens = new List<QueueItem>(GetTokens(querystring));
             var queueGrouper = new QueueGrouper(tokens, QueueItem.GetRepresentationValue);
-            AddTermsForFilter(queueGrouper, rootQueryType);
+            AddTermsForFilter(queueGrouper);
 
             var filter = queueGrouper.Reduce();
             if (tokens.Count != 1)
@@ -277,8 +312,53 @@ namespace NoData.QueryParser
             FilterTree = filter;
         }
 
-        private void ParseSelect(string querystring, Type rootQueryType)
+        private void ParseSelect(string querystring)
         {
+            var tokens = new List<QueueItem>(GetTokens(querystring));
+            var queueGrouper = new QueueGrouper(tokens, QueueItem.GetRepresentationValue);
+            AddTermsForSelect(queueGrouper);
+
+            var select = queueGrouper.Reduce();
+            if (tokens.Count != 1)
+                throw new Exception("Unexped output from parsing.");
+
+            var parsed = queueGrouper.Reduce();
+            if (parsed.Root.Value.Representation != Graph.TextInfo.ListOfExpands &&
+                parsed.Root.Value.Representation != Graph.TextInfo.ExpandProperty)
+                throw new ArgumentException("invalid query");
+
+            var groupOfSelects = parsed?.Children;
+
+            if (groupOfSelects is null)
+                throw new ArgumentException("invalid query");
+
+            foreach (var propertySelection in groupOfSelects.Select(x => x.Item2))
+            {
+                // add to paths.
+                var edges = new List<NoData.Graph.Edge>();
+                string propertyName = null;
+                void traverseExpandTree(NoData.Graph.Vertex from, QueueItem parsedSelection)
+                {
+                    if (parsedSelection?.Root?.Value.Representation != Graph.TextInfo.ExpandProperty) return;
+                    if(!parsedSelection.Children.Any())
+                    {
+                        propertyName = parsedSelection.Root.Value.Text;
+                        return;
+                    }
+
+                    // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
+                    var edge = _Graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == parsedSelection.Root.Value.Value);
+                    if (edge is null)
+                        return;
+                    edges.Add(edge);
+                    foreach (var child in parsedSelection.Children)
+                        traverseExpandTree(edge.To, child.Item2);
+                }
+                var rootQueryVertex = _Graph.VertexContainingType(RootQueryType);
+                traverseExpandTree(rootQueryVertex, propertySelection);
+                SelectionPaths.Add(ITuple.Create(new NoData.Graph.Path(edges), propertyName));
+            }
+
         }
     }
 }

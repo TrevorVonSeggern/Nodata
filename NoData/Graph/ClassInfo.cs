@@ -10,10 +10,9 @@ namespace NoData.Graph
     {
         public readonly Type Type;
         protected List<SerializeInfo> SerializeList = new List<SerializeInfo>();
-        public Expression FilterExpression { get; set; }
 
         public ClassInfo() { }
-        public ClassInfo(Type type) : this(type, new[] { new SerializeInfo() }) { }
+        public ClassInfo(Type type) : this(type, new[] { new SerializeInfo(NoData.Utility.ClassInfoCache.GetOrAdd(type).NonExpandablePropertyNames, NoData.Utility.ClassInfoCache.GetOrAdd(type).ExpandablePropertyNames, false) }) { }
         public ClassInfo(Type type, IEnumerable<SerializeInfo> enumerable)
         {
             Type = type;
@@ -30,10 +29,15 @@ namespace NoData.Graph
             return this;
         }
 
-        public void AddItem(object t)
+        private void AssertUnInitialized()
         {
             if (SerializeList.Count() != 1)
                 throw new ArgumentException("Too many serialize settings to add an item to.");
+        }
+
+        public void AddItem(object t)
+        {
+            AssertUnInitialized();
             var info = SerializeList.Single();
             info.AddItem(t);
         }
@@ -44,7 +48,7 @@ namespace NoData.Graph
             {
                 if (info.PossiblyExists(instance))
                 {
-                    if (info.PropertyNames.Contains(propertyName))
+                    if (info.DoesPropertyExist(propertyName))
                         return true;
                     return false;
                 }
@@ -53,6 +57,13 @@ namespace NoData.Graph
         }
 
         public object Clone() => new ClassInfo(Type, SerializeList.Select(s => (SerializeInfo)s.Clone()));
+
+        internal void AddSelection(string propertyName)
+        {
+            AssertUnInitialized();
+            var info = SerializeList.Single();
+            info.AddPropertyToSerialize(propertyName);
+        }
 
         public void Merge(ClassInfo other)
         {
@@ -71,6 +82,12 @@ namespace NoData.Graph
                 return Type == other.Type;
             }
             return false;
+        }
+
+        internal IEnumerable<string> GetSelectProperties()
+        {
+            AssertUnInitialized();
+            return SerializeList[0].PropertySelectList();
         }
     }
 

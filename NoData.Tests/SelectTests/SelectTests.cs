@@ -151,7 +151,7 @@ namespace BinaryExpressionParserTests
                 Assert.NotNull(dto.id);
                 Assert.NotNull(dto.Name);
                 Assert.NotNull(dto.region_code);
-                Assert.NotNull(dto.favorite ?? dto.children?.FirstOrDefault());
+                Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
             }
         }
         
@@ -188,18 +188,16 @@ namespace BinaryExpressionParserTests
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
             Assert.NotNull(result);
-            int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
-            Assert.AreEqual(expectedIds.Count(), resultIds.Count());
-            foreach (var resultId in resultIds)
-                Assert.True(expectedIds.Contains(resultId));
+            Assert.AreEqual(ParentCollection.Count(), resultIds.Count());
 
             foreach(var dto in result)
             {
                 Assert.NotNull(dto);
-                Assert.Null(dto.id);
+                Assert.AreEqual(dto.id, 0); // int cannot be null, defaults to 0 when not selected.
                 Assert.NotNull(dto.Name);
                 Assert.Null(dto.region_code);
-                Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
+                Assert.Null(dto.favorite);
+                Assert.Null(dto.children);
             }
         }
     }
