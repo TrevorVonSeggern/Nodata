@@ -1,5 +1,3 @@
-using NoData.Internal.TreeParser.ExpandExpressionParser;
-using NoData.Internal.TreeParser.ExpandExpressionParser.Nodes;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,10 +107,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Expand_Ignore_Deserialized_ExpandPartner_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>()
-            {
-                expand = "partner"
-            };
+            var filter = new NoData.NoDataQuery<Dto>("partner", null, null);
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is array");// returns list
@@ -133,10 +128,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Expand_Ignore_Deserialized_ExpandChildren_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>()
-            {
-                expand = "children"
-            };
+            var filter = new NoData.NoDataQuery<Dto>("children", null, null);
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is array");// returns list
@@ -155,10 +147,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Expand_Ignore_Deserialized_ExpandChildrenOfChildren_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>()
-            {
-                expand = "children/children"
-            };
+            var filter = new NoData.NoDataQuery<Dto>("children/children", null, null);
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is array");// returns list
@@ -180,10 +169,7 @@ namespace BinaryExpressionParserTests
         [Test]
         public void Expand_Ignore_Deserialized_ExpandPartnerPartner_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>()
-            {
-                expand = "partner/partner"
-            };
+            var filter = new NoData.NoDataQuery<Dto>("partner/partner", null, null);
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is array");// returns list
@@ -195,6 +181,31 @@ namespace BinaryExpressionParserTests
             // should appear three times. Once for the root. Once for the partner, once for the partners partner.
             Assert.AreEqual(3, serialized.Count(x => x == '1'));
             Assert.AreEqual(3, serialized.Count(x => x == '2'));
+            Assert.True(serialized.Contains("John"));
+            Assert.True(serialized.Contains("Jane"));
+            Assert.True(serialized.Contains("partner"));
+            Assert.True(serialized.Contains("en")); // basic values
+            Assert.False(serialized.Contains("children")); // ignored values
+            Assert.False(serialized.Contains("favorite"));
+            Assert.False(serialized.Contains("null"));
+        }
+
+        [Test]
+        public void Expand_Ignore_Deserialized_ExpandPartnerPartner_SelectId_Success()
+        {
+            var filter = new NoData.NoDataQuery<Dto>("partner/partner($select=id)", null, null);
+            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            Assert.NotNull(serialized);
+            Assert.True(serialized.Contains("["), "is array");// returns list
+            Assert.True(serialized.Contains("id")); // basic properties
+            Assert.True(serialized.Contains("Name"));
+            Assert.True(serialized.Contains("region_code"));
+            Assert.True(serialized.Contains("1"));
+            Assert.True(serialized.Contains("2"));
+            // should appear three times. Once for the root. Once for the partner, once for the partners partner.
+            Assert.AreEqual(3, serialized.Count(x => x == '1'));
+            Assert.AreEqual(3, serialized.Count(x => x == '2'));
+            Assert.AreEqual(4, serialized.Count(x => x == 'J')); // two for John, two for Jane (for root properties and on not on expanded.)
             Assert.True(serialized.Contains("John"));
             Assert.True(serialized.Contains("Jane"));
             Assert.True(serialized.Contains("partner"));

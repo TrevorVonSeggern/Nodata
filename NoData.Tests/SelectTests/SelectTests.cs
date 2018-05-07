@@ -5,7 +5,7 @@ using System.Linq;
 namespace BinaryExpressionParserTests
 {
     [TestFixture]
-    public class ExpandTest
+    public class SelectTest
     {
         public class Dto
         {
@@ -131,44 +131,74 @@ namespace BinaryExpressionParserTests
             }
         }
         
-        [TestCase("", 1, 2, 3, 4, 5, 6)] // returns everything.
-        [TestCase("partner", 1, 2, 3, 4, 5, 6, 1, 2)] // one expand
-        [TestCase("children", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60)]
-        [TestCase("favorite", 1, 2, 3, 4, 5, 6, 10, 40)]
-        [TestCase("favorite/favorite", 1, 2, 3, 4, 5, 6, 10, 40, 300)]
-        [TestCase("partner,children", 1, 2, 3, 4, 5, 6, 1, 2, 10, 30, 40, 50, 60)] // multiple expands.
-        [TestCase("children/partner", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60, 10, 60)]
-        [TestCase("partner,children/partner", 1, 2, 3, 4, 5, 6, 6, 1, 10, 30, 40, 50, 60, 60, 10/*, 100, 200, 300, 400, 500, 600*/)]
-        [TestCase("partner/children,partner/favorite", 
-            1, 2, 3, 4, 5, 6, // root
-            1, 2, // partner
-            10, // partner/children
-            10 // partner/favorite
-            )]
-        public void Expand_Expression(string expression, params int[] expectedIds)
+        [Test]
+        public void Select_Blank_AllPropertiesArePresent()
         {
-            var ft = new NoData.NoDataQuery<Dto>(expression, null, null);
+            var ft = new NoData.NoDataQuery<Dto>(null, null, null);
             var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
             Assert.NotNull(result);
-
+            int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
             Assert.AreEqual(expectedIds.Count(), resultIds.Count());
             foreach (var resultId in resultIds)
                 Assert.True(expectedIds.Contains(resultId));
-        }
 
-        //[Test]
-        //public void TestMethod1()
-        //{
-        //    // endswith(Name,'eorge')
-        //    // startswith(Name,'george')
-        //    // substringof(Name,'eorg') // right is contained within the left paramter
-        //    // length(Name) gt 1
-        //    // indexof(Name, 'ame') eq 1
-        //    // replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'
-        //    // substring(Name, 'Name', 'ReplacedName') eq 'ReplacedName'
-        //}
+            foreach(var dto in result)
+            {
+                Assert.NotNull(dto);
+                Assert.NotNull(dto.id);
+                Assert.NotNull(dto.Name);
+                Assert.NotNull(dto.region_code);
+                Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
+            }
+        }
+        
+        [Test]
+        public void Select_id_OnlyReturnsId_Success()
+        {
+            var ft = new NoData.NoDataQuery<Dto>(null, null, "id");
+            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
+
+            var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
+
+            Assert.NotNull(result);
+            int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
+            Assert.AreEqual(expectedIds.Count(), resultIds.Count());
+            foreach (var resultId in resultIds)
+                Assert.True(expectedIds.Contains(resultId));
+
+            foreach(var dto in result)
+            {
+                Assert.NotNull(dto);
+                Assert.NotNull(dto.id);
+                Assert.Null(dto.Name);
+                Assert.Null(dto.region_code);
+                Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
+            }
+        }
+        
+        [Test]
+        public void Select_Name_OnlyReturnsName_Success()
+        {
+            var ft = new NoData.NoDataQuery<Dto>(null, null, "Name");
+            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
+
+            var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
+
+            Assert.NotNull(result);
+            Assert.AreEqual(ParentCollection.Count(), resultIds.Count());
+
+            foreach(var dto in result)
+            {
+                Assert.NotNull(dto);
+                Assert.AreEqual(dto.id, 0); // int cannot be null, defaults to 0 when not selected.
+                Assert.NotNull(dto.Name);
+                Assert.Null(dto.region_code);
+                Assert.Null(dto.favorite);
+                Assert.Null(dto.children);
+            }
+        }
     }
 }

@@ -1,38 +1,58 @@
 ﻿using NoData.Graph.Base;
 using NoData.Graph.Interfaces;
+using NoData.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace NoData.Graph
 {
-    public class Tree : Base.Tree
+    public class Tree : Tree<Vertex, Edge, ClassInfo, EdgeMetaData>
     {
-        public new Vertex Root => base.Root as Vertex;
+        public override Vertex Root { get; protected set; }
         public new IEnumerable<Tuple<Edge, Tree>> Children => base.Children?.Cast<Tuple<Edge, Tree>>();
 
         public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }
         public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children) : base(root, children) { }
 
-        public void Traverse(Action<Edge> callback) => Traverse((IEdge iEdge) => callback(iEdge as Edge));
-        public void Traverse(Action<Vertex> callback) => Traverse((IVertex iVertex) => callback(iVertex as Vertex));
+        public static Tree CreateFromPathsTree(Vertex root, IEnumerable<Path> expandPaths, IEnumerable<ITuple<Path, string>> selections)
+        {
+            var c = new List<ITuple<Edge, Tree>>();
+            expandPaths = expandPaths.Where(p => p.Edges.Count() > 0);
+            selections = selections ?? new List<ITuple<Path, string>>();
+            if (expandPaths.Count() != 0)
+            {
+                if (!expandPaths.All(p => p.Edges.First().From.Value.Type == root.Value.Type) && !selections.All(p => p.Item1.Edges.First().From.Value.Type == root.Value.Type))
+                    throw new ArgumentException("Paths don't all begin at the same vertex");
 
+                foreach (var path in expandPaths.Select(p => p.Edges).GroupBy(x => x.First()))
+                {
+                    var childPaths = path.Select(p => new Path(p.Skip(1))).Where(p => p.Edges.Count() > 0);
+                    var childRoot = path.Key.To.Clone() as Vertex;
+                    var childSelectionsPaths = selections.Where(s => s.Item1.Edges.Any() && s.Item1.Edges.First().From.Value.Type == childRoot.Value.Type)
+                        .Select(p => ITuple.Create(new Path(p.Item1.Edges.Skip(1)), p.Item2));
+                    var edge = new Edge(root, childRoot, path.First().First().Value);
+                    c.Add(ITuple.Create(edge, CreateFromPathsTree(childRoot, childPaths, childSelectionsPaths)));
+                }
+            }
+            foreach(var propertyName in selections.Where(x => x.Item1 is null || !x.Item1.Edges.Any()).Select(x => x.Item2))
+                root.Value.AddSelection(propertyName);
+            return new Tree(root, c);
+        }
 
+        #region modifying the tree with instances
         private void _Add_Initialize()
         {
-            Root.Value.Initialize(() =>
-            {
-                var list = new List<string>(Utility.ClassInfoCache.GetOrAdd(Root.Value.Type).NonExpandablePropertyNames);
-                list.AddRange(Children.Select(t => t.Item1.Value.PropertyName));
-                return list;
-            });
+            Root.Value.Initialize(() => Children.Select(t => t.Item1.Value.PropertyName));
         }
+
         public void AddInstances(IEnumerable<object> instances)
         {
             if (instances == null)
                 return;
             _Add_Initialize();
-            var info = Utility.ClassInfoCache.GetOrAdd(instances.GetType().GenericTypeArguments[0]);
+            var info = ClassInfoCache.GetOrAdd(instances.GetType().GenericTypeArguments[0]);
             foreach (var instance in instances)
                 _addInstance(instance, info);
         }
@@ -42,11 +62,11 @@ namespace NoData.Graph
             if (instance == null)
                 return;
             _Add_Initialize();
-            var info = Utility.ClassInfoCache.GetOrAdd(instance.GetType());
+            var info = NoData.Utility.ClassInfoCache.GetOrAdd(instance.GetType());
             _addInstance(instance, info);
         }
 
-        private void _addInstance(object instance, Utility.ClassInfoUtility classInfo)
+        private void _addInstance(object instance, ClassInfoUtility classInfo)
         {
             // add value.
             Root.Value.AddItem(instance);
@@ -64,29 +84,38 @@ namespace NoData.Graph
             }
         }
 
-        public override IGraph Flatten()
+        #endregion
+
+        #region build queryables
+        public IQueryable<TDto> ApplyExpand<TDto>(IQueryable<TDto> query, ParameterExpression parameter) where TDto : class, new()
         {
-            var edges = new List<Edge>();
-            Traverse(edges.Add);
-            var vertices = new Dictionary<Type, Vertex>();
+            var body = Root?.GetExpandExpression(parameter, this) ?? throw new ArgumentNullException("Root filter node or resulting expression is null");
 
-            void MergeVertexes(IEnumerable<Vertex> selection)
-            {
-                foreach (var v in selection)
-                {
-                    if (!vertices.ContainsKey(v.Value.Type))
-                    {
-                        vertices.Add(v.Value.Type, v);
-                        continue;
-                    }
-                    vertices[v.Value.Type].Merge(v);
-                }
-            }
+            var expr = ExpressionBuilder.BuildSelectExpression(query, parameter, body);
 
-            MergeVertexes(new[] { Root });
-            MergeVertexes(edges.Select(e => e.From).Where(v => v != Root));
-            MergeVertexes(edges.Select(e => e.To));
-            return new Graph(vertices.Values.ToList(), edges);
+            return query.Provider.CreateQuery<TDto>(expr);
         }
+
+        public IQueryable<TDto> ApplyFilter<TDto>(IQueryable<TDto> query, ParameterExpression parameter, Expression filterExpression) where TDto : class, new()
+        {
+            if (filterExpression is null) return query;
+
+            var expr = ExpressionBuilder.BuildWhereExpression(query, parameter, filterExpression);
+
+            return query.Provider.CreateQuery<TDto>(expr);
+        }
+
+        public IQueryable<TDto> ApplySelect<TDto>(IQueryable<TDto> query, ParameterExpression parameter) where TDto : class, new()
+        {
+            var selectExpression = Root?.GetSelectExpression(parameter, this) ?? throw new ArgumentNullException("Root filter node or resulting expression is null");
+
+            if (selectExpression is null) return query;
+
+            var expr = ExpressionBuilder.BuildSelectExpression(query, parameter, selectExpression);
+
+            return query.Provider.CreateQuery<TDto>(expr);
+        }
+
+        #endregion
     }
 }

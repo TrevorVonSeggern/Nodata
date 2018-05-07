@@ -2,109 +2,97 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using Newtonsoft.Json;
-using NoData.Internal.TreeParser.FilterExpressionParser;
-using NoData.Internal.TreeParser.ExpandExpressionParser;
 using Newtonsoft.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
+using NoData.QueryParser;
+using System.Linq.Expressions;
 
 namespace NoData
 {
-    public class NoDataQuery<TDto> where TDto : class, new()
+    public class NoDataQuery<TDto> : QueryParameters where TDto : class, new()
     {
-        [FromQuery(Name = "$count")]
-        public bool count { get; set; }
-        [FromQuery(Name = "$top")]
-        public int? top { get; set; }
-        [FromQuery(Name = "$skip")]
-        public int? skip { get; set; }
-        [FromQuery(Name = "$filter")]
-        public string filter { get; set; }
-        [FromQuery(Name = "$select")]
-        public string select { get; set; }
-        [FromQuery(Name = "$expand")]
-        public string expand { get; set; }
-
         [JsonIgnore]
         private static readonly Graph.Graph baseGraph = Graph.Graph.CreateFromGeneric<TDto>();
         [JsonIgnore]
         private Graph.Graph graph;
         [JsonIgnore]
-        private Graph.Tree selectionTree;
+        internal IQueryable<TDto> query;
+        [JsonIgnore]
+        QueryParser<TDto> QueryParser;
+        
+        [JsonIgnore]
+        private ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
+        [JsonIgnore]
+        private Expression FilterExpression = null;
 
-        public NoDataQuery()
+        public NoDataQuery(
+            string expand = null, 
+            string filter = null, 
+            string select = null, 
+            int? top = null, 
+            int? skip = null, 
+            bool count = false)
+            : base(expand, filter, select, top, skip, count)
         {
             graph = baseGraph.Clone() as Graph.Graph;
-        }
-
-        internal IQueryable<TDto> query;
-        private ExpandParser<TDto> expandParser = new ExpandParser<TDto>();
-
-        public enum FilterSecurityTypes
-        {
-            AllowOnlyVisibleValues,
-            AllowFilteringOnPropertiesThatAreNotDisplayed,
-            AllowFilteringOnNonExplicitlyExpandedExpansions,
+            QueryParser = new QueryParser<TDto>(this as QueryParameters, graph);
         }
 
         public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
 
-        internal NoDataQuery<TDto> ApplyTop()
+        private bool parsed = false;
+        private void ValidateParsed()
         {
-            if(top.HasValue)
-                query = query.Take(top.Value);
-            return this;
-        }
-
-        internal NoDataQuery<TDto> ApplySkip()
-        {
-            if(skip.HasValue)
-                query = query.Skip(skip.Value);
-            return this;
-        }
-
-        internal NoDataQuery<TDto> ApplyFilter()
-        {
-            if(!string.IsNullOrEmpty(filter))
+            if (!parsed)
             {
-                var tree = new FilterTree<TDto>();
-                tree.ParseTree(filter);
-                query = tree.ApplyFilter(query);
+                QueryParser.Parse();
+                FilterExpression = QueryParser.ApplyFilterExpression(ParameterDtoExpression);
             }
+            parsed = true;
+        }
+
+        private NoDataQuery<TDto> ApplyTop()
+        {
+            if (Top.HasValue)
+                query = query.Take(Top.Value);
             return this;
         }
 
-        internal NoDataQuery<TDto> ApplyExpand()
+        private NoDataQuery<TDto> ApplySkip()
         {
-            if (!string.IsNullOrEmpty(expand))
-            {
-                expandParser = new ExpandParser<TDto>();
-                selectionTree = expandParser.ParseExpand(expand, graph);
-                graph = selectionTree.Flatten() as Graph.Graph;
-                query = expandParser.ApplyExpand(query);
-            }
-            else
-                selectionTree = new Graph.Tree(graph.VertexContainingType(typeof(TDto)));
+            if (Skip.HasValue)
+                query = query.Skip(Skip.Value);
+            return this;
+        }
+
+        private NoDataQuery<TDto> ApplyFilter()
+        {
+            if(!string.IsNullOrEmpty(Filter))
+                query = QueryParser.SelectionTree.ApplyFilter(query, ParameterDtoExpression, FilterExpression);
+            return this;
+        }
+
+        private NoDataQuery<TDto> ApplyExpand()
+        {
+            query = QueryParser.SelectionTree.ApplyExpand(query, ParameterDtoExpression);
             return this;
         }
 
         /// <summary>
         /// Selects a subset of properties
         /// </summary>
-        /// <returns></returns>
         /// <remarks>Requires that Apply Expand is called first.</remarks>
-        internal NoDataQuery<TDto> ApplySelect()
+        private NoDataQuery<TDto> ApplySelect()
         {
-            if(!string.IsNullOrEmpty(select))
-            {
-                // TODO: Select
-            }
+            if(!string.IsNullOrEmpty(Select))
+                query = QueryParser.SelectionTree.ApplySelect(query, ParameterDtoExpression);
             return this;
         }
 
         public NoDataQuery<TDto> BuildQueryable(IQueryable<TDto> query)
         {
             this.query = query;
-            switch(FilterSecurity)
+            ValidateParsed();
+            switch (FilterSecurity)
             {
                 default:
                 case FilterSecurityTypes.AllowOnlyVisibleValues:
@@ -124,8 +112,8 @@ namespace NoData
         {
             ApplyQueryable(query);
             var list = this.query.ToList();
-            selectionTree.AddInstances(list);
-            var sGraph = selectionTree.Flatten() as Graph.Graph;
+            QueryParser.SelectionTree.AddInstances(list);
+            var sGraph = Graph.Utility.TreeUtility.Flatten(QueryParser.SelectionTree);
             return JsonConvert.SerializeObject(
                 list,
                 Formatting.Indented, 
@@ -139,41 +127,6 @@ namespace NoData
         }
 
         public IQueryable<TDto> ApplyQueryable(IQueryable<TDto> query) => BuildQueryable(query).query;
-    }
-
-    public class DynamicContractResolver : DefaultContractResolver
-    {
-        public readonly Graph.Graph Graph;
-
-        public DynamicContractResolver(Graph.Graph graph)
-        {
-            Graph = graph;
-        }
-
-        // TODO: Needs to serialize multiple types. Not just the root.
-        protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-        {
-            IList<JsonProperty> retval = base.CreateProperties(type, memberSerialization);
-            
-            retval = retval.ToList(); //.Where(p => !props.Contains(p.PropertyName))
-
-            var result = new List<JsonProperty>();
-            foreach(var property in retval)
-            {
-                //if (vertex.Value.PropertyNames.Contains(property.PropertyName))
-                //    continue;
-                property.ShouldSerialize = instance =>
-                {
-                    if (property.Ignored)
-                        return false;
-                    
-                    return Graph.ShouldSerializeProperty(instance, property.PropertyName, property.PropertyType);
-                };
-                result.Add(property);
-            }
-
-            return result;
-        }
     }
 
 }

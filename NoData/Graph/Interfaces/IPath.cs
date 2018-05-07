@@ -3,9 +3,12 @@ using System.Collections.Generic;
 
 namespace NoData.Graph.Interfaces
 {
-    public interface IPath
+    public interface IPath <TEdge, TVertex, TEdgeValue, TVertexValue>
+        where TVertex : IVertex<TVertexValue>
+        where TEdge : IEdge<TEdgeValue, TVertex, TVertexValue>
+        where TVertexValue : IMergable<TVertexValue>
     {
-        IEnumerable<IEdge> Edge { get; }
-        void Traverse(Action<IEdge> edge);
+        IEnumerable<TEdge> Edges { get; }
+        void Traverse(Action<TEdge> edge);
     }
 }

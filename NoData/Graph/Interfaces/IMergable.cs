@@ -6,10 +6,8 @@ namespace NoData.Graph.Interfaces
     /// <summary>
     /// A class representation in a graph context.
     /// </summary>
-    public interface IVertex<TValue> : IMergable<IVertex<TValue>>, ICloneable
-        where TValue : IMergable<TValue>
+    public interface IMergable<T>
     {
-        TValue Value { get; }
-        string ToString();
+        void Merge(T other);
     }
 }

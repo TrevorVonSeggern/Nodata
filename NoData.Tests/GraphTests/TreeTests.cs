@@ -1,5 +1,6 @@
 using NoData.Graph;
 using NoData.Graph.Interfaces;
+using NoData.Graph.Utility;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -53,7 +54,7 @@ namespace BinaryExpressionParserTests
                     NoData.Graph.Base.ITuple.Create(edgeRootToRootAsFavorite, new Tree(root)),
                 }
             );
-            var traversedEdges = new List<IEdge>();
+            var traversedEdges = new List<Edge>();
             tree.Traverse(e => traversedEdges.Add(e));
             Assert.AreEqual(2, traversedEdges.Count());
         }
@@ -75,7 +76,7 @@ namespace BinaryExpressionParserTests
                 }
             );
 
-            var flat = tree.Flatten();
+            var flat = TreeUtility.Flatten(tree);
             Assert.AreEqual(2, flat.Vertices.Count());
             Assert.AreEqual(2, flat.Edges.Count());
             Assert.NotNull(flat.VertexOfValue(root.Value));
@@ -98,7 +99,7 @@ namespace BinaryExpressionParserTests
             );
 
             var list = new List<string>();
-            tree.Traverse((IVertex v, IEnumerable<IEdge> c) => list.Add($"{v.ToString()} - {string.Join(",", c.Select(e => e.ToString()))}"));
+            tree.Traverse((Vertex v, IEnumerable<Edge> c) => list.Add($"{v.ToString()} - {string.Join(",", c.Select(e => e.ToString()))}"));
 
             Assert.AreEqual(3, list.Count());
             Assert.True(list[0].StartsWith("Dto - "));

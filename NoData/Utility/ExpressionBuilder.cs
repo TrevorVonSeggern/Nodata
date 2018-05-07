@@ -26,6 +26,22 @@ namespace NoData.Utility
             );
         }
 
+        public static Expression BuildSelectExpression(Type type, Expression enumerable, ParameterExpression parameter, Expression body)
+        {
+            return GenericHelper.CreateAndCallMethodOnStaticClass(
+                typeof(ExpressionBuilder), 
+                new[] { type }, 
+                nameof(BuildSelectExpression),
+                new[] { typeof(Expression), typeof(ParameterExpression), typeof(Expression) },
+                new object[] { enumerable, parameter, body }) as Expression;
+            //var delegateType = typeof(Func<,>).MakeGenericType(type, type);
+            //return Expression.Call(
+            //    typeof(Enumerable), "Select", new[] { type, type },
+            //    enumerable,
+            //    Expression.Lambda(delegateType, body, parameter)
+            //);
+        }
+
         public static Expression BuildWhereExpression<TDto>(IQueryable<TDto> query, ParameterExpression parameter, Expression body)
         {
             return Expression.Call(

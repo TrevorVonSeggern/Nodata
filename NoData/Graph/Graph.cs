@@ -4,27 +4,13 @@ using System.Linq;
 
 namespace NoData.Graph
 {
-    using Interfaces;
     using NoData.Graph.Base;
 
-    public class Graph : Base.Graph
+    public class Graph : Graph<Vertex, Edge, ClassInfo, EdgeMetaData>
     {
-        public new IEnumerable<Vertex> Vertices => base.Vertices.Cast<Vertex>();
-        public new IEnumerable<Edge> Edges => base.Edges.Cast<Edge>();
-
-        public Graph() : base() { }
         public Graph(IEnumerable<Vertex> vertices, IEnumerable<Edge> edges) : base(vertices, edges) { }
-        public Graph(IEnumerable<Vertex> vertices, IEnumerable<Edge> edges, bool verticesUnique = true, bool edgesUnique = true, bool danglingEdges = false)
-            : base(vertices, edges, verticesUnique, edgesUnique, danglingEdges) { }
 
         public Vertex VertexContainingType(Type type) => Vertices.Single(v => v.Value.Type == type);
-
-        public virtual bool ShouldSerializeProperty(object instance, string propertyName, Type propertyType)
-        {
-            var vertex = Vertices.FirstOrDefault(v => v.Value.Type == instance.GetType());
-            if (vertex is null) return false;
-            return vertex.Value.ShouldSerializeProperty(instance, propertyName);
-        }
 
         public override object Clone()
         {
@@ -33,7 +19,7 @@ namespace NoData.Graph
                 Edges.Select(e =>
                     new Edge(
                         vertices.Single(v => v.Value.Type == e.From.Value.Type),
-                        vertices.Single(v => v.Value.Type == e.From.Value.Type),
+                        vertices.Single(v => v.Value.Type == e.To.Value.Type),
                         e.Value)
                         )
                     );
@@ -67,7 +53,7 @@ namespace NoData.Graph
                 var vertex = vertices.First(v => v.Color == StatefulVertex.StateType.UnReached);
                 vertex.Color = StatefulVertex.StateType.Identified;
 
-                var classInfo = Utility.ClassInfoCache.GetOrAdd(vertex.Vertex.Value.Type);
+                var classInfo = NoData.Utility.ClassInfoCache.GetOrAdd(vertex.Vertex.Value.Type);
                 var tentativeConnectionToType = new List<Edge>();
 
                 void EstablishConnection(Type connectionToType, string name, bool collection)
