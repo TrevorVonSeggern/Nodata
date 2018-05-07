@@ -1,5 +1,6 @@
 # NOData
 Not only data, but a queryable interface!
+![TravisCI Badge](https://travis-ci.org/TrevorVonSeggern/Nodata.svg?branch=master)
 
 NOData is a loose implementation of the OData [specification](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html).
 
