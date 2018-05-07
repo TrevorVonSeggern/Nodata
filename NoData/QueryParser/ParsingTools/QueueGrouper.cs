@@ -2,18 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace NoData.QueryParser.ParsingTools
 {
     public class QueueGrouper<T>
     {
-        private readonly List<T> list;
+        private readonly IList<T> list;
         private readonly Func<T, string> getRepresnetationalValueFunc;
         private readonly Dictionary<Regex, Func<List<T>, ITuple<T, int>>> patternDictionary = new Dictionary<Regex, Func<List<T>, ITuple<T, int>>>();
 
-        public QueueGrouper(List<T> list, Func<T, string> getRepresnetationalValueFunc)
+        public QueueGrouper(IList<T> list, Func<T, string> getRepresnetationalValueFunc)
         {
             this.list = list;
             this.getRepresnetationalValueFunc = getRepresnetationalValueFunc;
@@ -65,7 +64,7 @@ namespace NoData.QueryParser.ParsingTools
                     var i = GetListIndexInRepString(match.Index);
                     if (i == -1 || i >= list.Count())
                         continue;
-                    var groupInfo = func(list.GetRange(i, list.Count() - i));
+                    var groupInfo = func(list.ToList().GetRange(i, list.Count() - i));
                     if (groupInfo is null)
                         return default(T);
                     var toRemove = groupInfo.Item2 - 1;

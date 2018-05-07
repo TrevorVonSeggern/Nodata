@@ -12,7 +12,7 @@ namespace NoData.Graph
 
         public Vertex VertexContainingType(Type type) => Vertices.Single(v => v.Value.Type == type);
 
-        public object Clone()
+        public override object Clone()
         {
             var vertices = new List<Vertex>(Vertices.Select(v => v.Clone() as Vertex));
             var edges = new List<Edge>(

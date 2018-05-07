@@ -5,7 +5,7 @@ using System.Linq;
 namespace BinaryExpressionParserTests
 {
     [TestFixture]
-    public class SelectPropertyIgnoreTest
+    public class FilterPropertyIgnoreTest
     {
         public class Dto
         {

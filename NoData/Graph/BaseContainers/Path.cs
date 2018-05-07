@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace NoData.Graph.Base
 {
@@ -11,12 +10,11 @@ namespace NoData.Graph.Base
         where TVertex : IVertex<TVertexValue>
         where TVertexValue : IMergable<TVertexValue>
     {
-        private readonly IEnumerable<TEdge> edges;
-        public IEnumerable<TEdge> Edges => edges;
+        public virtual IEnumerable<TEdge> Edges { get; protected set; }
 
         public Path(IEnumerable<TEdge> edges)
         {
-            this.edges = edges;
+            Edges = edges;
             var toAdd = new List<TEdge>(edges.Count());
             TEdge previousEdge = default(TEdge);
             foreach(var edge in edges)
@@ -32,12 +30,12 @@ namespace NoData.Graph.Base
                 }
                 previousEdge = edge;
             }
-            this.edges = toAdd;
+            Edges = toAdd;
         }
 
-        public void Traverse(Action<TEdge> action)
+        public virtual void Traverse(Action<TEdge> action)
         {
-            foreach (var edge in edges)
+            foreach (var edge in Edges)
                 action(edge);
         }
     }

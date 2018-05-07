@@ -8,9 +8,9 @@ using System.Linq.Expressions;
 
 namespace NoData.Graph
 {
-    public class Tree : Base.Tree<Vertex, Edge, ClassInfo, EdgeMetaData>
+    public class Tree : Tree<Vertex, Edge, ClassInfo, EdgeMetaData>
     {
-        public new Vertex Root => base.Root as Vertex;
+        public override Vertex Root { get; protected set; }
         public new IEnumerable<Tuple<Edge, Tree>> Children => base.Children?.Cast<Tuple<Edge, Tree>>();
 
         public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }

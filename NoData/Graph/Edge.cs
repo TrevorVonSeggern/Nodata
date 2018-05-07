@@ -6,9 +6,9 @@ namespace NoData.Graph
 {
     public class Edge : Base.Edge<EdgeMetaData, Vertex, ClassInfo>
     {
-        public new Vertex From => base.From as Vertex;
-        public new Vertex To => base.To as Vertex;
-        public new EdgeMetaData Value => base.Value as EdgeMetaData;
+        public override Vertex From { get; protected set; }
+        public override Vertex To { get; protected set; }
+        public override EdgeMetaData Value { get; protected set; }
 
         public Edge(Vertex from, Vertex to) : base(from, to) { }
         public Edge(Vertex from, Vertex to, EdgeMetaData metadata) : base(from, to, metadata) { }

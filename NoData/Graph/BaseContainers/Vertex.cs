@@ -12,13 +12,13 @@ namespace NoData.Graph.Base
     public class Vertex<TValue> : IVertex<TValue>
         where TValue : IMergable<TValue>
     {
+        public virtual TValue Value { get; protected set; }
+
         public Vertex(TValue value)
         {
-            this.value = value;
+            Value = value;
         }
 
-        private readonly TValue value;
-        public TValue Value { get { return value; } }
         
         public void Merge(IVertex<TValue> other)
         {
@@ -27,8 +27,8 @@ namespace NoData.Graph.Base
             Value.Merge(other.Value);
         }
 
-        public object Clone() => MemberwiseClone();
-        public override string ToString() => value.ToString();
+        public virtual object Clone() => MemberwiseClone();
+        public override string ToString() => Value.ToString();
 
     }
 }

@@ -12,16 +12,14 @@ namespace NoData.Graph.Base
         where TEdge : IEdge<TEdgeValue, TVertex, TVertexValue>
         where TVertexValue : IMergable<TVertexValue>
     {
-        public IEnumerable<TVertex> Vertices { get; }
-        public IEnumerable<TEdge> Edges { get; }
+        public virtual IEnumerable<TVertex> Vertices { get; protected set; }
+        public virtual IEnumerable<TEdge> Edges { get; protected set; }
 
         public Graph()
         {
             Vertices = new List<TVertex>();
             Edges = new List<TEdge>();
         }
-
-        public TVertex VertexOfValue(TVertexValue value) => Vertices.FirstOrDefault(v => v.Value.Equals(value));
 
         public Graph(IEnumerable<TVertex> vertices, IEnumerable<TEdge> edges, bool verticesUnique = true, bool edgesUnique = true)
         {
@@ -34,11 +32,13 @@ namespace NoData.Graph.Base
             Edges = new List<TEdge>(edges);
         }
 
-        public IEnumerable<TVertex> VerticesConnectedTo(TVertex vertex) => IncomingEdges(vertex).Select(e => e.From);
-        public IEnumerable<TVertex> VerticesConnectedFrom(TVertex vertex) => OutgoingEdges(vertex).Select(e => e.To);
+        public virtual TVertex VertexOfValue(TVertexValue value) => Vertices.FirstOrDefault(v => v.Value.Equals(value));
 
-        public IEnumerable<TEdge> IncomingEdges(TVertex vertex) => Edges.Where(e => e.To.Equals(vertex));
-        public IEnumerable<TEdge> OutgoingEdges(TVertex vertex) => Edges.Where(e => e.From.Equals(vertex));
+        public virtual IEnumerable<TVertex> VerticesConnectedTo(TVertex vertex) => IncomingEdges(vertex).Select(e => e.From);
+        public virtual IEnumerable<TVertex> VerticesConnectedFrom(TVertex vertex) => OutgoingEdges(vertex).Select(e => e.To);
+
+        public virtual IEnumerable<TEdge> IncomingEdges(TVertex vertex) => Edges.Where(e => e.To.Equals(vertex));
+        public virtual IEnumerable<TEdge> OutgoingEdges(TVertex vertex) => Edges.Where(e => e.From.Equals(vertex));
 
         public virtual object Clone()
         {

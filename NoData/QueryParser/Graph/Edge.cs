@@ -13,8 +13,8 @@ namespace NoData.QueryParser.Graph
 
     public class Edge : NoData.Graph.Base.Edge<EdgeInfo, Vertex, TextInfo>
     {
-        public new Vertex From => base.From as Vertex;
-        public new Vertex To => base.To as Vertex;
+        public override Vertex From { get; protected set; }
+        public override Vertex To { get; protected set; }
 
         public Edge(Vertex from, Vertex to) : base(from, to) { }
     }

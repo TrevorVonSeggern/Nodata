@@ -10,9 +10,9 @@ namespace NoData.Graph.Base
         where TVertexValue : IMergable<TVertexValue>
         where TEdgeValue : ICloneable
     {
-        public TVertex From { get; }
-        public TVertex To { get; }
-        public TEdgeValue Value { get; }
+        public virtual TVertex From { get; protected set; }
+        public virtual TVertex To { get; protected set; }
+        public virtual TEdgeValue Value { get; protected set; }
 
         public Edge(TVertex from, TVertex to, TEdgeValue value = default(TEdgeValue))
         {

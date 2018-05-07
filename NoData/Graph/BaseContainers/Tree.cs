@@ -11,23 +11,21 @@ namespace NoData.Graph.Base
         where TEdge : IEdge<TEdgeValue, TVertex, TVertexValue>
         where TVertexValue : IMergable<TVertexValue>
     {
-        private readonly TVertex root;
-        public TVertex Root => root;
+        public virtual TVertex Root { get; protected set; }
 
-        private readonly IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> children;
-        public IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> Children => children;
+        public virtual IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> Children { get; protected set; }
 
         public Tree(TVertex root, IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> children)
         {
-            this.root = root;
-            this.children = children;
+            Root = root;
+            Children = children;
             if (Children == null)
                 return;
             //if (Children.Any(c => c.Item1.From.Value != Root))
             //    throw new ArgumentException("Children edges must all be from the root.");
         }
         
-        public void Traverse(Action<TEdge> callback)
+        public virtual void Traverse(Action<TEdge> callback)
         {
             if (Children == null)
                 return;
@@ -38,9 +36,9 @@ namespace NoData.Graph.Base
             }
         }
 
-        public void Traverse(Action<TVertex> callback)
+        public virtual void Traverse(Action<TVertex> callback)
         {
-            callback(root);
+            callback(Root);
             if (Children == null)
                 return;
             foreach(var tuple in Children)
@@ -49,14 +47,14 @@ namespace NoData.Graph.Base
             }
         }
 
-        public void Traverse(Action<TVertex, IEnumerable<TEdge>> callback)
+        public virtual void Traverse(Action<TVertex, IEnumerable<TEdge>> callback)
         {
             if (Children == null)
             {
-                callback(root, new TEdge[] { });
+                callback(Root, new TEdge[] { });
                 return;
             }
-            callback(root, Children.Select(c => c.Item1));
+            callback(Root, Children.Select(c => c.Item1));
             foreach (var tuple in Children)
             {
                 tuple.Item2.Traverse(callback);

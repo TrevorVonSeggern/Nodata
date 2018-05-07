@@ -8,11 +8,26 @@ namespace NoData.QueryParser.Graph
 {
     public class Tree : Tree<Vertex, Edge, TextInfo, EdgeInfo>
     {
-        public new Vertex Root => base.Root as Vertex;
+        public IList<string> RawText = new List<string>();
+        public override Vertex Root { get; protected set; }
         public new IEnumerable<ITuple<Edge, Tree>> Children => base.Children?.Cast<ITuple<Edge, Tree>>();
 
-        public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }
-        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children) : base(root, children) { }
+        public Tree(Vertex root, string rawText) : base(root, new List<ITuple<Edge, Tree>>())
+        {
+            RawText.Add(rawText);
+        }
+        public Tree(Vertex root, IEnumerable<string> rawText) : base(root, new List<ITuple<Edge, Tree>>())
+        {
+            RawText = rawText.ToList();
+        }
+        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children, string rawText) : base(root, children)
+        {
+            RawText.Add(rawText);
+        }
+        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children, IEnumerable<string> rawText) : base(root, children)
+        {
+            RawText = rawText.ToList();
+        }
 
         internal static string GetRepresentationValue(Tree arg) => arg.Root.Value.Representation;
 
@@ -34,9 +49,15 @@ namespace NoData.QueryParser.Graph
             NumberDictionary = nDict;
         }
 
+        internal string InOrderRawValueTraversal()
+        {
+
+            return "";
+        }
+
         private bool IsNumberType(Type type) => NumberDictionary.ContainsKey(type);
-        private int GetNumberIndex(Type type) => NumberDictionary[type];
-        private Type GetTypeFromIndex(int i) => NumberDictionary.ToList().FirstOrDefault(x => x.Value == i).Key;
+        private int IndexFromType(Type type) => NumberDictionary[type];
+        private Type TypeFromIndex(int i) => NumberDictionary.ToList().FirstOrDefault(x => x.Value == i).Key;
         private bool IsPropertyAccess => Children.Count() == 1 && (Children.First().Item2.Root.Value.Representation == TextInfo.ExpandProperty || Children.First().Item2.Root.Value.Representation == TextInfo.ClassProperty);
         private bool IsDirectPropertyAccess => IsPropertyAccess && (Children.FirstOrDefault().Item2.Root.Value.Representation == TextInfo.ClassProperty || Children.FirstOrDefault().Item2.Children.Count() == 0);
 
@@ -53,13 +74,13 @@ namespace NoData.QueryParser.Graph
 
             if (left.Type != right.Type && IsNumberType(left.Type) && IsNumberType(right.Type))
             {
-                int lIndex = GetNumberIndex(left.Type);
-                int rIndex = GetNumberIndex(right.Type);
+                int lIndex = IndexFromType(left.Type);
+                int rIndex = IndexFromType(right.Type);
                 int largerIndex = Math.Max(lIndex, rIndex);
                 if (lIndex != largerIndex)
-                    left = Expression.Convert(left, GetTypeFromIndex(largerIndex));
+                    left = Expression.Convert(left, TypeFromIndex(largerIndex));
                 if (rIndex != largerIndex)
-                    right = Expression.Convert(right, GetTypeFromIndex(largerIndex));
+                    right = Expression.Convert(right, TypeFromIndex(largerIndex));
             }
 
             Expression doComparison()
@@ -101,7 +122,6 @@ namespace NoData.QueryParser.Graph
                     }
                     else
                         return conditional(parentClass);
-                    //return Expression.Constant(true);
                 }
                 return null;
             }
@@ -113,7 +133,6 @@ namespace NoData.QueryParser.Graph
                 return doComparison();
             if (leftNullCheck != null && rightNullCheck == null)
                 return Expression.AndAlso(leftNullCheck, doComparison());
-                //return Expression.AndAlso(Expression.IsTrue(leftNullCheck), Expression.Constant(true));
             if (leftNullCheck == null && rightNullCheck != null)
                 return Expression.AndAlso(rightNullCheck, doComparison());
             return Expression.AndAlso(Expression.AndAlso(leftNullCheck, rightNullCheck), doComparison());

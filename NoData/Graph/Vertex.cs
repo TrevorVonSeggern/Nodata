@@ -13,12 +13,12 @@ namespace NoData.Graph
     /// </summary>
     public class Vertex : Vertex<ClassInfo>, ICloneable
     {
-        public new ClassInfo Value => base.Value as ClassInfo;
+        public override ClassInfo Value { get; protected set; }
 
         public Vertex(ClassInfo value) : base(value) { }
         public Vertex(Type type) : base(new ClassInfo(type)) { }
 
-        public new object Clone() =>new Vertex(Value.Clone() as ClassInfo);
+        public override object Clone() => new Vertex(Value.Clone() as ClassInfo);
 
         private IEnumerable<MemberBinding> BindingsForProperties(IEnumerable<PropertyInfo> properties, Expression dto)
         {
