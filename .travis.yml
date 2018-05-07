@@ -3,5 +3,5 @@ solution: NoData.sln
 mono: none
 dotnet: 2.1.10
 script:
-  - dotnet restore
+  - dotnet build
   - dotnet test NoData.Tests
