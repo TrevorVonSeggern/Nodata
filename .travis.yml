@@ -2,9 +2,6 @@ language: csharp
 solution: NoData.sln
 mono: none
 dotnet: 2.1.10
-install:
-  - nuget restore NoData.sln
-  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
 script:
   - dotnet restore
   - dotnet test NoData.Tests
