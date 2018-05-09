@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NoData.Graph;
 using NoData.Graph.Base;
-using NoData.QueryParser.Graph;
 using QueueItem = NoData.QueryParser.Graph.Tree;
 using TInfo = NoData.QueryParser.Graph.TextInfo;
 
@@ -19,6 +18,11 @@ namespace NoData.QueryParser.ParsingTools
             Result = new List<Path>();
         }
 
+        public void AddToResult(IEnumerable<NoData.Graph.Edge> edgePath)
+        {
+            Result.Add(new Path(edgePath));
+        }
+
         public override void Parse()
         {
             if(!SetupParsing())
@@ -27,7 +31,7 @@ namespace NoData.QueryParser.ParsingTools
             var queueGrouper = Grouper;
 
             var parsed = queueGrouper.Reduce();
-            if (parsed.Root.Value.Representation != TInfo.ListOfExpands &&
+            if (parsed != null && parsed.Root.Value.Representation != TInfo.ListOfExpands &&
                 parsed.Root.Value.Representation != TInfo.ExpandProperty)
                 throw new ArgumentException("invalid query");
 
@@ -40,10 +44,12 @@ namespace NoData.QueryParser.ParsingTools
                 Result.Add(new Path(_ExpandPropertyToEdgeList(expansion, Graph)));
         }
 
-        internal static IEnumerable<NoData.Graph.Edge> _ExpandPropertyToEdgeList(ITuple<Graph.Edge, QueueItem> expandItem, NoData.Graph.Graph graph)
+        internal static IEnumerable<Edge> _ExpandPropertyToEdgeList(ITuple<Graph.Edge, QueueItem> expandItem, NoData.Graph.Graph graph)
+            => _ExpandPropertyToEdgeList(expandItem.Item2, graph);
+        internal static IEnumerable<Edge> _ExpandPropertyToEdgeList(QueueItem expandItem, NoData.Graph.Graph graph)
         {
-            var edges = new List<NoData.Graph.Edge>();
-            void traverseExpandTree(NoData.Graph.Vertex from, QueueItem tree)
+            var edges = new List<Edge>();
+            void traverseExpandTree(Vertex from, QueueItem tree)
             {
                 if (tree?.Root?.Value.Representation != TInfo.ExpandProperty) return;
                 // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
@@ -53,7 +59,7 @@ namespace NoData.QueryParser.ParsingTools
                     traverseExpandTree(edge.To, child.Item2);
             }
             var rootQueryVertex = graph.VertexContainingType(typeof(TRootQueryType));
-            traverseExpandTree(rootQueryVertex, expandItem.Item2);
+            traverseExpandTree(rootQueryVertex, expandItem);
             return edges;
         }
     }

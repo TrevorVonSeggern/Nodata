@@ -66,7 +66,7 @@ namespace NoData
 
         private NoDataQuery<TDto> ApplyFilter()
         {
-            if(!string.IsNullOrEmpty(Filter))
+            if(FilterExpression != null)
                 query = QueryParser.SelectionTree.ApplyFilter(query, ParameterDtoExpression, FilterExpression);
             return this;
         }

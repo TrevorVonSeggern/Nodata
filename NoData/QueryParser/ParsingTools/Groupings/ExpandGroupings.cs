@@ -150,5 +150,41 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 return ITuple.Create(list[0], 4);
             });
         }
+
+        public static TGrouping FilterClauseIntegration<TRoot>(NoData.Graph.Graph graph, IAcceptAdditions filterParser, Action<IEnumerable<NoData.Graph.Edge>> addExpandPath)
+        {
+            var open = TInfo.OpenParenthesis;
+            var close = TInfo.CloseParenthesis;
+            var filter = TInfo.FilterClause;
+            var beginAssert = TInfo.ExpandProperty;
+
+            var pStrt = $"{beginAssert}{open}{filter}";
+            var pLvlUp = $"(?<Level>{open})";
+            var pLvlDwn = $"(?<-Level>{close})";
+            var pNormal = $"(?>({filter}|(?!{open}|{close}).)*)";
+
+            var pattern = $"{pStrt}({pLvlUp}|{pNormal}|{pLvlDwn})+(?(Level)(?!)){close}";
+            return Create(pattern, list =>
+            {
+                var edges = ExpandClaseParser<TRoot>._ExpandPropertyToEdgeList(list[0], graph);
+                addExpandPath(edges);
+                string rootPath = string.Join("/", edges.Select(x => x.Value.PropertyName));
+
+                string GetRawTextForFilter(QueueItem item)
+                {
+                    if (item.Root.Value.Representation == TInfo.ExpandProperty)
+                    {
+                        return rootPath + "/" + string.Join("/", item.RawText);
+                    }
+                    else
+                        return string.Join(" ", item.RawText);
+                }
+
+                var filterText = string.Join(" ", list.ToList().Take(list.Count - 1).Skip(3).Select(tree => GetRawTextForFilter(tree)));
+
+                filterParser.AddToClause(filterText);
+                return ITuple.Create(list[0], list.Count - 1);
+            });
+        }
     }
 }
