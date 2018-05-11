@@ -41,7 +41,10 @@ namespace NoData.QueryParser.ParsingTools
                 throw new ArgumentException("invalid query");
 
             foreach (var expansion in groupOfExpansions)
+            {
+                // determine if it's an expand property or a expand expression hidden behind a expand property.
                 Result.Add(new Path(_ExpandPropertyToEdgeList(expansion, Graph)));
+            }
         }
 
         internal static IEnumerable<Edge> _ExpandPropertyToEdgeList(ITuple<Graph.Edge, QueueItem> expandItem, NoData.Graph.Graph graph)

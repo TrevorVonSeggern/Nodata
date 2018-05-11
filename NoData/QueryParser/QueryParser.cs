@@ -43,10 +43,10 @@ namespace NoData.QueryParser
 
             Expand = new ExpandClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph);
             Expand.AddGroupingTerms(ExpandGroupings.ExpandProperty);
-            Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
-            Expand.AddGroupingTerms(ExpandGroupings.SelectClauseIntegration<TRootVertex>(graph, Select));
-            Expand.AddGroupingTerms(ExpandGroupings.FilterClauseIntegrations<TRootVertex>(graph, Filter, Expand.AddToResult));
+            Expand.AddGroupingTerms(ExpandGroupings.ClauseExpressionGrouper());
             Expand.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithEmptyParenthesis);
+            Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
+            Expand.AddGroupingTerms(ExpandGroupings.ClauseIntegrations);
             Expand.AddGroupingTerms(ExpandGroupings.CollectionOfExpandProperty);
 
             _Graph = graph;

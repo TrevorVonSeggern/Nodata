@@ -50,7 +50,10 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 return ITuple.Create(item, toRemove);
             });
 
-        public static TGrouping ExpandPropertyWithEmptyParenthesis = Create(TInfo.ExpandProperty + TInfo.OpenParenthesis + TInfo.CloseParenthesis, list => ITuple.Create(list[0], 2));
+        public static TGrouping ExpandPropertyWithEmptyParenthesis = Create(TInfo.ExpandProperty + TInfo.OpenParenthesis + TInfo.CloseParenthesis, list =>
+        {
+            return ITuple.Create(list[0], 2);
+        });
 
         public static IEnumerable<TGrouping> CollectionOfExpandProperty = new TGrouping[] {
             Create(TInfo.ListOfExpands + TInfo.Comma + TInfo.ExpandProperty, list =>
@@ -100,7 +103,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 grouped = new QueueItem(grouped.Root, children, raw);
                 return ITuple.Create(grouped, 2);
             }),
-            Create($"{TInfo.ExpandProperty}(\\/{TInfo.ExpandProperty})*", list =>
+            Create($"{TInfo.ExpandProperty}({TInfo.Comma}{TInfo.ExpandProperty})*", list =>
             {
                 var children = new Queue<QueueItem>();
                 children.Enqueue(list[0]);
@@ -134,69 +137,53 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             })
         };
 
-        public static TGrouping SelectClauseIntegration<TRoot>(NoData.Graph.Graph graph)
-        {
-            return Create(TInfo.ListOfExpands + TInfo.OpenParenthesis + TInfo.SelectClause + TInfo.ListOfExpands + TInfo.CloseParenthesis, list =>
-            {
-                var edges = ExpandClaseParser<TRoot>._ExpandPropertyToEdgeList(list[0].Children.Last(), graph);
-
-                string rootPath = string.Join("/", edges.Select(x => x.Value.PropertyName));
-
-                var expandPaths = new List<string>();
-                foreach(var expand in list[3].Children)
-                {
-                    expandPaths.Add(rootPath + "/" + string.Join("/", expand.Item2.RawText));
-                }
-
-                selectParser.AddToClause(string.Join(",", expandPaths));
-                return ITuple.Create(list[0], 4);
-            });
-        }
-
-        public static TGrouping FilterClauseIntegrations<TRoot>(NoData.Graph.Graph graph, IAcceptAdditions filterParser)
+        public static TGrouping ClauseExpressionGrouper()
         {
             var open = TInfo.OpenParenthesis;
             var close = TInfo.CloseParenthesis;
-            var filter = TInfo.FilterClause;
-            var beginAssert = TInfo.ExpandProperty;
-            var boolValue = TInfo.BooleanValue;
+            var sep = TInfo.SemiColin;
+            var property = TInfo.ExpandProperty;
 
-            return Create($"{filter}{boolValue}", list =>
+            var expand = TInfo.ExpandExpression;
+            var filter = TInfo.FilterExpression;
+            var select = TInfo.SelectExpression;
+
+            var clause = $"({expand}|{filter}|{select})";
+            var pattern = $"{property}{open}{clause}({sep}{clause})*{close}";
+            return Create(pattern, list =>
             {
-                var edges = ExpandClaseParser<TRoot>._ExpandPropertyToEdgeList(list[0], graph);
-                addExpandPath(edges);
-                string rootPath = string.Join("/", edges.Select(x => x.Value.PropertyName));
+                var root = new Graph.Vertex(new TInfo { Representation = TInfo.ExpandProperty, Type = typeof(TInfo) });
 
-                string GetRawTextForFilter(QueueItem item)
+                var clauses = new List<QueueItem>();
+                foreach(var item in list.Where(x => x.Root.Value.Representation == expand || 
+                                                x.Root.Value.Representation == filter || 
+                                                x.Root.Value.Representation == select))
                 {
-                    if (item.Root.Value.Representation == TInfo.ExpandProperty)
-                    {
-                        return rootPath + "/" + string.Join("/", item.RawText);
-                    }
-                    else
-                        return string.Join(" ", item.RawText);
+                    clauses.Add(item);
                 }
-                IEnumerable<QueueItem> Flatten(QueueItem input)
-                {
-                    if(input.Root.Value.Representation != TInfo.ExpandProperty)
-                    {
-                        foreach (var child in input.Children)
-                            foreach (var f in Flatten(child.Item2))
-                                yield return f;
-                        if(!input.Children.Any())
-                            yield return input;
-                    }
-                    else
-                        yield return input;
-                }
-
-                //var filterText = string.Join(" ", Flatten(list[1]));
-                //filterParser.AddToClause(filterText);
-
-
-
-                return ITuple.Create(list[0], 2);
+                var children = clauses.Select(x => ITuple.Create(new Graph.Edge(root, x.Root), x));
+                return ITuple.Create(new QueueItem(root, children), list.Count - 1);
             });
         }
+
+        public static IEnumerable<TGrouping> ClauseIntegrations = new[]{
+            Create(TInfo.FilterClause + TInfo.BooleanValue, list =>
+            {
+                var root = new Graph.Vertex(new TInfo { Representation = TInfo.FilterExpression });
+                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Graph.Edge(root, list[1].Root), list[1]) }), list.Count() - 1);
+            }),
+            Create(TInfo.SelectClause + $"{TInfo.ExpandProperty}({TInfo.Comma}{TInfo.ExpandProperty})*", list =>
+            {
+                var root = new Graph.Vertex(new TInfo { Representation = TInfo.SelectExpression });
+                // TODO create a list of expand properties as children.
+                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Graph.Edge(root, list[1].Root), list[1]) }), list.Count() - 1);
+            }),
+            Create(TInfo.ExpandClause + $"{TInfo.ExpandProperty}({TInfo.Comma}{TInfo.ExpandProperty})*", list =>
+            {
+                var root = new Graph.Vertex(new TInfo { Representation = TInfo.ExpandExpression });
+                // TODO create a list of expand properties as children.
+                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Graph.Edge(root, list[1].Root), list[1]) }), list.Count() - 1);
+            }),
+        };
     }
 }

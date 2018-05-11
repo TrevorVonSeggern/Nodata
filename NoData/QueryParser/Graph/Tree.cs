@@ -22,6 +22,7 @@ namespace NoData.QueryParser.Graph
         {
             RawText = rawText.ToList();
         }
+        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children) : base(root, children) { }
         public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children, string rawText) : base(root, children)
         {
             RawText.Add(rawText);

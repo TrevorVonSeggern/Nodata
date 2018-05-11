@@ -64,7 +64,8 @@ namespace NoData.QueryParser.ParsingTools
                     var i = GetListIndexInRepString(match.Index);
                     if (i == -1 || i >= list.Count())
                         continue;
-                    var groupInfo = func(list.ToList().GetRange(i, list.Count() - i));
+                    var endPosition = GetListIndexInRepString(match.Index + match.Length - 1);
+                    var groupInfo = func(list.ToList().GetRange(i, endPosition - i + 1));
                     if (groupInfo is null)
                         return default(T);
                     var toRemove = groupInfo.Item2 - 1;
