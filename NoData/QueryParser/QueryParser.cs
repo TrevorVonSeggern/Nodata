@@ -39,14 +39,15 @@ namespace NoData.QueryParser
 
             Filter = new FilterClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Filter);
             Filter.AddGroupingTerms(ExpandGroupings.ExpandProperty);
-            Filter.AddGroupingTerms(FilterGroupings.AddTermsForFilter<TRootVertex>(graph));
+            Filter.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
 
             Expand = new ExpandClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph);
             Expand.AddGroupingTerms(ExpandGroupings.ExpandProperty);
+            Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
             Expand.AddGroupingTerms(ExpandGroupings.SelectClauseIntegration<TRootVertex>(graph, Select));
-            Expand.AddGroupingTerms(ExpandGroupings.FilterClauseIntegration<TRootVertex>(graph, Filter, Expand.AddToResult));
-            //Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter<TRootVertex>(graph));
-            //Expand.AddGroupingTerms(ExpandGroupings.CollectionOfExpandProperty);
+            Expand.AddGroupingTerms(ExpandGroupings.FilterClauseIntegrations<TRootVertex>(graph, Filter, Expand.AddToResult));
+            Expand.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithEmptyParenthesis);
+            Expand.AddGroupingTerms(ExpandGroupings.CollectionOfExpandProperty);
 
             _Graph = graph;
         }

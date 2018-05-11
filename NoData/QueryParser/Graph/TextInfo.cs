@@ -89,8 +89,11 @@ namespace NoData.QueryParser.Graph
                 'Z',
             };
             public static string NextRep() => possibleChars[index++].ToString();
-            //public static string NextRep(string regex) => NextRep();
+#if DEBUG
             public static string NextRep(string regex) => Regex.Escape(regex);
+#else
+            public static string NextRep(string regex) => NextRep();
+#endif
         }
 
         // value types
@@ -115,6 +118,7 @@ namespace NoData.QueryParser.Graph
         public static readonly string ListOfExpands = ConstRep.NextRep("<ListOfExpand>");
 
         // text symbols
+        public static readonly string SemiColin = ConstRep.NextRep("<;>");
         public static readonly string ForwardSlash = ConstRep.NextRep("</>");
         public static readonly string Comma = ConstRep.NextRep("<,>");
         public static readonly string OpenParenthesis = ConstRep.NextRep("<open_grouping>");
@@ -124,6 +128,9 @@ namespace NoData.QueryParser.Graph
         public static readonly string SelectClause = ConstRep.NextRep("<select>");
         public static readonly string ExpandClause = ConstRep.NextRep("<expand>");
         public static readonly string FilterClause = ConstRep.NextRep("<filter>");
+        public static readonly string SelectExpression = ConstRep.NextRep("<select_expr>");
+        public static readonly string ExpandExpression = ConstRep.NextRep("<expand_expr>");
+        public static readonly string FilterExpression = ConstRep.NextRep("<filter_expr>");
 
         public TextInfo() { }
         public TextInfo(Token token, Type type) : this(token) { Type = type; }
@@ -143,6 +150,9 @@ namespace NoData.QueryParser.Graph
                     case TokenTypes.forwardSlash:
                         Representation = ForwardSlash;
                         break;
+                    case TokenTypes.semiColin:
+                        Representation = SemiColin;
+                        break;
                     case TokenTypes.comma:
                         Representation = Comma;
                         break;
@@ -160,6 +170,10 @@ namespace NoData.QueryParser.Graph
                     case TokenTypes.and:
                     case TokenTypes.or:
                         Representation = LogicalComparison;
+                        break;
+                    case TokenTypes.truth:
+                    case TokenTypes.falsey:
+                        Representation = BooleanValue;
                         break;
                     case TokenTypes.quotedString:
                         Representation = TextValue;

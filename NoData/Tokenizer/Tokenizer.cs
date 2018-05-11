@@ -34,7 +34,11 @@ namespace NoData.Internal.TreeParser.Tokenizer
             lexer.AddDefinition(new TokenDefinition(@"ge", TokenTypes.greaterThanOrEqual));
             lexer.AddDefinition(new TokenDefinition(@"le", TokenTypes.lessThanOrEqual));
 
+            lexer.AddDefinition(new TokenDefinition(@"[Tt]rue", TokenTypes.truth));
+            lexer.AddDefinition(new TokenDefinition(@"[Ff]alse", TokenTypes.falsey));
+
             lexer.AddDefinition(new TokenDefinition(@"/", TokenTypes.forwardSlash));
+            lexer.AddDefinition(new TokenDefinition(@";", TokenTypes.semiColin));
             lexer.AddDefinition(new TokenDefinition(@",", TokenTypes.comma));
 
             lexer.AddDefinition(new TokenDefinition(Regex.Escape("$filter="), TokenTypes.filterClause));

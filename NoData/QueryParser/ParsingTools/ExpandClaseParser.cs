@@ -18,7 +18,7 @@ namespace NoData.QueryParser.ParsingTools
             Result = new List<Path>();
         }
 
-        public void AddToResult(IEnumerable<NoData.Graph.Edge> edgePath)
+        public void AddToResult(IEnumerable<Edge> edgePath)
         {
             Result.Add(new Path(edgePath));
         }

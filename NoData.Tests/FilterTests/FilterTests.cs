@@ -43,6 +43,7 @@ namespace BinaryExpressionParserTests
             }
         }
 
+        [TestCase("true", 1, 1, 2, 3, 4, 5, 6, 10)] // id comared to numbers.
         [TestCase("id eq 2", 2)] // id comared to numbers.
         [TestCase("id gt 2", 3, 4, 5, 6)]
         [TestCase("id ge 2", 2, 3, 4, 5, 6)]

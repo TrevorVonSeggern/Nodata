@@ -139,12 +139,12 @@ namespace BinaryExpressionParserTests
         [TestCase("partner,children", 1, 2, 3, 4, 5, 6, 1, 2, 10, 30, 40, 50, 60)] // multiple expands.
         [TestCase("children/partner", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60, 10, 60)]
         [TestCase("partner,children/partner", 1, 2, 3, 4, 5, 6, 6, 1, 10, 30, 40, 50, 60, 60, 10/*, 100, 200, 300, 400, 500, 600*/)]
-        [TestCase("partner/children,partner/favorite", 
-            1, 2, 3, 4, 5, 6, // root
-            1, 2, // partner
-            10, // partner/children
-            10 // partner/favorite
-            )]
+        [TestCase("partner/children,partner/favorite", 1, 2, 3, 4, 5, 6, /*root*/ 1, 2, /*partner*/ 10, /*partner/children*/ 10 /*partner/favorite*/ )]
+        [TestCase("partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)] // one expand
+        [TestCase("partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)] // one expand
+        [TestCase("partner/partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)] // one expand
+        [TestCase("partner($expand=partner)", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)]
+        [TestCase("partner($expand=partner($expand=partner))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)]
         public void Expand_Expression(string expression, params int[] expectedIds)
         {
             var ft = new NoData.NoDataQuery<Dto>(expression, null, null);

@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
-using System;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using NoData.QueryParser;
 using System.Linq.Expressions;
 
@@ -23,6 +20,12 @@ namespace NoData
         private ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
         [JsonIgnore]
         private Expression FilterExpression = null;
+
+        public NoDataQuery()
+        {
+            graph = baseGraph.Clone() as Graph.Graph;
+            QueryParser = new QueryParser<TDto>(this as QueryParameters, graph);
+        }
 
         public NoDataQuery(
             string expand = null, 

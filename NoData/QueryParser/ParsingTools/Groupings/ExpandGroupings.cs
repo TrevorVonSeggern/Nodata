@@ -50,6 +50,8 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 return ITuple.Create(item, toRemove);
             });
 
+        public static TGrouping ExpandPropertyWithEmptyParenthesis = Create(TInfo.ExpandProperty + TInfo.OpenParenthesis + TInfo.CloseParenthesis, list => ITuple.Create(list[0], 2));
+
         public static IEnumerable<TGrouping> CollectionOfExpandProperty = new TGrouping[] {
             Create(TInfo.ListOfExpands + TInfo.Comma + TInfo.ExpandProperty, list =>
             {
@@ -132,7 +134,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             })
         };
 
-        public static TGrouping SelectClauseIntegration<TRoot>(NoData.Graph.Graph graph, IAcceptAdditions selectParser)
+        public static TGrouping SelectClauseIntegration<TRoot>(NoData.Graph.Graph graph)
         {
             return Create(TInfo.ListOfExpands + TInfo.OpenParenthesis + TInfo.SelectClause + TInfo.ListOfExpands + TInfo.CloseParenthesis, list =>
             {
@@ -151,20 +153,15 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             });
         }
 
-        public static TGrouping FilterClauseIntegration<TRoot>(NoData.Graph.Graph graph, IAcceptAdditions filterParser, Action<IEnumerable<NoData.Graph.Edge>> addExpandPath)
+        public static TGrouping FilterClauseIntegrations<TRoot>(NoData.Graph.Graph graph, IAcceptAdditions filterParser)
         {
             var open = TInfo.OpenParenthesis;
             var close = TInfo.CloseParenthesis;
             var filter = TInfo.FilterClause;
             var beginAssert = TInfo.ExpandProperty;
+            var boolValue = TInfo.BooleanValue;
 
-            var pStrt = $"{beginAssert}{open}{filter}";
-            var pLvlUp = $"(?<Level>{open})";
-            var pLvlDwn = $"(?<-Level>{close})";
-            var pNormal = $"(?>({filter}|(?!{open}|{close}).)*)";
-
-            var pattern = $"{pStrt}({pLvlUp}|{pNormal}|{pLvlDwn})+(?(Level)(?!)){close}";
-            return Create(pattern, list =>
+            return Create($"{filter}{boolValue}", list =>
             {
                 var edges = ExpandClaseParser<TRoot>._ExpandPropertyToEdgeList(list[0], graph);
                 addExpandPath(edges);
@@ -179,11 +176,26 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                     else
                         return string.Join(" ", item.RawText);
                 }
+                IEnumerable<QueueItem> Flatten(QueueItem input)
+                {
+                    if(input.Root.Value.Representation != TInfo.ExpandProperty)
+                    {
+                        foreach (var child in input.Children)
+                            foreach (var f in Flatten(child.Item2))
+                                yield return f;
+                        if(!input.Children.Any())
+                            yield return input;
+                    }
+                    else
+                        yield return input;
+                }
 
-                var filterText = string.Join(" ", list.ToList().Take(list.Count - 1).Skip(3).Select(tree => GetRawTextForFilter(tree)));
+                //var filterText = string.Join(" ", Flatten(list[1]));
+                //filterParser.AddToClause(filterText);
 
-                filterParser.AddToClause(filterText);
-                return ITuple.Create(list[0], list.Count - 1);
+
+
+                return ITuple.Create(list[0], 2);
             });
         }
     }
