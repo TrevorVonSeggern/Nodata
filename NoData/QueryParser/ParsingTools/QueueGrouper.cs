@@ -28,7 +28,7 @@ namespace NoData.QueryParser.ParsingTools
         {
             if (stringIndex == 0) return 0;
             var currentRep = "";
-            for(var i = 0; i < list.Count(); ++i)
+            for (var i = 0; i < list.Count(); ++i)
             {
                 currentRep += getRepresnetationalValueFunc(list[i]);
                 if (stringIndex < currentRep.Length)
@@ -47,6 +47,22 @@ namespace NoData.QueryParser.ParsingTools
             patternDictionary.Add(new Regex(pattern, RegexOptions.Compiled | RegexOptions.Multiline), handleGrouping);
         }
 
+        /// <summary>
+        /// Adds a grouping pattern to match/group on.
+        /// </summary>
+        public void AddGroupingTerm(ITuple<string, Func<IList<T>, ITuple<T, int>>> handleGrouping) => AddGroupingTerm(handleGrouping.Item1, handleGrouping.Item2);
+
+        /// <summary>
+        /// Adds a grouping patterns to match/group on.
+        /// </summary>
+        public void AddGroupingTerm(IEnumerable<ITuple<string, Func<IList<T>, ITuple<T, int>>>> handleGrouping)
+        {
+            foreach (var grouping in handleGrouping)
+            {
+                AddGroupingTerm(grouping);
+            }
+        }
+
         public T Reduce()
         {
             var foundMatch = true;
@@ -54,7 +70,7 @@ namespace NoData.QueryParser.ParsingTools
             {
                 foundMatch = false;
                 var representation = RepresentationalValueString;
-                foreach(var keypair in patternDictionary)
+                foreach (var keypair in patternDictionary)
                 {
                     var regex = keypair.Key;
                     var func = keypair.Value;
@@ -70,7 +86,7 @@ namespace NoData.QueryParser.ParsingTools
                         return default(T);
                     var toRemove = groupInfo.Item2 - 1;
                     list[i] = groupInfo.Item1;
-                    for(var r = 0; r <= toRemove; ++r)
+                    for (var r = 0; r <= toRemove; ++r)
                     {
                         list.RemoveAt(i + 1);
                     }

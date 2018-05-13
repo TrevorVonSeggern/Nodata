@@ -7,7 +7,7 @@ using TGrouping = NoData.Graph.Base.ITuple<string, System.Func<System.Collection
 
 namespace NoData.QueryParser.ParsingTools.Groupings
 {
-    static internal class FilterGroupings
+    public static class FilterGroupings
     {
         private static TGrouping Create(string pattern, Func<IList<QueueItem>, ITuple<QueueItem, int>> addFunc) => ITuple.Create(pattern, addFunc);
 

@@ -83,6 +83,12 @@ namespace NoData.Graph
             }
             return false;
         }
+        
+
+        public override int GetHashCode()
+        {
+            return (this.Type.GetHashCode() + this.SerializeList.GetHashCode()) % int.MaxValue;
+        }
 
         internal IEnumerable<string> GetSelectProperties()
         {

@@ -1,7 +1,7 @@
 using NoData.Graph.Base;
 using NUnit.Framework;
 
-namespace BinaryExpressionParserTests
+namespace NoData.Tests.BloomFilterTests
 {
 
     [TestFixture]

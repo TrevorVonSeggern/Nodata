@@ -17,7 +17,7 @@ namespace NoData.Graph.Base
             Edges = edges;
             var toAdd = new List<TEdge>(edges.Count());
             TEdge previousEdge = default(TEdge);
-            foreach(var edge in edges)
+            foreach (var edge in edges)
             {
                 if (ReferenceEquals(previousEdge, null))
                     toAdd.Add(edge);

@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BinaryExpressionParserTests
+namespace NoData.Tests.SelectTests
 {
     [TestFixture]
     public class SelectTest
@@ -21,14 +21,14 @@ namespace BinaryExpressionParserTests
                 yield return id;
                 // partner
                 if (partner != null)
-                    foreach(var i in partner.GetAllIds())
+                    foreach (var i in partner.GetAllIds())
                         yield return i;
                 // favorite
                 if (favorite != null)
                     foreach (var i in favorite.GetAllIds())
                         yield return i;
                 // children
-                if(children != null)
+                if (children != null)
                     foreach (var child in children)
                         if (child != null)
                             foreach (var i in child.GetAllIds())
@@ -58,7 +58,7 @@ namespace BinaryExpressionParserTests
                     foreach (var i in favorite.GetAllIds())
                         yield return i;
                 // children
-                if(children != null)
+                if (children != null)
                     foreach (var child in children)
                         if (child != null)
                             foreach (var i in child.GetAllIds())
@@ -130,7 +130,7 @@ namespace BinaryExpressionParserTests
                 return result;
             }
         }
-        
+
         [Test]
         public void Select_Blank_AllPropertiesArePresent()
         {
@@ -145,7 +145,7 @@ namespace BinaryExpressionParserTests
             foreach (var resultId in resultIds)
                 Assert.True(expectedIds.Contains(resultId));
 
-            foreach(var dto in result)
+            foreach (var dto in result)
             {
                 Assert.NotNull(dto);
                 Assert.NotNull(dto.id);
@@ -154,7 +154,7 @@ namespace BinaryExpressionParserTests
                 Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
             }
         }
-        
+
         [Test]
         public void Select_id_OnlyReturnsId_Success()
         {
@@ -169,7 +169,7 @@ namespace BinaryExpressionParserTests
             foreach (var resultId in resultIds)
                 Assert.True(expectedIds.Contains(resultId));
 
-            foreach(var dto in result)
+            foreach (var dto in result)
             {
                 Assert.NotNull(dto);
                 Assert.NotNull(dto.id);
@@ -178,7 +178,7 @@ namespace BinaryExpressionParserTests
                 Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
             }
         }
-        
+
         [Test]
         public void Select_Name_OnlyReturnsName_Success()
         {
@@ -190,7 +190,7 @@ namespace BinaryExpressionParserTests
             Assert.NotNull(result);
             Assert.AreEqual(ParentCollection.Count(), resultIds.Count());
 
-            foreach(var dto in result)
+            foreach (var dto in result)
             {
                 Assert.NotNull(dto);
                 Assert.AreEqual(dto.id, 0); // int cannot be null, defaults to 0 when not selected.

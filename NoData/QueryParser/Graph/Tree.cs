@@ -32,7 +32,7 @@ namespace NoData.QueryParser.Graph
             RawText = rawText.ToList();
         }
 
-        internal static string GetRepresentationValue(Tree arg) => arg.Root.Value.Representation;
+        public static string GetRepresentationValue(Tree arg) => arg.Root.Value.Representation;
 
         public override string ToString() => Root.ToString() + " ";
 
@@ -55,8 +55,9 @@ namespace NoData.QueryParser.Graph
         private bool IsNumberType(Type type) => NumberDictionary.ContainsKey(type);
         private int IndexFromType(Type type) => NumberDictionary[type];
         private Type TypeFromIndex(int i) => NumberDictionary.ToList().FirstOrDefault(x => x.Value == i).Key;
-        private bool IsPropertyAccess => Root.Value.Representation == TextInfo.ExpandProperty || Root.Value.Representation == TextInfo.ClassProperty;
-        private bool IsDirectPropertyAccess => IsPropertyAccess && !Children.Any();
+        public bool IsPropertyAccess => Root.Value.Representation == TextInfo.ExpandProperty || Root.Value.Representation == TextInfo.ClassProperty;
+        public bool IsDirectPropertyAccess => IsPropertyAccess && !Children.Any();
+        public bool IsFakeExpandProperty => IsPropertyAccess && Root.Value.Type == typeof(TextInfo);
 
         #region Filtering Expressions
 
@@ -105,15 +106,15 @@ namespace NoData.QueryParser.Graph
                     Expression conditional(Expression propertyExpression)
                     {
                         var nullExpr = Expression.Constant(null);
-                        if(propertyExpression.Type.IsValueType)
+                        if (propertyExpression.Type.IsValueType)
                             return null;
                         return Expression.NotEqual(propertyExpression, nullExpr);
                     }
                     if (!child.IsDirectPropertyAccess)
                     {
                         var subPropertyAccessCheck = IsChildPropertyAccessNull(child.Children.First().Item2, Expression.PropertyOrField(parentClass, child.Root.Value.Text));
-                        if(subPropertyAccessCheck is null)
-                           return conditional(parentClass);
+                        if (subPropertyAccessCheck is null)
+                            return conditional(parentClass);
                         return Expression.AndAlso(conditional(parentClass), subPropertyAccessCheck);
                     }
                     else

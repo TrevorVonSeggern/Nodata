@@ -8,7 +8,7 @@ using TInfo = NoData.QueryParser.Graph.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    class FilterClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, QueueItem>, IAcceptAdditions
+    public class FilterClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, QueueItem>, IAcceptAdditions
     {
         public FilterClaseParser(Func<string, IList<QueueItem>> tokenFunc, string query) : base(tokenFunc, query) { }
 

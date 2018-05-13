@@ -48,6 +48,7 @@ namespace NoData.QueryParser
             Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
             Expand.AddGroupingTerms(ExpandGroupings.ClauseIntegrations);
             Expand.AddGroupingTerms(ExpandGroupings.CollectionOfExpandProperty);
+            Expand.AddGroupingTerms(ExpandGroupings.ExpandExpressionToProperty);
 
             _Graph = graph;
         }

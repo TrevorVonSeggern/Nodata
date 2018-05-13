@@ -8,7 +8,7 @@ using TInfo = NoData.QueryParser.Graph.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    class ExpandClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IList<Path>>
+    public class ExpandClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IList<Path>>
     {
         private readonly NoData.Graph.Graph Graph;
 
@@ -25,7 +25,7 @@ namespace NoData.QueryParser.ParsingTools
 
         public override void Parse()
         {
-            if(!SetupParsing())
+            if (!SetupParsing())
                 return;
 
             var queueGrouper = Grouper;
@@ -40,30 +40,55 @@ namespace NoData.QueryParser.ParsingTools
             if (groupOfExpansions is null)
                 throw new ArgumentException("invalid query");
 
-            foreach (var expansion in groupOfExpansions)
+            foreach (var expansion in groupOfExpansions.Select(x => x.Item2))
             {
-                // determine if it's an expand property or a expand expression hidden behind a expand property.
-                Result.Add(new Path(_ExpandPropertyToEdgeList(expansion, Graph)));
+                foreach (var path in _ExpandPropertyToEdgeList(expansion, Graph))
+                    Result.Add(path);
             }
         }
 
-        internal static IEnumerable<Edge> _ExpandPropertyToEdgeList(ITuple<Graph.Edge, QueueItem> expandItem, NoData.Graph.Graph graph)
-            => _ExpandPropertyToEdgeList(expandItem.Item2, graph);
-        internal static IEnumerable<Edge> _ExpandPropertyToEdgeList(QueueItem expandItem, NoData.Graph.Graph graph)
+        private static IEnumerable<Path> TraverseFakeProperty(Vertex from, QueueItem property, NoData.Graph.Graph graph)
         {
-            var edges = new List<Edge>();
-            void traverseExpandTree(Vertex from, QueueItem tree)
+            if (!property.IsFakeExpandProperty)
+                yield break;
+
+            foreach (var treeItem in property.Children.Where(x => x.Item2.Root.Value.Representation == TInfo.ExpandExpression).SelectMany(x => x.Item2.Children))
             {
-                if (tree?.Root?.Value.Representation != TInfo.ExpandProperty) return;
+                foreach (var path in _ExpandPropertyToEdgeList(treeItem.Item2, graph))
+                    yield return path.PrependEdge(graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.To.Value.Type == path.Edges.FirstOrDefault().From.Value.Type));
+            }
+        }
+
+        private static IEnumerable<Path> _ExpandRec(Vertex from, QueueItem tree, NoData.Graph.Graph graph)
+        {
+            if (!tree.IsPropertyAccess)
+                yield break;
+
+            if (tree.IsFakeExpandProperty)
+            {
+                foreach (var path in TraverseFakeProperty(from, tree, graph))
+                    yield return path;
+            }
+            else
+            {
                 // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
                 var edge = graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == tree.Root.Value.Value);
-                edges.Add(edge);
+                if (edge == null)
+                    throw new IndexOutOfRangeException("Cound not find edge: " + $"from {from.Value.Type} with name: {tree.Root.Value.Value}");
+
+                if (tree.IsDirectPropertyAccess)
+                    yield return new Path(new[] { edge });
                 foreach (var child in tree.Children)
-                    traverseExpandTree(edge.To, child.Item2);
+                    foreach (var path in _ExpandRec(edge.To, child.Item2, graph).Select(x => x.PrependEdge(edge)))
+                        yield return path;
             }
+
+        }
+
+        internal static IEnumerable<Path> _ExpandPropertyToEdgeList(QueueItem expandItem, NoData.Graph.Graph graph)
+        {
             var rootQueryVertex = graph.VertexContainingType(typeof(TRootQueryType));
-            traverseExpandTree(rootQueryVertex, expandItem);
-            return edges;
+            return _ExpandRec(rootQueryVertex, expandItem, graph);
         }
     }
 }

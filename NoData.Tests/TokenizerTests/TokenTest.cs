@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System;
 using NoData.Internal.TreeParser.Tokenizer;
 
-namespace TokenizerTests
+namespace NoData.Tests.TokenizerTests
 {
     [TestFixture]
     public class TokenTest

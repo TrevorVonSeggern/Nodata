@@ -1,11 +1,12 @@
-using NoData.Graph;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BinaryExpressionParserTests
+namespace NoData.Tests.GraphTests
 {
+    using NoData.Graph;
+
     [TestFixture]
     public class GraphTests
     {
@@ -68,7 +69,7 @@ namespace BinaryExpressionParserTests
                     e.Value.IsCollection == isCollection
                 );
 
-                Assert.NotNull(edge , $"Edge must exist: from: {from}, to: {to}, with name: {propertyName}, collection: {isCollection}");
+                Assert.NotNull(edge, $"Edge must exist: from: {from}, to: {to}, with name: {propertyName}, collection: {isCollection}");
             }, "Exactly one edge expected.");
         }
     }

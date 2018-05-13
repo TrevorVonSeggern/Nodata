@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BinaryExpressionParserTests
+namespace NoData.Tests.FilterTests
 {
 
     [TestFixture]
@@ -19,8 +19,8 @@ namespace BinaryExpressionParserTests
             internal IEnumerable<int> GetIds()
             {
                 yield return id;
-                if(partner != null)
-                    foreach(var i in partner.GetIds())
+                if (partner != null)
+                    foreach (var i in partner.GetIds())
                         yield return i;
             }
         }
@@ -59,7 +59,7 @@ namespace BinaryExpressionParserTests
         [TestCase("   ( region_code eq 'de' or region_code eq 'es'    ) and Name eq 'George'", 3, 5)] // space doesn't matter  (  loose  )   .
         [TestCase("Name eq 'George' or (region_code eq 'en' and id eq 4 ) ", 3, 4, 5)] // grouping order matters.
         [TestCase("(Name eq 'George' or region_code eq 'en') and id eq 4", 4)]
-        [TestCase("id le 1 or id ge 1", 1, 1, 2, 3, 4, 5 ,6, 10)] // multiple of the same property.
+        [TestCase("id le 1 or id ge 1", 1, 1, 2, 3, 4, 5, 6, 10)] // multiple of the same property.
         [TestCase("id le 1 and id ge 1", 1, 1, 10)]
         [TestCase("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1", 1, 1, 10)] // duplication doesn't matter.
         [TestCase("partner/id eq 10", 1, 1, 10)] // duplication doesn't matter.
