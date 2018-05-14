@@ -27,7 +27,7 @@ namespace NoData.QueryParser.ParsingTools
             if (!SetupParsing())
                 return;
 
-            var filter = Grouper.Reduce();
+            var filter = Grouper.ParseToSingle(TokenFunc(QueryString));
 
             Result = filter;
         }

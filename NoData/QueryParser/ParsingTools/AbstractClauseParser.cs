@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NoData.Graph;
 using NoData.Graph.Base;
+using NoData.QueryParser.ParsingTools.Groupers;
 using QueueItem = NoData.QueryParser.Graph.Tree;
 using TInfo = NoData.QueryParser.Graph.TextInfo;
 
@@ -36,7 +37,7 @@ namespace NoData.QueryParser.ParsingTools
         }
 
         protected IList<QueueItem> Tokens { get; private set; }
-        public QueueGrouper<QueueItem> Grouper { get; private set; }
+        public IGrouper<QueueItem> Grouper { get; private set; }
         protected bool SetupParsing()
         {
             IsFinished = true;
@@ -47,9 +48,9 @@ namespace NoData.QueryParser.ParsingTools
             if (Tokens.Count == 0)
                 return false;
 
-            Grouper = new QueueGrouper<QueueItem>(Tokens, QueueItem.GetRepresentationValue);
+            Grouper = new OrderdGrouper<QueueItem>(GroupingTerms.ToDictionary(x => x.Item1, x => x.Item2));
             foreach (var grouping in GroupingTerms)
-                Grouper.AddGroupingTerm(grouping.Item1, grouping.Item2);
+                Grouper.AddGroupingTerms(grouping.Item1, grouping.Item2);
             return true;
         }
         public abstract void Parse();

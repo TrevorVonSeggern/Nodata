@@ -18,10 +18,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 var root = new Graph.Vertex(new TInfo { Value = "!", Representation = TInfo.BooleanValue });
                 var child = list[1];
                 var edge = new Graph.Edge(root, child.Root);
-                var raw = new List<string>();
-                raw.AddRange(list[0].RawText);
-                raw.AddRange(child.RawText);
-                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root, child.RawText)) }, raw), 1);
+                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 1);
             });
 
             ITuple<QueueItem, int> valueItemValue(IList<QueueItem> list)
@@ -31,14 +28,10 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 var right = list[2];
                 var edgeLeft = new Graph.Edge(root, left.Root);
                 var edgeRight = new Graph.Edge(root, right.Root);
-                var raw = new List<string>();
-                raw.AddRange(left.RawText);
-                raw.Add(root.Value.Text);
-                raw.AddRange(right.RawText);
                 return ITuple.Create(new QueueItem(root, new[] {
                     ITuple.Create(edgeLeft, left),
                     ITuple.Create(edgeRight, right),
-                }, raw), 2);
+                }), 2);
             }
 
             string valueComparisonPattern(string a, string b) => a + TInfo.ValueComparison + b;

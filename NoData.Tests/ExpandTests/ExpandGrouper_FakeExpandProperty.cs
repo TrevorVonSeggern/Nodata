@@ -23,11 +23,9 @@ namespace NoData.Tests.ExpandTests
             var queryString = nameof(Dto.partner);
             var tokens = _GetTokens(queryString);
 
-            var grouper = new QueueGrouper<QueueItem>(tokens, QueueItem.GetRepresentationValue);
-
-            grouper.AddGroupingTerm(ExpandGroupings.ExpandProperty);
-
-            var parsed = grouper.Reduce();
+            var grouper = new QueueGrouper<QueueItem>();
+            grouper.AddGroupingTerms(ExpandGroupings.ExpandProperty);
+            var parsed = grouper.ParseToSingle(tokens);
 
             Assert.NotNull(parsed);
             Assert.True(parsed.IsPropertyAccess);
@@ -38,19 +36,21 @@ namespace NoData.Tests.ExpandTests
         public void ExpandGrouper_CanGroupFakeExpandPropertyCorrectly()
         {
             // setup
-            var queryString = $"{nameof(Dto.partner)}($expand={nameof(Dto.partner)})";
+            var queryString = $"{nameof(Dto.partner)}($expand={nameof(Dto.partner)}($expand={nameof(Dto.partner)}))";
             var tokens = _GetTokens(queryString);
 
-            var grouper = new QueueGrouper<QueueItem>(tokens, QueueItem.GetRepresentationValue);
+            var grouper = new OrderdGrouper<QueueItem>();
 
-            grouper.AddGroupingTerm(ExpandGroupings.ExpandProperty);
-            grouper.AddGroupingTerm(ExpandGroupings.ClauseExpressionGrouper());
-            grouper.AddGroupingTerm(ExpandGroupings.ExpandPropertyWithEmptyParenthesis);
-            grouper.AddGroupingTerm(FilterGroupings.AddTermsForFilter());
-            grouper.AddGroupingTerm(ExpandGroupings.ClauseIntegrations);
-            grouper.AddGroupingTerm(ExpandGroupings.CollectionOfExpandProperty);
+            grouper.AddGroupingTerms(ExpandGroupings.ExpandProperty);
+            grouper.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
+            grouper.AddGroupingTerms(ExpandGroupings.ExpandExpression);
+            grouper.AddGroupingTerms(ExpandGroupings.FilterExpression);
+            grouper.AddGroupingTerms(ExpandGroupings.SelectExpression);
+            grouper.AddGroupingTerms(ExpandGroupings.ListOfClauseExpressions());
+            grouper.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithListOfClauses);
+            grouper.AddGroupingTerms(ExpandGroupings.ListOfExpand);
 
-            var parsed = grouper.Reduce();
+            var parsed = grouper.ParseToSingle(tokens);
 
             Assert.NotNull(parsed);
             Assert.NotNull(parsed.Root);
@@ -59,7 +59,7 @@ namespace NoData.Tests.ExpandTests
             foreach (var child in parsed.Children.Select(x => x.Item2))
             {
                 Assert.True(child.IsPropertyAccess);
-                Assert.True(child.IsFakeExpandProperty);
+                Assert.False(child.IsFakeExpandProperty);
                 Assert.False(child.IsDirectPropertyAccess);
             }
         }

@@ -35,7 +35,7 @@ namespace NoData.QueryParser
 
             Select = new SelectClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Select, graph);
             Select.AddGroupingTerms(ExpandGroupings.ExpandProperty);
-            Select.AddGroupingTerms(ExpandGroupings.CollectionOfExpandProperty);
+            Select.AddGroupingTerms(ExpandGroupings.ListOfExpand);
 
             Filter = new FilterClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Filter);
             Filter.AddGroupingTerms(ExpandGroupings.ExpandProperty);
@@ -43,12 +43,13 @@ namespace NoData.QueryParser
 
             Expand = new ExpandClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph);
             Expand.AddGroupingTerms(ExpandGroupings.ExpandProperty);
-            Expand.AddGroupingTerms(ExpandGroupings.ClauseExpressionGrouper());
-            Expand.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithEmptyParenthesis);
             Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
-            Expand.AddGroupingTerms(ExpandGroupings.ClauseIntegrations);
-            Expand.AddGroupingTerms(ExpandGroupings.CollectionOfExpandProperty);
-            Expand.AddGroupingTerms(ExpandGroupings.ExpandExpressionToProperty);
+            Expand.AddGroupingTerms(ExpandGroupings.ListOfExpand);
+            Expand.AddGroupingTerms(ExpandGroupings.ExpandExpression);
+            Expand.AddGroupingTerms(ExpandGroupings.FilterExpression);
+            Expand.AddGroupingTerms(ExpandGroupings.SelectExpression);
+            Expand.AddGroupingTerms(ExpandGroupings.ListOfClauseExpressions());
+            Expand.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithListOfClauses);
 
             _Graph = graph;
         }

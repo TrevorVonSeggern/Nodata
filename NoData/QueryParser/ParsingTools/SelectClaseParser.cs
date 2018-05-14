@@ -34,7 +34,7 @@ namespace NoData.QueryParser.ParsingTools
             if (!SetupParsing())
                 return;
 
-            var select = Grouper.Reduce();
+            var select = Grouper.ParseToSingle(TokenFunc(QueryString));
 
             if (select.Root.Value.Representation != TInfo.ListOfExpands &&
                 select.Root.Value.Representation != TInfo.ExpandProperty)

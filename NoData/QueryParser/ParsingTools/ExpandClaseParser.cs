@@ -30,7 +30,7 @@ namespace NoData.QueryParser.ParsingTools
 
             var queueGrouper = Grouper;
 
-            var parsed = queueGrouper.Reduce();
+            var parsed = queueGrouper.ParseToSingle(TokenFunc(QueryString));
             if (parsed != null && parsed.Root.Value.Representation != TInfo.ListOfExpands &&
                 parsed.Root.Value.Representation != TInfo.ExpandProperty)
                 throw new ArgumentException("invalid query");
@@ -49,21 +49,22 @@ namespace NoData.QueryParser.ParsingTools
 
         private static IEnumerable<Path> TraverseFakeProperty(Vertex from, QueueItem property, NoData.Graph.Graph graph)
         {
-            if (!property.IsFakeExpandProperty)
+            if (!property.IsFakeExpandProperty && property.Root.Value.Representation != TInfo.ExpandExpression)
                 yield break;
 
             foreach (var treeItem in property.Children.Where(x => x.Item2.Root.Value.Representation == TInfo.ExpandExpression).SelectMany(x => x.Item2.Children))
             {
-                foreach (var path in _ExpandPropertyToEdgeList(treeItem.Item2, graph))
-                    yield return path.PrependEdge(graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.To.Value.Type == path.Edges.FirstOrDefault().From.Value.Type));
+                if (treeItem.Item2.Root.Value.Representation == TInfo.ExpandExpression)
+                    foreach (var path in TraverseFakeProperty(from, treeItem.Item2, graph))
+                        yield return path;
+                else
+                    foreach (var path in _ExpandPropertyToEdgeList(treeItem.Item2, graph))
+                        yield return path.PrependEdge(graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.To.Value.Type == path.Edges.FirstOrDefault().From.Value.Type));
             }
         }
 
         private static IEnumerable<Path> _ExpandRec(Vertex from, QueueItem tree, NoData.Graph.Graph graph)
         {
-            if (!tree.IsPropertyAccess)
-                yield break;
-
             if (tree.IsFakeExpandProperty)
             {
                 foreach (var path in TraverseFakeProperty(from, tree, graph))

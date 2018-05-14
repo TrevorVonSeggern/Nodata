@@ -97,40 +97,42 @@ namespace NoData.QueryParser.Graph
         }
 
         // value types
-        public static readonly string RawTextRepresentation = ConstRep.NextRep("<RawText>");
-        public static readonly string ClassProperty = ConstRep.NextRep("<ClassProperty>");
-        public static readonly string TextValue = ConstRep.NextRep("<Text>");
-        public static readonly string BooleanValue = ConstRep.NextRep("<Bool>");
-        public static readonly string NumberValue = ConstRep.NextRep("<Number>");
-        public static readonly string DateValue = ConstRep.NextRep("<Date>");
+        public static readonly string RawTextRepresentation = ConstRep.NextRep("<raw_text>");
+        public static readonly string ClassProperty = ConstRep.NextRep("<class_property>");
+        public static readonly string TextValue = ConstRep.NextRep("<text>");
+        public static readonly string BooleanValue = ConstRep.NextRep("<bool>");
+        public static readonly string NumberValue = ConstRep.NextRep("<number>");
+        public static readonly string DateValue = ConstRep.NextRep("<date>");
 
         // grouping
         public static readonly string LogicalComparison = ConstRep.NextRep("<and_or>");
         public static readonly string ValueComparison = ConstRep.NextRep("<value_comparison>");
         public static readonly string BooleanFunction = ConstRep.NextRep("<func_bool>");
         public static readonly string IntFunction = ConstRep.NextRep("<func_int>");
-        public static readonly string Add = ConstRep.NextRep("<+>");
-        public static readonly string MathSymbols = ConstRep.NextRep("<+-/*>");
-        public static readonly string Inverse = ConstRep.NextRep("<!>");
+        public static readonly string Add = ConstRep.NextRep("<add>");
+        public static readonly string MathSymbols = ConstRep.NextRep("<math_operator>");
+        public static readonly string Inverse = ConstRep.NextRep("<inverse_operator>");
 
         // Expansion
         public static readonly string ExpandProperty = ConstRep.NextRep("<expandProperty>");
-        public static readonly string ListOfExpands = ConstRep.NextRep("<ListOfExpand>");
+        public static readonly string ListOfExpands = ConstRep.NextRep("<list_of_expand>");
 
         // text symbols
-        public static readonly string SemiColin = ConstRep.NextRep("<;>");
-        public static readonly string ForwardSlash = ConstRep.NextRep("</>");
-        public static readonly string Comma = ConstRep.NextRep("<,>");
+        public static readonly string SemiColin = ConstRep.NextRep("<semi_colin>");
+        public static readonly string ForwardSlash = ConstRep.NextRep("<forward_slash>");
+        public static readonly string Comma = ConstRep.NextRep("<comma>");
         public static readonly string OpenParenthesis = ConstRep.NextRep("<open_grouping>");
         public static readonly string CloseParenthesis = ConstRep.NextRep("<close_grouping>");
 
         // sub-parameters
-        public static readonly string SelectClause = ConstRep.NextRep("<select>");
-        public static readonly string ExpandClause = ConstRep.NextRep("<expand>");
-        public static readonly string FilterClause = ConstRep.NextRep("<filter>");
+        public static readonly string SelectClause = ConstRep.NextRep("<select_clause>");
+        public static readonly string ExpandClause = ConstRep.NextRep("<expand_clause>");
+        public static readonly string FilterClause = ConstRep.NextRep("<filter_clause>");
         public static readonly string SelectExpression = ConstRep.NextRep("<select_expr>");
         public static readonly string ExpandExpression = ConstRep.NextRep("<expand_expr>");
         public static readonly string FilterExpression = ConstRep.NextRep("<filter_expr>");
+        public static readonly string ListOfClause = ConstRep.NextRep("<list_of_clause>");
+
 
         public TextInfo() { }
         public TextInfo(Token token, Type type) : this(token) { Type = type; }
