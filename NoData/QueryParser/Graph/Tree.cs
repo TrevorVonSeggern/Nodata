@@ -9,35 +9,22 @@ namespace NoData.QueryParser.Graph
 {
     public class Tree : Tree<Vertex, Edge, TextInfo, EdgeInfo>, IRepresent
     {
-        [Obsolete("Too much overhead for a small optimization in parsing.")]
-        public IList<string> RawText = new List<string>();
         public override Vertex Root { get; protected set; }
         public new IEnumerable<ITuple<Edge, Tree>> Children => base.Children?.Cast<ITuple<Edge, Tree>>();
         public string Representation => Root.Value.Representation;
 
-
         public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }
-        public Tree(Vertex root, string rawText) : base(root, new List<ITuple<Edge, Tree>>())
-        {
-            RawText.Add(rawText);
-        }
-        public Tree(Vertex root, IEnumerable<string> rawText) : base(root, new List<ITuple<Edge, Tree>>())
-        {
-            RawText = rawText.ToList();
-        }
         public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children) : base(root, children) { }
-        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children, string rawText) : base(root, children)
-        {
-            RawText.Add(rawText);
-        }
-        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children, IEnumerable<string> rawText) : base(root, children)
-        {
-            RawText = rawText.ToList();
-        }
 
-        public static string GetRepresentationValue(Tree arg) => arg.Root.Value.Representation;
+
+        public bool IsPropertyAccess => Root.Value.Representation == TextInfo.ExpandProperty || Root.Value.Representation == TextInfo.ClassProperty;
+        public bool IsDirectPropertyAccess => IsPropertyAccess && !Children.Any();
+        public bool IsFakeExpandProperty => IsPropertyAccess && Root.Value.Type == typeof(TextInfo);
 
         public override string ToString() => Root.ToString() + " ";
+
+
+        #region Filtering Expressions
 
         static readonly IReadOnlyDictionary<Type, int> NumberDictionary;
         static Tree()
@@ -58,11 +45,6 @@ namespace NoData.QueryParser.Graph
         private bool IsNumberType(Type type) => NumberDictionary.ContainsKey(type);
         private int IndexFromType(Type type) => NumberDictionary[type];
         private Type TypeFromIndex(int i) => NumberDictionary.ToList().FirstOrDefault(x => x.Value == i).Key;
-        public bool IsPropertyAccess => Root.Value.Representation == TextInfo.ExpandProperty || Root.Value.Representation == TextInfo.ClassProperty;
-        public bool IsDirectPropertyAccess => IsPropertyAccess && !Children.Any();
-        public bool IsFakeExpandProperty => IsPropertyAccess && Root.Value.Type == typeof(TextInfo);
-
-        #region Filtering Expressions
 
         private Expression ComparisonExpression(Expression dto)
         {

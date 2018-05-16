@@ -24,9 +24,9 @@ namespace NoData.QueryParser.ParsingTools
             IsFinished = false;
         }
 
-        public bool IsFinished { get; protected set; }
-        public Type RootQueryType => typeof(TRootQueryType);
-        public TResult Result { get; protected set; }
+        public virtual bool IsFinished { get; protected set; }
+        public virtual Type RootQueryType => typeof(TRootQueryType);
+        public virtual TResult Result { get; protected set; }
 
         public void AddGroupingTerms(ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>> handleGrouping) => GroupingTerms.Add(handleGrouping);
 
@@ -36,7 +36,7 @@ namespace NoData.QueryParser.ParsingTools
                 AddGroupingTerms(group);
         }
 
-        protected IList<QueueItem> Tokens { get; private set; }
+        protected IEnumerable<QueueItem> Tokens { get; private set; }
         public IGrouper<QueueItem> Grouper { get; private set; }
         protected bool SetupParsing()
         {
@@ -45,7 +45,7 @@ namespace NoData.QueryParser.ParsingTools
                 return false;
             Tokens = GetTokens(QueryString);
 
-            if (Tokens.Count == 0)
+            if (Tokens.Count() == 0)
                 return false;
 
             Grouper = new OrderdGrouper<QueueItem>(GroupingTerms.ToDictionary(x => x.Item1, x => x.Item2));

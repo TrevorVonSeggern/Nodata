@@ -38,5 +38,38 @@ namespace NoData.Graph.Base
             foreach (var edge in Edges)
                 action(edge);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Path<TEdge, TVertex, TEdgeValue, TVertexValue>)
+            {
+                var other = obj as Path<TEdge, TVertex, TEdgeValue, TVertexValue>;
+                if (other.Edges.Count() != Edges.Count())
+                    return false;
+                if (other.Edges.Count() == 0)
+                    return true;
+
+                // validate each edge
+                var oEnum = other.Edges.GetEnumerator();
+                var myEnum = Edges.GetEnumerator();
+                while (oEnum.Current != null && myEnum.Current != null)
+                {
+                    if (!myEnum.Current.Equals(oEnum.Current))
+                        return false;
+                    oEnum.MoveNext();
+                    myEnum.MoveNext();
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            int result = 0;
+            foreach (var edge in Edges)
+                result += edge.GetHashCode() % int.MaxValue;
+            return result;
+        }
     }
 }

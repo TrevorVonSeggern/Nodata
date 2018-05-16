@@ -13,7 +13,7 @@ namespace NoData.Tests.ExpandTests
     public class ExpandGrouper_FakeExpandProperty
     {
 
-        private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new NoData.QueryParser.Graph.Vertex(t), t.Value)).ToList();
+        private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new NoData.QueryParser.Graph.Vertex(t))).ToList();
         private readonly IEnumerable<string> ClassProperties = NoData.Utility.ClassInfoCache.GetOrAdd(typeof(Dto)).PropertyNames;
 
         [Test]

@@ -32,7 +32,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
                 var vertex = itemList.Pop();
                 vertex.Value.Representation = TInfo.ExpandProperty;
-                QueueItem propertyTree = new QueueItem(vertex, vertex.Value.Text);
+                QueueItem propertyTree = new QueueItem(vertex);
 
                 // build from linear list, the tree
                 for (vertex = itemList.Any() ? itemList.Peek() : null; itemList.Count() != 0; vertex = itemList.Pop())
@@ -54,10 +54,8 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 {
                     ITuple.Create(new Graph.Edge(grouped.Root, expand.Root), expand)
                 };
-                var raw = new List<string>();
 
-                grouped = new QueueItem(grouped.Root, children, raw);
-                return ITuple.Create(grouped, 2);
+                return ITuple.Create(new QueueItem(grouped.Root, children), 2);
             }),
             Create(TInfo.ExpandProperty + TInfo.Comma + TInfo.ListOfExpands, list =>
             {
@@ -68,10 +66,8 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 {
                     ITuple.Create(new Graph.Edge(grouped.Root, expand.Root), expand)
                 };
-                var raw = new List<string>();
 
-                grouped = new QueueItem(grouped.Root, children, raw);
-                return ITuple.Create(grouped, 2);
+                return ITuple.Create(new QueueItem(grouped.Root, children), 2);
             }),
             Create(TInfo.ListOfExpands + TInfo.Comma + TInfo.ListOfExpands, list =>
             {
@@ -83,8 +79,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                     children.Add(child);
                 var raw = new List<string>();
 
-                grouped = new QueueItem(grouped.Root, children, raw);
-                return ITuple.Create(grouped, 2);
+                return ITuple.Create(new QueueItem(grouped.Root, children), 2);
             }),
             Create($"{TInfo.ExpandProperty}({TInfo.Comma}{TInfo.ExpandProperty})*", list =>
             {
@@ -110,9 +105,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 foreach (var child in children)
                     childrenItems.Add(ITuple.Create(edges.First(e => e.To == child.Root), child));
 
-                QueueItem item = new QueueItem(root, childrenItems);
-
-                return ITuple.Create(item, toRemove);
+                return ITuple.Create(new QueueItem(root, childrenItems), toRemove);
             })
         };
 
@@ -163,7 +156,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 // add one to the children
                 var root = list[0].Root;
                 var children = list[0].Children.ToList();
-                children.Add(ITuple.Create(new Graph.Edge(root, list[1].Root), list[1]));
+                children.Add(ITuple.Create(new Graph.Edge(root, list[2].Root), list[2]));
                 return ITuple.Create(new QueueItem(root, children), 3);
             });
 
