@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using NoData.Graph;
 using NoData.Graph.Base;
+using NoData.QueryParser.Graph;
 using QueueItem = NoData.QueryParser.Graph.Tree;
 using TInfo = NoData.QueryParser.Graph.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    class FilterClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, QueueItem>, IAcceptAdditions
+    public class FilterClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, QueueItem>, IAcceptAdditions
     {
         public FilterClaseParser(Func<string, IList<QueueItem>> tokenFunc, string query) : base(tokenFunc, query) { }
 
@@ -22,14 +23,33 @@ namespace NoData.QueryParser.ParsingTools
                 QueryString = $"({QueryString}) and ({clause})";
         }
 
+        public void AddToClause(QueueItem clause)
+        {
+            if (Result is null)
+            {
+                Result = clause;
+            }
+            else
+            {
+                var and = new TextInfo();
+                and.Text = "and";
+                and.Value = TextInfo.LogicalComparison;
+                and.Representation = TextInfo.LogicalComparison;
+                var rootAnd = new NoData.QueryParser.Graph.Vertex(and);
+                var childrenWithEdges = new[]{
+                    ITuple.Create(new Graph.Edge(rootAnd, clause.Root), clause),
+                    ITuple.Create(new Graph.Edge(rootAnd, Result.Root), Result)
+                };
+                Result = new QueueItem(rootAnd, childrenWithEdges);
+            }
+        }
+
         public override void Parse()
         {
             if (!SetupParsing())
                 return;
 
-            var filter = Grouper.Reduce();
-
-            Result = filter;
+            AddToClause(Grouper.ParseToSingle(TokenFunc(QueryString)));
         }
     }
 }

@@ -3,7 +3,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BinaryExpressionParserTests
+namespace NoData.Tests.UtilityTests
 {
     [TestFixture]
     public class UtilityTest
@@ -40,7 +40,7 @@ namespace BinaryExpressionParserTests
             var expected = new string[] { "id", "Name", "region_code", "partner", "children" };
             Assert.NotNull(properties);
             Assert.AreEqual(expected.Count(), properties.Count());
-            foreach(var prop in properties)
+            foreach (var prop in properties)
             {
                 Assert.Contains(prop, expected);
             }
@@ -53,7 +53,7 @@ namespace BinaryExpressionParserTests
 
             var expected = new string[] { "partner", "children" };
             Assert.NotNull(properties);
-            foreach(var prop in expected)
+            foreach (var prop in expected)
             {
                 Assert.Contains(prop, properties);
             }
@@ -67,7 +67,7 @@ namespace BinaryExpressionParserTests
 
             var expected = new string[] { "id", "Name", "region_code" };
             Assert.NotNull(properties);
-            foreach(var prop in expected)
+            foreach (var prop in expected)
             {
                 Assert.Contains(prop, properties);
             }

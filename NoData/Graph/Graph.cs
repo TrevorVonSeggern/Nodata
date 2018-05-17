@@ -48,7 +48,7 @@ namespace NoData.Graph
                 return vertex;
             }
 
-            while(vertices.Where(v => v.Color == StatefulVertex.StateType.Discovered).Count() != vertices.Count())
+            while (vertices.Where(v => v.Color == StatefulVertex.StateType.Discovered).Count() != vertices.Count())
             {
                 var vertex = vertices.First(v => v.Color == StatefulVertex.StateType.UnReached);
                 vertex.Color = StatefulVertex.StateType.Identified;
@@ -69,7 +69,7 @@ namespace NoData.Graph
                     var type = childNavigationProperty.PropertyType;
                     EstablishConnection(type, childNavigationProperty.Name, false);
                 }
-                foreach(var childCollection in classInfo.Collections)
+                foreach (var childCollection in classInfo.Collections)
                 {
                     var type = childCollection.PropertyType.GetGenericArguments()[0];
                     EstablishConnection(type, childCollection.Name, true);

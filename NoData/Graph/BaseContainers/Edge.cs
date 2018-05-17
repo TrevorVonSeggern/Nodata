@@ -38,6 +38,11 @@ namespace NoData.Graph.Base
             return false;
         }
 
+        public override int GetHashCode()
+        {
+            return (this.Value?.GetHashCode() ?? 0 + this.From.GetHashCode() + this.To.GetHashCode()) % int.MaxValue;
+        }
+
         public object Clone() => MemberwiseClone();
 
         public override string ToString() => $"{From.ToString()}->{To.ToString()}";

@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BinaryExpressionParserTests
+namespace NoData.Tests.ExpandTests
 {
     [TestFixture]
     public class PropertyIgnoreTest

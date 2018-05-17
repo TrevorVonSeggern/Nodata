@@ -8,14 +8,15 @@ using TInfo = NoData.QueryParser.Graph.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    class SelectClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IList<ITuple<Path, string>>>, IAcceptAdditions
+    class SelectClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IEnumerable<ITuple<Path, string>>>, IAcceptAdditions
     {
         private readonly NoData.Graph.Graph Graph;
+        public override IEnumerable<ITuple<Path, string>> Result => ResultList;
+        private List<ITuple<Path, string>> ResultList = new List<ITuple<Path, string>>();
 
         public SelectClaseParser(Func<string, IList<QueueItem>> tokenFunc, string query, NoData.Graph.Graph graph) : base(tokenFunc, query)
         {
             Graph = graph;
-            Result = new List<ITuple<Path, string>>();
         }
 
         public void AddToClause(string clause)
@@ -29,48 +30,46 @@ namespace NoData.QueryParser.ParsingTools
                 QueryString += "," + clause;
         }
 
+        public void AddToClause(QueueItem addition)
+        {
+            if (addition is null || (addition.Representation != TInfo.ListOfExpands && addition.Representation != TInfo.ExpandProperty))
+                throw new ArgumentException("invalid query");
+            if (addition.Representation == TInfo.ListOfExpands)
+            {
+                foreach (var expand in addition.Children.Select(x => x.Item2))
+                    AddToClause(expand);
+                return;
+            }
+
+            // add to path list.
+            var edges = new List<Edge>();
+            string propertyName = null;
+            void traverseExpandTree(Vertex from, QueueItem parsedSelection)
+            {
+                if (parsedSelection?.Root?.Value.Representation != TInfo.ExpandProperty) return;
+                if (!parsedSelection.Children.Any())
+                {
+                    propertyName = parsedSelection.Root.Value.Text;
+                    return;
+                }
+
+                // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
+                var edge = Graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == parsedSelection.Root.Value.Value);
+                if (edge is null)
+                    return;
+                edges.Add(edge);
+                foreach (var child in parsedSelection.Children)
+                    traverseExpandTree(edge.To, child.Item2);
+            }
+            var rootQueryVertex = Graph.VertexContainingType(RootQueryType);
+            traverseExpandTree(rootQueryVertex, addition);
+            ResultList.Add(ITuple.Create(new Path(edges), propertyName));
+        }
+
         public override void Parse()
         {
-            if (!SetupParsing())
-                return;
-
-            var select = Grouper.Reduce();
-
-            if (select.Root.Value.Representation != TInfo.ListOfExpands &&
-                select.Root.Value.Representation != TInfo.ExpandProperty)
-                throw new ArgumentException("invalid query");
-
-            var groupOfSelects = select?.Children;
-
-            if (groupOfSelects is null)
-                throw new ArgumentException("invalid query");
-
-            foreach (var propertySelection in groupOfSelects.Select(x => x.Item2))
-            {
-                // add to paths.
-                var edges = new List<Edge>();
-                string propertyName = null;
-                void traverseExpandTree(Vertex from, QueueItem parsedSelection)
-                {
-                    if (parsedSelection?.Root?.Value.Representation != TInfo.ExpandProperty) return;
-                    if (!parsedSelection.Children.Any())
-                    {
-                        propertyName = parsedSelection.Root.Value.Text;
-                        return;
-                    }
-
-                    // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
-                    var edge = Graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == parsedSelection.Root.Value.Value);
-                    if (edge is null)
-                        return;
-                    edges.Add(edge);
-                    foreach (var child in parsedSelection.Children)
-                        traverseExpandTree(edge.To, child.Item2);
-                }
-                var rootQueryVertex = Graph.VertexContainingType(RootQueryType);
-                traverseExpandTree(rootQueryVertex, propertySelection);
-                Result.Add(ITuple.Create(new Path(edges), propertyName));
-            }
+            if (SetupParsing())
+                AddToClause(Grouper.ParseToSingle(TokenFunc(QueryString)));
         }
     }
 }

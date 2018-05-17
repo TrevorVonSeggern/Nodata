@@ -5,8 +5,9 @@ using QueueItem = NoData.QueryParser.Graph.Tree;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    interface IAcceptAdditions
+    public interface IAcceptAdditions
     {
         void AddToClause(string clause);
+        void AddToClause(QueueItem clause);
     }
 }

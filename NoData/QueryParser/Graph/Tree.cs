@@ -1,4 +1,5 @@
 ﻿using NoData.Graph.Base;
+using NoData.QueryParser.ParsingTools.Groupers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,32 +7,24 @@ using System.Linq.Expressions;
 
 namespace NoData.QueryParser.Graph
 {
-    public class Tree : Tree<Vertex, Edge, TextInfo, EdgeInfo>
+    public class Tree : Tree<Vertex, Edge, TextInfo, EdgeInfo>, IRepresent
     {
-        public IList<string> RawText = new List<string>();
         public override Vertex Root { get; protected set; }
         public new IEnumerable<ITuple<Edge, Tree>> Children => base.Children?.Cast<ITuple<Edge, Tree>>();
+        public string Representation => Root.Value.Representation;
 
-        public Tree(Vertex root, string rawText) : base(root, new List<ITuple<Edge, Tree>>())
-        {
-            RawText.Add(rawText);
-        }
-        public Tree(Vertex root, IEnumerable<string> rawText) : base(root, new List<ITuple<Edge, Tree>>())
-        {
-            RawText = rawText.ToList();
-        }
-        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children, string rawText) : base(root, children)
-        {
-            RawText.Add(rawText);
-        }
-        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children, IEnumerable<string> rawText) : base(root, children)
-        {
-            RawText = rawText.ToList();
-        }
+        public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }
+        public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children) : base(root, children) { }
 
-        internal static string GetRepresentationValue(Tree arg) => arg.Root.Value.Representation;
+
+        public bool IsPropertyAccess => Root.Value.Representation == TextInfo.ExpandProperty || Root.Value.Representation == TextInfo.ClassProperty;
+        public bool IsDirectPropertyAccess => IsPropertyAccess && !Children.Any();
+        public bool IsFakeExpandProperty => IsPropertyAccess && Root.Value.Type == typeof(TextInfo);
 
         public override string ToString() => Root.ToString() + " ";
+
+
+        #region Filtering Expressions
 
         static readonly IReadOnlyDictionary<Type, int> NumberDictionary;
         static Tree()
@@ -49,19 +42,9 @@ namespace NoData.QueryParser.Graph
             NumberDictionary = nDict;
         }
 
-        internal string InOrderRawValueTraversal()
-        {
-
-            return "";
-        }
-
         private bool IsNumberType(Type type) => NumberDictionary.ContainsKey(type);
         private int IndexFromType(Type type) => NumberDictionary[type];
         private Type TypeFromIndex(int i) => NumberDictionary.ToList().FirstOrDefault(x => x.Value == i).Key;
-        private bool IsPropertyAccess => Children.Count() == 1 && (Children.First().Item2.Root.Value.Representation == TextInfo.ExpandProperty || Children.First().Item2.Root.Value.Representation == TextInfo.ClassProperty);
-        private bool IsDirectPropertyAccess => IsPropertyAccess && (Children.FirstOrDefault().Item2.Root.Value.Representation == TextInfo.ClassProperty || Children.FirstOrDefault().Item2.Children.Count() == 0);
-
-        #region Filtering Expressions
 
         private Expression ComparisonExpression(Expression dto)
         {
@@ -108,16 +91,15 @@ namespace NoData.QueryParser.Graph
                     Expression conditional(Expression propertyExpression)
                     {
                         var nullExpr = Expression.Constant(null);
-                        var trueExpr = Expression.Constant(true);
-                        var falseExpr = Expression.Constant(false);
-                        var NotNullCondition = Expression.NotEqual(propertyExpression, nullExpr);
-                        return Expression.Condition(NotNullCondition, trueExpr, falseExpr);
+                        if (propertyExpression.Type.IsValueType)
+                            return null;
+                        return Expression.NotEqual(propertyExpression, nullExpr);
                     }
                     if (!child.IsDirectPropertyAccess)
                     {
-                        var subPropertyAccessCheck = IsChildPropertyAccessNull(child.Children.First().Item2, Expression.PropertyOrField(parentClass, child.Children.First().Item2.Root.Value.Text));
-                        if(subPropertyAccessCheck is null)
-                           return conditional(parentClass);
+                        var subPropertyAccessCheck = IsChildPropertyAccessNull(child.Children.First().Item2, Expression.PropertyOrField(parentClass, child.Root.Value.Text));
+                        if (subPropertyAccessCheck is null)
+                            return conditional(parentClass);
                         return Expression.AndAlso(conditional(parentClass), subPropertyAccessCheck);
                     }
                     else
@@ -156,23 +138,27 @@ namespace NoData.QueryParser.Graph
             throw new NotImplementedException();
         }
 
-        private Expression BoolExpression(Expression dto)
+        private Expression BoolExpression()
         {
+            if (Root.Value.Value.ToLower().Equals("true"))
+                return Expression.Constant(true);
+            if (Root.Value.Value.ToLower().Equals("false"))
+                return Expression.Constant(false);
             throw new NotImplementedException();
         }
 
         public Expression FilterExpression(Expression dto)
         {
             if (IsDirectPropertyAccess)
-                return Expression.PropertyOrField(dto, Children.FirstOrDefault().Item2.Root.Value.Text);
+                return Expression.PropertyOrField(dto, Root.Value.Text);
             if (IsPropertyAccess)
-                return Children.FirstOrDefault().Item2.FilterExpression(Expression.PropertyOrField(dto, Children.FirstOrDefault().Item2.Root.Value.Value));
+                return Children.FirstOrDefault().Item2.FilterExpression(Expression.PropertyOrField(dto, Root.Value.Value));
             if (Root.Value.Value == TextInfo.ValueComparison)
                 return ComparisonExpression(dto);
             if (Root.Value.Value == TextInfo.LogicalComparison)
                 return LogicalExpression(dto);
             if (Root.Value.Representation == TextInfo.BooleanValue)
-                return BoolExpression(dto);
+                return BoolExpression();
             if (Root.Value.Representation == TextInfo.NumberValue)
                 return Expression.Constant(Root.Value.Parsed, Root.Value.Type);
             if (Root.Value.Representation == TextInfo.TextValue)

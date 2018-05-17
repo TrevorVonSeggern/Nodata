@@ -13,6 +13,9 @@ namespace NoData.Internal.TreeParser.Tokenizer
 
         parenthesis,
 
+        truth,
+        falsey,
+
         not,
 
         and,
@@ -36,5 +39,6 @@ namespace NoData.Internal.TreeParser.Tokenizer
         filterClause,
         expandClause,
         selectClause,
+        semiColin,
     }
 }

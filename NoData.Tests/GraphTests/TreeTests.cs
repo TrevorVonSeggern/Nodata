@@ -1,4 +1,3 @@
-using NoData.Graph;
 using NoData.Graph.Interfaces;
 using NoData.Graph.Utility;
 using NUnit.Framework;
@@ -6,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BinaryExpressionParserTests
+namespace NoData.Tests.GraphTests
 {
+    using NoData.Graph;
+
     [TestFixture]
     public class TreeTests
     {

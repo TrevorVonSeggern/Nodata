@@ -22,7 +22,7 @@ namespace NoData.QueryParser
         private readonly IEnumerable<string> ClassProperties;
         private readonly NoData.Graph.Graph _Graph;
 
-        private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new Graph.Vertex(t), t.Value)).ToList();
+        private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new Graph.Vertex(t))).ToList();
 
         public QueryParser(QueryParameters parameters, NoData.Graph.Graph graph)
         {
@@ -35,16 +35,21 @@ namespace NoData.QueryParser
 
             Select = new SelectClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Select, graph);
             Select.AddGroupingTerms(ExpandGroupings.ExpandProperty);
-            Select.AddGroupingTerms(ExpandGroupings.CollectionOfExpandProperty);
+            Select.AddGroupingTerms(ExpandGroupings.ListOfExpand);
 
             Filter = new FilterClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Filter);
             Filter.AddGroupingTerms(ExpandGroupings.ExpandProperty);
-            Filter.AddGroupingTerms(FilterGroupings.AddTermsForFilter<TRootVertex>(graph));
+            Filter.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
 
-            Expand = new ExpandClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph);
+            Expand = new ExpandClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph, Select, Filter);
             Expand.AddGroupingTerms(ExpandGroupings.ExpandProperty);
-            Expand.AddGroupingTerms(ExpandGroupings.CollectionOfExpandProperty);
-            Expand.AddGroupingTerms(ExpandGroupings.SelectClauseIntegration<TRootVertex>(graph, Select));
+            Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
+            Expand.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithListOfClauses);
+            Expand.AddGroupingTerms(ExpandGroupings.ListOfExpand);
+            Expand.AddGroupingTerms(ExpandGroupings.ExpandExpression);
+            Expand.AddGroupingTerms(ExpandGroupings.FilterExpression);
+            Expand.AddGroupingTerms(ExpandGroupings.SelectExpression);
+            Expand.AddGroupingTerms(ExpandGroupings.ListOfClauseExpressions());
 
             _Graph = graph;
         }

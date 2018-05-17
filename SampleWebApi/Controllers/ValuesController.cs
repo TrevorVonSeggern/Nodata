@@ -75,7 +75,7 @@ namespace nodata.Controllers
             }
             catch (Exception e)
             {
-                return "Error has occurred";
+                return "Error has occurred: " + e.Message;
             }
             return response;
         }
