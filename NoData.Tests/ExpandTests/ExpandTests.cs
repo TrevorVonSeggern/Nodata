@@ -75,6 +75,14 @@ namespace NoData.Tests.ExpandTests
         [TestCase("partner/partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)] // one expand
         [TestCase("partner($expand=partner)", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)]
         [TestCase("partner($expand=partner($expand=partner))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)]
+        [TestCase("partner($expand=partner($expand=partner($expand=partner)))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)]
+        [TestCase("partner($expand=partner($expand=partner($expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
+        [TestCase("partner($expand=partner;$filter=id eq 1)", 2, 1, 2)]
+        [TestCase("partner($expand=partner($expand=partner($expand=partner;$filter=id eq 1;$select=id)))", 2, 1, 2, 1, 2)]
+        [TestCase("partner($expand=partner;$filter=id eq 1;$select=id)", 2, 1, 2)]
+        [TestCase("partner($expand=partner($expand=partner($select=id;$expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
+        [TestCase("partner($select=id;$expand=partner;$filter=id eq 1)", 2, 1, 2)]
+        [TestCase("partner($select=id,Name;$expand=partner($select=id,region_code;$expand=partner($select=id;$select=id;$expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
         public void Expand_Expression(string expression, params int[] expectedIds)
         {
             var ft = new NoData.NoDataQuery<Dto>(expression, null, null);

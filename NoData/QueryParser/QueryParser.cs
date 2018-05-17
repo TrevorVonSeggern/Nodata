@@ -44,12 +44,12 @@ namespace NoData.QueryParser
             Expand = new ExpandClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph, Select, Filter);
             Expand.AddGroupingTerms(ExpandGroupings.ExpandProperty);
             Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
+            Expand.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithListOfClauses);
+            Expand.AddGroupingTerms(ExpandGroupings.ListOfExpand);
             Expand.AddGroupingTerms(ExpandGroupings.ExpandExpression);
             Expand.AddGroupingTerms(ExpandGroupings.FilterExpression);
             Expand.AddGroupingTerms(ExpandGroupings.SelectExpression);
             Expand.AddGroupingTerms(ExpandGroupings.ListOfClauseExpressions());
-            Expand.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithListOfClauses);
-            Expand.AddGroupingTerms(ExpandGroupings.ListOfExpand);
 
             _Graph = graph;
         }
