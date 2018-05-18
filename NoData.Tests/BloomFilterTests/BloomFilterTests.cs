@@ -1,5 +1,6 @@
 using NoData.Graph.Base;
 using NUnit.Framework;
+using NoData.Tests.SharedExampleClasses;
 
 namespace NoData.Tests.BloomFilterTests
 {
@@ -7,13 +8,6 @@ namespace NoData.Tests.BloomFilterTests
     [TestFixture]
     public class BloomFilterTests
     {
-        public class Dto
-        {
-            public int id { get; set; }
-            public string Name { get; set; }
-            public string region_code { get; set; }
-        }
-
         [Test]
         public void Bloom_Nothing_PropertyDoesntExist_Success()
         {

@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NoData.Tests.SharedExampleClasses;
 
 namespace NoData.Tests.FilterTests
 {
@@ -9,22 +10,6 @@ namespace NoData.Tests.FilterTests
     [TestFixture]
     public class FilterTest
     {
-        public class Dto
-        {
-            public int id { get; set; }
-            public string Name { get; set; }
-            public string region_code { get; set; }
-            public Dto partner { get; set; }
-
-            internal IEnumerable<int> GetIds()
-            {
-                yield return id;
-                if (partner != null)
-                    foreach (var i in partner.GetIds())
-                        yield return i;
-            }
-        }
-
         public static IEnumerable<Dto> SampleCollection
         {
             get
@@ -69,7 +54,7 @@ namespace NoData.Tests.FilterTests
             var ft = new NoData.NoDataQuery<Dto>("partner/partner", expression, null);
             var result = ft.ApplyQueryable(new List<Dto>(SampleCollection).AsQueryable());
 
-            var ids = result.SelectMany(r => r.GetIds()).ToList();
+            var ids = result.SelectMany(r => r.GetAllIds()).ToList();
 
             Assert.AreEqual(expectedIds.Count(), ids.Count());
             foreach (var resultId in ids)

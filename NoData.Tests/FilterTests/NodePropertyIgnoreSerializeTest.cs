@@ -1,39 +1,13 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using NoData.Tests.SharedExampleClasses;
 
 namespace NoData.Tests.FilterTests
 {
     [TestFixture]
     public class FilterPropertyIgnoreTest
     {
-        public class Dto
-        {
-            public int id { get; set; }
-            public string Name { get; set; }
-            public string region_code { get; set; }
-            public Dto partner { get; set; }
-            public ICollection<DtoChild> children { get; set; }
-            public DtoChild favorite { get; set; }
-        }
-
-        public class DtoChild
-        {
-            public int id { get; set; }
-            public string Name { get; set; }
-            public string region_code { get; set; }
-            public DtoChild partner { get; set; }
-            public ICollection<DtoGrandChild> children { get; set; }
-            public DtoGrandChild favorite { get; set; }
-        }
-
-        public class DtoGrandChild
-        {
-            public int id { get; set; }
-            public string Name { get; set; }
-            public string region_code { get; set; }
-        }
-
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
         {
             new DtoGrandChild{ id = 100, Name = "George German grand child 1", region_code = "de"  },
