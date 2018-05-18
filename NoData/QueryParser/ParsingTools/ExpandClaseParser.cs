@@ -129,7 +129,7 @@ namespace NoData.QueryParser.ParsingTools
                 if (edge == null)
                     yield break;
 
-                if (tree.IsDirectPropertyAccess)
+                if (tree.IsDirectPropertyAccess())
                 {
                     var childEdgePath = new List<Edge>(currentPath);
                     childEdgePath.Add(edge);

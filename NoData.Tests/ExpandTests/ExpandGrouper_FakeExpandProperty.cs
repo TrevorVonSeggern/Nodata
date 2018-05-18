@@ -28,8 +28,8 @@ namespace NoData.Tests.ExpandTests
             var parsed = grouper.ParseToSingle(tokens);
 
             Assert.NotNull(parsed);
-            Assert.True(parsed.IsPropertyAccess);
-            Assert.False(parsed.IsFakeExpandProperty);
+            Assert.True(parsed.IsPropertyAccess());
+            Assert.False(parsed.IsFakeExpandProperty());
         }
 
         [Test]
@@ -58,9 +58,9 @@ namespace NoData.Tests.ExpandTests
             Assert.NotZero(parsed.Children.Count());
             foreach (var child in parsed.Children.Select(x => x.Item2))
             {
-                Assert.True(child.IsPropertyAccess);
-                Assert.False(child.IsFakeExpandProperty);
-                Assert.False(child.IsDirectPropertyAccess);
+                Assert.True(child.IsPropertyAccess());
+                Assert.False(child.IsFakeExpandProperty());
+                Assert.False(child.IsDirectPropertyAccess());
             }
         }
     }

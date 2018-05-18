@@ -94,7 +94,7 @@ namespace NoData.QueryParser
             _AssertParsed();
             if (Filter.Result is null)
                 return null;
-            return Filter.Result.FilterExpression(parameter);
+            return new FilterTreeExpressionBuilder(_Graph).FilterExpression(Filter.Result, parameter);
         }
     }
 }
