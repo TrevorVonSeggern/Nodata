@@ -15,9 +15,10 @@ namespace NoData.QueryParser
         public bool IsParsed { get; private set; }
         private static readonly Type RootQueryType = typeof(TRootVertex);
 
-        private FilterClaseParser<TRootVertex> Filter { get; set; }
-        private ExpandClaseParser<TRootVertex> Expand { get; set; }
-        private SelectClaseParser<TRootVertex> Select { get; set; }
+        private FilterClauseParser<TRootVertex> Filter { get; set; }
+        private ExpandClauseParser<TRootVertex> Expand { get; set; }
+        private SelectClauseParser<TRootVertex> Select { get; set; }
+        private OrderByClauseParser<TRootVertex> OrderBy { get; set; }
 
         private readonly IEnumerable<string> ClassProperties;
         private readonly NoData.Graph.Graph _Graph;
@@ -33,15 +34,18 @@ namespace NoData.QueryParser
                 .SelectMany(cp => cp.PropertyNames)
                 .Distinct();
 
-            Select = new SelectClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Select, graph);
+            OrderBy = new OrderByClauseParser<TRootVertex>(x => _GetTokens(x), parameters.OrderBy, graph);
+            OrderBy.AddGroupingTerms(ExpandGroupings.ExpandProperty);
+
+            Select = new SelectClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Select, graph);
             Select.AddGroupingTerms(ExpandGroupings.ExpandProperty);
             Select.AddGroupingTerms(ExpandGroupings.ListOfExpand);
 
-            Filter = new FilterClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Filter);
+            Filter = new FilterClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Filter);
             Filter.AddGroupingTerms(ExpandGroupings.ExpandProperty);
             Filter.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
 
-            Expand = new ExpandClaseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph, Select, Filter);
+            Expand = new ExpandClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph, Select, Filter);
             Expand.AddGroupingTerms(ExpandGroupings.ExpandProperty);
             Expand.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
             Expand.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithListOfClauses);
@@ -58,6 +62,8 @@ namespace NoData.QueryParser
         {
             do
             {
+                if (!OrderBy.IsFinished)
+                    OrderBy.Parse();
                 if (!Expand.IsFinished)
                     Expand.Parse();
                 if (!Filter.IsFinished)
@@ -86,6 +92,21 @@ namespace NoData.QueryParser
                     _selectionTree = NoData.Graph.Tree.CreateFromPathsTree(rootQueryVertex, Expand.Result.Where(p => p.Edges.Count() > 0), Select.Result);
                 }
                 return _selectionTree;
+            }
+        }
+
+        private NoData.Graph.Tree _orderByPath { get; set; }
+        public NoData.Graph.Tree OrderByPath
+        {
+            get
+            {
+                _AssertParsed();
+                if (_orderByPath is null)
+                {
+                    var rootQueryVertex = _Graph.VertexContainingType(RootQueryType);
+                    _orderByPath = NoData.Graph.Tree.CreateFromPathsTree(rootQueryVertex, new[] { OrderBy.Result }, Select.Result);
+                }
+                return _orderByPath;
             }
         }
 

@@ -5,7 +5,7 @@ using QueueItem = NoData.QueryParser.Graph.Tree;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    interface IQueryClaseParser<TResult>
+    interface IQueryClauseParser<TResult>
     {
         bool IsFinished { get; }
         void Parse();

@@ -8,7 +8,7 @@ namespace NoData.QueryParser
     public class QueryParameters
     {
         public QueryParameters() { }
-        public QueryParameters(string expand, string filter, string select, int? top, int? skip, bool count = false)
+        public QueryParameters(string expand, string filter, string select, string orderBy, int? top, int? skip, bool count = false)
         {
             Count = count;
             Top = top;
@@ -16,6 +16,7 @@ namespace NoData.QueryParser
             Filter = filter;
             Select = select;
             Expand = expand;
+            OrderBy = orderBy;
         }
 
         [FromQuery(Name = "$count")]
@@ -30,5 +31,7 @@ namespace NoData.QueryParser
         public string Select { get; private set; }
         [FromQuery(Name = "$expand")]
         public string Expand { get; private set; }
+        [FromQuery(Name = "$orderBy")]
+        public string OrderBy { get; private set; }
     }
 }

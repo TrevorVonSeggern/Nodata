@@ -36,7 +36,7 @@ namespace NoData.Graph
                     c.Add(ITuple.Create(edge, CreateFromPathsTree(childRoot, childPaths, childSelectionsPaths)));
                 }
             }
-            foreach(var propertyName in selections.Where(x => x.Item1 is null || !x.Item1.Edges.Any()).Select(x => x.Item2))
+            foreach (var propertyName in selections.Where(x => x.Item1 is null || !x.Item1.Edges.Any()).Select(x => x.Item2))
                 root.Value.AddSelection(propertyName);
             return new Tree(root, c);
         }
@@ -71,14 +71,14 @@ namespace NoData.Graph
             // add value.
             Root.Value.AddItem(instance);
             // add children.
-            foreach(var child in Children)
+            foreach (var child in Children)
             {
                 var edge = child.Item1;
                 var tree = child.Item2;
                 var propertyName = edge.Value.PropertyName;
                 var action = classInfo.AccessProperties[propertyName];
                 if (edge.Value.IsCollection)
-                    tree.AddInstances((IEnumerable<object>) action(instance));
+                    tree.AddInstances((IEnumerable<object>)action(instance));
                 else
                     tree.AddInstance(action(instance));
             }
@@ -92,6 +92,14 @@ namespace NoData.Graph
             var body = Root?.GetExpandExpression(parameter, this) ?? throw new ArgumentNullException("Root filter node or resulting expression is null");
 
             var expr = ExpressionBuilder.BuildSelectExpression(query, parameter, body);
+
+            return query.Provider.CreateQuery<TDto>(expr);
+        }
+        public IQueryable<TDto> ApplyOrderBy<TDto>(IQueryable<TDto> query, ParameterExpression parameter) where TDto : class, new()
+        {
+            var body = Root?.GetExpandExpression(parameter, this) ?? throw new ArgumentNullException("Root filter node or resulting expression is null");
+
+            var expr = ExpressionBuilder.BuildOrderByExpression(query, parameter, body);
 
             return query.Provider.CreateQuery<TDto>(expr);
         }
