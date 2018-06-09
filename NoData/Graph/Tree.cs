@@ -19,7 +19,7 @@ namespace NoData.Graph
         public static Tree CreateFromPathsTree(Vertex root, IEnumerable<Path> expandPaths, IEnumerable<ITuple<Path, string>> selections)
         {
             var c = new List<ITuple<Edge, Tree>>();
-            expandPaths = expandPaths.Where(p => p.Edges.Count() > 0);
+            expandPaths = expandPaths?.Where(p => p.Edges.Count() > 0) ?? new List<Path>();
             selections = selections ?? new List<ITuple<Path, string>>();
             if (expandPaths.Count() != 0)
             {
