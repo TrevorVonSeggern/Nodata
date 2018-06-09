@@ -19,16 +19,16 @@ namespace NoData.Graph
         public static Tree CreateFromPathsTree(Vertex root, IEnumerable<Path> expandPaths, IEnumerable<ITuple<Path, string>> selections)
         {
             var c = new List<ITuple<Edge, Tree>>();
-            expandPaths = expandPaths.Where(p => p.Edges.Count() > 0);
+            expandPaths = expandPaths.Where(p => p.Edges.Any());
             selections = selections ?? new List<ITuple<Path, string>>();
-            if (expandPaths.Count() != 0)
+            if (expandPaths.Any())
             {
                 if (!expandPaths.All(p => p.Edges.First().From.Value.Type == root.Value.Type) && !selections.All(p => p.Item1.Edges.First().From.Value.Type == root.Value.Type))
                     throw new ArgumentException("Paths don't all begin at the same vertex");
 
                 foreach (var path in expandPaths.Select(p => p.Edges).GroupBy(x => x.First()))
                 {
-                    var childPaths = path.Select(p => new Path(p.Skip(1))).Where(p => p.Edges.Count() > 0);
+                    var childPaths = path.Select(p => new Path(p.Skip(1))).Where(p => p.Edges.Any());
                     var childRoot = path.Key.To.Clone() as Vertex;
                     var childSelectionsPaths = selections.Where(s => s.Item1.Edges.Any() && s.Item1.Edges.First().From.Value.Type == childRoot.Value.Type)
                         .Select(p => ITuple.Create(new Path(p.Item1.Edges.Skip(1)), p.Item2));
@@ -36,7 +36,7 @@ namespace NoData.Graph
                     c.Add(ITuple.Create(edge, CreateFromPathsTree(childRoot, childPaths, childSelectionsPaths)));
                 }
             }
-            foreach(var propertyName in selections.Where(x => x.Item1 is null || !x.Item1.Edges.Any()).Select(x => x.Item2))
+            foreach (var propertyName in selections.Where(x => x.Item1 is null || !x.Item1.Edges.Any()).Select(x => x.Item2))
                 root.Value.AddSelection(propertyName);
             return new Tree(root, c);
         }
@@ -71,14 +71,14 @@ namespace NoData.Graph
             // add value.
             Root.Value.AddItem(instance);
             // add children.
-            foreach(var child in Children)
+            foreach (var child in Children)
             {
                 var edge = child.Item1;
                 var tree = child.Item2;
                 var propertyName = edge.Value.PropertyName;
                 var action = classInfo.AccessProperties[propertyName];
                 if (edge.Value.IsCollection)
-                    tree.AddInstances((IEnumerable<object>) action(instance));
+                    tree.AddInstances((IEnumerable<object>)action(instance));
                 else
                     tree.AddInstance(action(instance));
             }

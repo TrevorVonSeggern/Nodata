@@ -45,7 +45,7 @@ namespace NoData.QueryParser.ParsingTools
                 return false;
             Tokens = GetTokens(QueryString);
 
-            if (Tokens.Count() == 0)
+            if (!Tokens.Any())
                 return false;
 
             Grouper = new OrderdGrouper<QueueItem>(GroupingTerms.ToDictionary(x => x.Item1, x => x.Item2));

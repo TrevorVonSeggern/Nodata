@@ -33,10 +33,10 @@ namespace NoData.Graph.Base
             Edges = toAdd;
         }
 
-        public virtual void Traverse(Action<TEdge> action)
+        public virtual void Traverse(Action<TEdge> edge)
         {
-            foreach (var edge in Edges)
-                action(edge);
+            foreach (var e in Edges)
+                edge(e);
         }
 
         public override bool Equals(object obj)
@@ -46,13 +46,13 @@ namespace NoData.Graph.Base
                 var other = obj as Path<TEdge, TVertex, TEdgeValue, TVertexValue>;
                 if (other.Edges.Count() != Edges.Count())
                     return false;
-                if (other.Edges.Count() == 0)
+                if (!other.Edges.Any())
                     return true;
 
                 // validate each edge
                 var oEnum = other.Edges.GetEnumerator();
                 var myEnum = Edges.GetEnumerator();
-                while (oEnum.Current != null && myEnum.Current != null)
+                while (!ReferenceEquals(oEnum.Current, null) && !ReferenceEquals(myEnum.Current, null))
                 {
                     if (!myEnum.Current.Equals(oEnum.Current))
                         return false;

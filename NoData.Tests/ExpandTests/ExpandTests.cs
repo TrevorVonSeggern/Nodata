@@ -92,7 +92,7 @@ namespace NoData.Tests.ExpandTests
 
             Assert.NotNull(result);
 
-            Assert.AreEqual(expectedIds.Count(), resultIds.Count());
+            Assert.AreEqual(expectedIds.Length, resultIds.Count);
             foreach (var resultId in resultIds)
                 Assert.True(expectedIds.Contains(resultId));
         }

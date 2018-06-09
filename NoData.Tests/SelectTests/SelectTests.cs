@@ -1,83 +1,13 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
+using NoData.Tests.SharedExampleClasses;
 
 namespace NoData.Tests.SelectTests
 {
     [TestFixture]
     public class SelectTest
     {
-        public class Dto
-        {
-            public int id { get; set; }
-            public string Name { get; set; }
-            public string region_code { get; set; }
-            public Dto partner { get; set; }
-            public ICollection<DtoChild> children { get; set; }
-            public DtoChild favorite { get; set; }
-
-            public IEnumerable<int> GetAllIds()
-            {
-                yield return id;
-                // partner
-                if (partner != null)
-                    foreach (var i in partner.GetAllIds())
-                        yield return i;
-                // favorite
-                if (favorite != null)
-                    foreach (var i in favorite.GetAllIds())
-                        yield return i;
-                // children
-                if (children != null)
-                    foreach (var child in children)
-                        if (child != null)
-                            foreach (var i in child.GetAllIds())
-                                yield return i;
-            }
-        }
-
-        public class DtoChild
-        {
-            public int id { get; set; }
-            public string Name { get; set; }
-            public string region_code { get; set; }
-            public DtoChild partner { get; set; }
-            public ICollection<DtoGrandChild> children { get; set; }
-            public DtoGrandChild favorite { get; set; }
-
-
-            public IEnumerable<int> GetAllIds()
-            {
-                yield return id;
-                // partner
-                if (partner != null)
-                    foreach (var i in partner.GetAllIds())
-                        yield return i;
-                // favorite
-                if (favorite != null)
-                    foreach (var i in favorite.GetAllIds())
-                        yield return i;
-                // children
-                if (children != null)
-                    foreach (var child in children)
-                        if (child != null)
-                            foreach (var i in child.GetAllIds())
-                                yield return i;
-            }
-        }
-
-        public class DtoGrandChild
-        {
-            public int id { get; set; }
-            public string Name { get; set; }
-            public string region_code { get; set; }
-
-            public IEnumerable<int> GetAllIds()
-            {
-                yield return id;
-            }
-        }
-
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
         {
             new DtoGrandChild{ id = 100, Name = "George German grand child 1", region_code = "de"  },
@@ -141,7 +71,7 @@ namespace NoData.Tests.SelectTests
 
             Assert.NotNull(result);
             int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
-            Assert.AreEqual(expectedIds.Count(), resultIds.Count());
+            Assert.AreEqual(expectedIds.Length, resultIds.Count);
             foreach (var resultId in resultIds)
                 Assert.True(expectedIds.Contains(resultId));
 
@@ -165,7 +95,7 @@ namespace NoData.Tests.SelectTests
 
             Assert.NotNull(result);
             int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
-            Assert.AreEqual(expectedIds.Count(), resultIds.Count());
+            Assert.AreEqual(expectedIds.Length, resultIds.Count);
             foreach (var resultId in resultIds)
                 Assert.True(expectedIds.Contains(resultId));
 
@@ -188,7 +118,7 @@ namespace NoData.Tests.SelectTests
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
             Assert.NotNull(result);
-            Assert.AreEqual(ParentCollection.Count(), resultIds.Count());
+            Assert.AreEqual(ParentCollection.Count(), resultIds.Count);
 
             foreach (var dto in result)
             {

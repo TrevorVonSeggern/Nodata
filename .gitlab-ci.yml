@@ -16,7 +16,8 @@ build:
     build_path: "$project"
   script:
     - "cd $build_path"
-    - "dotnet build"
+    - "dotnet add package Roslynator.Analyzers"
+    - "dotnet build --no-incremental -v q /warnaserror"
 
 test:
   stage: test

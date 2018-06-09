@@ -4,15 +4,14 @@ using Newtonsoft.Json;
 
 namespace SampleWebApi
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
-                //Formatting = Formatting.Indented,
-                //TypeNameHandling = TypeNameHandling.Objects,
-                //ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented,
+                TypeNameHandling = TypeNameHandling.Objects,
                 MetadataPropertyHandling = MetadataPropertyHandling.Ignore
             };
 

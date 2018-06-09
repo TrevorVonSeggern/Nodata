@@ -35,7 +35,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 QueueItem propertyTree = new QueueItem(vertex);
 
                 // build from linear list, the tree
-                for (vertex = itemList.Any() ? itemList.Peek() : null; itemList.Count() != 0; vertex = itemList.Pop())
+                for (vertex = itemList.Any() ? itemList.Peek() : null; itemList.Count != 0; vertex = itemList.Pop())
                 {
                     var edge = new Graph.Edge(vertex, propertyTree.Root);
                     vertex.Value.Representation = TInfo.ExpandProperty;
@@ -136,7 +136,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
         public static TGrouping FilterExpression = Create(TInfo.FilterClause + TInfo.BooleanValue, list =>
             {
                 var root = new Graph.Vertex(new TInfo { Representation = TInfo.FilterExpression });
-                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Graph.Edge(root, list[1].Root), list[1]) }), list.Count() - 1);
+                return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Graph.Edge(root, list[1].Root), list[1]) }), list.Count - 1);
             });
 
         public static TGrouping SelectExpression = Create(TInfo.SelectClause + TInfo.ListOfExpands, list =>

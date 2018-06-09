@@ -57,7 +57,7 @@ namespace NoData.Tests.GraphTests
             );
             var traversedEdges = new List<Edge>();
             tree.Traverse(e => traversedEdges.Add(e));
-            Assert.AreEqual(2, traversedEdges.Count());
+            Assert.AreEqual(2, traversedEdges.Count);
         }
 
         [Test]
@@ -102,7 +102,7 @@ namespace NoData.Tests.GraphTests
             var list = new List<string>();
             tree.Traverse((Vertex v, IEnumerable<Edge> c) => list.Add($"{v.ToString()} - {string.Join(",", c.Select(e => e.ToString()))}"));
 
-            Assert.AreEqual(3, list.Count());
+            Assert.AreEqual(3, list.Count);
             Assert.True(list[0].StartsWith("Dto - "));
             Assert.True(list[1] == "DtoChild - ");
             Assert.True(list[2] == "Dto - ");

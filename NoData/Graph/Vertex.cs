@@ -22,7 +22,7 @@ namespace NoData.Graph
 
         private IEnumerable<MemberBinding> BindingsForProperties(IEnumerable<PropertyInfo> properties, Expression dto)
         {
-            foreach(var prop in properties)
+            foreach (var prop in properties)
                 yield return (Expression.Bind(prop, Expression.PropertyOrField(dto, prop.Name)));
         }
 
@@ -50,7 +50,7 @@ namespace NoData.Graph
             // collections
             foreach (var prop in classInfo.Collections.Where(x => outgoingEdges.Any(c => c.Value.PropertyName == x.Name)))
             {
-                if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Count() != 1)
+                if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Length != 1)
                     continue;
 
                 var collectionVertex = outgoingEdges.Single(x => x.Value.PropertyName == prop.Name).To;
@@ -59,15 +59,15 @@ namespace NoData.Graph
 
                 var childrenParameter = Expression.Parameter(collectionVertex.Value.Type, prop.Name);
                 var childrenProperty = Expression.PropertyOrField(dto, prop.Name);
-                var select = ExpressionBuilder.BuildSelectExpression(collectionVertex.Value.Type, 
-                    childrenProperty, 
+                var select = ExpressionBuilder.BuildSelectExpression(collectionVertex.Value.Type,
+                    childrenProperty,
                     childrenParameter, collectionVertex.GetExpandExpression(childrenParameter, navigationTree));
                 var list = Expression.Condition(
                     Expression.Equal(childrenProperty, Expression.Constant(null)),
                     Expression.New(listType.GetConstructor(new Type[] { }), new Expression[] { }),
                     Expression.New(listType.GetConstructor(new Type[] { listType }), select)
                     );
-                yield return(Expression.Bind(prop, list));
+                yield return (Expression.Bind(prop, list));
             }
         }
 
@@ -75,7 +75,7 @@ namespace NoData.Graph
 
         #region Expressions for select
 
-        public Expression GetSelectExpression(Expression dto, Tree tree) =>  BindingExpression(dto, SelectionMemberBindings(dto, tree));
+        public Expression GetSelectExpression(Expression dto, Tree tree) => BindingExpression(dto, SelectionMemberBindings(dto, tree));
 
         private IEnumerable<MemberBinding> SelectionMemberBindings(Expression dto, Tree tree)
         {
@@ -96,7 +96,7 @@ namespace NoData.Graph
             // collections
             foreach (var prop in classInfo.Collections.Where(x => outgoingEdges.Any(c => c.Value.PropertyName == x.Name)))
             {
-                if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Count() != 1)
+                if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Length != 1)
                     continue;
 
                 var collectionVertex = outgoingEdges.Single(x => x.Value.PropertyName == prop.Name).To;

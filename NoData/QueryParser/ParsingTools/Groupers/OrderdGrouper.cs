@@ -20,10 +20,10 @@ namespace NoData.QueryParser.ParsingTools
         public override IList<T> Parse(IEnumerable<T> listToGroup)
         {
             var list = listToGroup.ToList();
-            var levelList = Enumerable.Range(0, list.Count()).ToList(); // create an initialized list of same size
+            var levelList = Enumerable.Range(0, list.Count).ToList(); // create an initialized list of same size
             var level = 0;
             var maxLevel = 0;
-            for (int i = 0; i < list.Count(); ++i)
+            for (int i = 0; i < list.Count; ++i)
             {
                 if (list[i].Representation == OpenGroupingValue)
                     levelList[i] = level++; // increase the level after the open grouping value
@@ -40,15 +40,15 @@ namespace NoData.QueryParser.ParsingTools
                 // setup the range to parse
                 var startRange = 0;
                 var endRange = 0;
-                for (int i = 0; i < levelList.Count(); ++i)
+                for (int i = 0; i < levelList.Count; ++i)
                 {
                     startRange = i;
                     if (maxLevel == levelList[i])
                     {
-                        for (int e = i; e <= levelList.Count(); ++e)
+                        for (int e = i; e <= levelList.Count; ++e)
                         {
                             endRange = e;
-                            if (e == levelList.Count() || maxLevel != levelList[e])
+                            if (e == levelList.Count || maxLevel != levelList[e])
                                 break;
                         }
                         break;
@@ -60,15 +60,15 @@ namespace NoData.QueryParser.ParsingTools
                 var parsed = new QueueGrouper<T>(GroupingTerms).Parse(toParse);
 
                 // update changes within the range & decrement the level of the range.
-                for (var i = 0; i < parsed.Count(); ++i)
+                for (var i = 0; i < parsed.Count; ++i)
                 {
                     list[startRange + i] = parsed[i];
                     levelList[startRange + i]--;
                 }
 
                 // remove extra.
-                var toRemoveCount = toParse.Count() - parsed.Count();
-                var toRemoveStartIndex = startRange + parsed.Count();
+                var toRemoveCount = toParse.Count - parsed.Count;
+                var toRemoveStartIndex = startRange + parsed.Count;
                 list.RemoveRange(toRemoveStartIndex, toRemoveCount);
                 levelList.RemoveRange(toRemoveStartIndex, toRemoveCount);
                 if (maxLevel == 0)
