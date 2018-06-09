@@ -31,7 +31,7 @@ namespace NoData.Graph
 
         private void AssertUnInitialized()
         {
-            if (SerializeList.Count() != 1)
+            if (SerializeList.Count != 1)
                 throw new ArgumentException("Too many serialize settings to add an item to.");
         }
 
@@ -76,14 +76,14 @@ namespace NoData.Graph
 
         public override bool Equals(object obj)
         {
-            if(obj is ClassInfo)
+            if (obj is ClassInfo)
             {
                 var other = obj as ClassInfo;
                 return Type == other.Type;
             }
             return false;
         }
-        
+
 
         public override int GetHashCode()
         {

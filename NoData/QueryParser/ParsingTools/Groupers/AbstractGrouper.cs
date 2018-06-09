@@ -22,14 +22,14 @@ namespace NoData.QueryParser.ParsingTools.Groupers
 
 
         public void AddGroupingTerms(string pattern, Func<IList<T>, ITuple<T, int>> groupingAction) => AddGroupingTerms(ITuple.Create(pattern, groupingAction));
-        public void AddGroupingTerms(IEnumerable<ITuple<string, Func<IList<T>, ITuple<T, int>>>> groupingTerms)
+        public void AddGroupingTerms(IEnumerable<ITuple<string, Func<IList<T>, ITuple<T, int>>>> handleGroupings)
         {
-            foreach (var term in groupingTerms)
+            foreach (var term in handleGroupings)
                 AddGroupingTerms(term);
         }
-        public void AddGroupingTerms(ITuple<string, Func<IList<T>, ITuple<T, int>>> term)
+        public void AddGroupingTerms(ITuple<string, Func<IList<T>, ITuple<T, int>>> handleGrouping)
         {
-            GroupingTerms.Add(new Regex(term.Item1, RegexOptions.Compiled), term.Item2);
+            GroupingTerms.Add(new Regex(handleGrouping.Item1, RegexOptions.Compiled), handleGrouping.Item2);
         }
 
         public abstract IList<T> Parse(IEnumerable<T> listToGroup);

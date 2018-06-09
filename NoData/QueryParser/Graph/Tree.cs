@@ -49,7 +49,7 @@ namespace NoData.QueryParser.Graph
         private Expression ComparisonExpression(Expression dto)
         {
             var children = new List<ITuple<Edge, Tree>>(Children);
-            if (children.Count() != 2)
+            if (children.Count != 2)
                 return null;
 
             var left = children[0].Item2.FilterExpression(dto);
@@ -123,7 +123,7 @@ namespace NoData.QueryParser.Graph
         private Expression LogicalExpression(Expression dto)
         {
             var children = new List<ITuple<Edge, Tree>>(Children);
-            if (children.Count() != 2) return null;
+            if (children.Count != 2) return null;
 
             var left = children[0].Item2.FilterExpression(dto);
             var right = children[1].Item2.FilterExpression(dto);
@@ -140,9 +140,9 @@ namespace NoData.QueryParser.Graph
 
         private Expression BoolExpression()
         {
-            if (Root.Value.Value.ToLower().Equals("true"))
+            if (Root.Value.Value.Equals("true", StringComparison.OrdinalIgnoreCase))
                 return Expression.Constant(true);
-            if (Root.Value.Value.ToLower().Equals("false"))
+            if (Root.Value.Value.Equals("false", StringComparison.OrdinalIgnoreCase))
                 return Expression.Constant(false);
             throw new NotImplementedException();
         }

@@ -48,7 +48,7 @@ namespace NoData.Graph
                 return vertex;
             }
 
-            while (vertices.Where(v => v.Color == StatefulVertex.StateType.Discovered).Count() != vertices.Count())
+            while (vertices.Where(v => v.Color == StatefulVertex.StateType.Discovered).Count() != vertices.Count)
             {
                 var vertex = vertices.First(v => v.Color == StatefulVertex.StateType.UnReached);
                 vertex.Color = StatefulVertex.StateType.Identified;

@@ -71,7 +71,7 @@ namespace NoData.Tests.FilterTests
 
             var ids = result.SelectMany(r => r.GetIds()).ToList();
 
-            Assert.AreEqual(expectedIds.Count(), ids.Count());
+            Assert.AreEqual(expectedIds.Length, ids.Count);
             foreach (var resultId in ids)
                 Assert.True(expectedIds.Contains(resultId));
         }

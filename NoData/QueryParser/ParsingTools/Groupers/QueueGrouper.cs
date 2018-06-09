@@ -16,7 +16,7 @@ namespace NoData.QueryParser.ParsingTools
         {
             if (stringIndex == 0) return 0;
             var currentRep = "";
-            for (var i = 0; i < list.Count(); ++i)
+            for (var i = 0; i < list.Count; ++i)
             {
                 currentRep += list[i].Representation;
                 if (stringIndex < currentRep.Length)
@@ -25,9 +25,9 @@ namespace NoData.QueryParser.ParsingTools
             return -1;
         }
 
-        public override IList<T> Parse(IEnumerable<T> inputToParse)
+        public override IList<T> Parse(IEnumerable<T> listToGroup)
         {
-            var list = new List<T>(inputToParse);
+            var list = new List<T>(listToGroup);
             string RepresentationalValueString() => string.Join("", list.Select(t => t.Representation));
             var foundMatch = true;
             while (foundMatch)
@@ -42,7 +42,7 @@ namespace NoData.QueryParser.ParsingTools
                     if (!match.Success)
                         continue;
                     var i = GetListIndexInRepString(match.Index, list);
-                    if (i == -1 || i >= list.Count())
+                    if (i == -1 || i >= list.Count)
                         continue;
                     var endPosition = GetListIndexInRepString(match.Index + match.Length - 1, list);
                     var groupInfo = func(list.ToList().GetRange(i, endPosition - i + 1));

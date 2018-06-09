@@ -10,8 +10,11 @@
         },
         {
             "label": "build",
-            "command": "dotnet build",
-            "type": "shell"
+            "command": "dotnet build -v q /warnaserror",
+            "type": "shell",
+            "problemMatcher": [
+                "$msCompile"
+            ]
         }
     ]
 }

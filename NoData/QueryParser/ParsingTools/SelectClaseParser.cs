@@ -30,13 +30,13 @@ namespace NoData.QueryParser.ParsingTools
                 QueryString += "," + clause;
         }
 
-        public void AddToClause(QueueItem addition)
+        public void AddToClause(QueueItem clause)
         {
-            if (addition is null || (addition.Representation != TInfo.ListOfExpands && addition.Representation != TInfo.ExpandProperty))
+            if (clause is null || (clause.Representation != TInfo.ListOfExpands && clause.Representation != TInfo.ExpandProperty))
                 throw new ArgumentException("invalid query");
-            if (addition.Representation == TInfo.ListOfExpands)
+            if (clause.Representation == TInfo.ListOfExpands)
             {
-                foreach (var expand in addition.Children.Select(x => x.Item2))
+                foreach (var expand in clause.Children.Select(x => x.Item2))
                     AddToClause(expand);
                 return;
             }
@@ -62,7 +62,7 @@ namespace NoData.QueryParser.ParsingTools
                     traverseExpandTree(edge.To, child.Item2);
             }
             var rootQueryVertex = Graph.VertexContainingType(RootQueryType);
-            traverseExpandTree(rootQueryVertex, addition);
+            traverseExpandTree(rootQueryVertex, clause);
             ResultList.Add(ITuple.Create(new Path(edges), propertyName));
         }
 

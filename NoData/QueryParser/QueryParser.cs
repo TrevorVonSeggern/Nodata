@@ -83,7 +83,7 @@ namespace NoData.QueryParser
                 if (_selectionTree is null)
                 {
                     var rootQueryVertex = _Graph.VertexContainingType(RootQueryType);
-                    _selectionTree = NoData.Graph.Tree.CreateFromPathsTree(rootQueryVertex, Expand.Result.Where(p => p.Edges.Count() > 0), Select.Result);
+                    _selectionTree = NoData.Graph.Tree.CreateFromPathsTree(rootQueryVertex, Expand.Result.Where(p => p.Edges.Any()), Select.Result);
                 }
                 return _selectionTree;
             }
