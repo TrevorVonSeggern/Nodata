@@ -1,6 +1,5 @@
 # NOData
-Not only data, but a queryable interface!
-![TravisCI Badge](https://travis-ci.org/TrevorVonSeggern/Nodata.svg?branch=master)
+Not only data, but a queryable interface! [![pipeline status](https://gitlab.com/tvo/Nodata/badges/master/pipeline.svg)](https://gitlab.com/tvo/Nodata/commits/master) [![coverage report](https://gitlab.com/tvo/Nodata/badges/master/coverage.svg)](https://gitlab.com/tvo/Nodata/commits/master)
 
 NOData is a loose implementation of the OData [specification](http://docs.oasis-open.org/odata/odata/v4.0/errata03/os/complete/part2-url-conventions/odata-v4.0-errata03-os-part2-url-conventions-complete.html).
 
@@ -24,4 +23,4 @@ With this package, you can perform queries like the following:
 /products$expand=Role($select=Name,id)
 
 Check out the wikki for more information:
-https://github.com/TrevorVonSeggern/Nodata/wiki
+https://gitlab.com/tvo/Nodata/wikis/home

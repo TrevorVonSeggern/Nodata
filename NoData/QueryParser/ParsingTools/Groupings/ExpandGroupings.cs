@@ -83,21 +83,8 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             }),
             Create($"{TInfo.ExpandProperty}({TInfo.Comma}{TInfo.ExpandProperty})*", list =>
             {
-                var children = new Queue<QueueItem>();
-                children.Enqueue(list[0]);
-
-                var toRemove = 0;
-                while (toRemove + 2 < list.Count)
-                {
-                    var representation = list[toRemove + 1].Root.Value.Representation;
-                    if (list[toRemove + 1].Root.Value.Representation == TInfo.Comma &&
-                        list[toRemove + 2].Root.Value.Representation == TInfo.ExpandProperty)
-                    {
-                        children.Enqueue(list[toRemove + 2]);
-                        toRemove += 2;
-                    }
-                    else break;
-                }
+                var filtered = list.Where(x => x.Representation == TInfo.ExpandProperty).ToList();
+                var children = new Queue<QueueItem>(filtered);
 
                 var root = new Graph.Vertex(new TInfo { Representation = TInfo.ListOfExpands });
                 var edges = children.Select(t => new Graph.Edge(root, t.Root));
@@ -105,7 +92,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 foreach (var child in children)
                     childrenItems.Add(ITuple.Create(edges.First(e => e.To == child.Root), child));
 
-                return ITuple.Create(new QueueItem(root, childrenItems), toRemove);
+                return ITuple.Create(new QueueItem(root, childrenItems), (list.Count - filtered.Count) - 1);
             })
         };
 
