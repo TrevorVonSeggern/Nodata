@@ -37,5 +37,4 @@ publish:
     - "rm -rf bin"
     - "dotnet pack -v q /warnaserror -c Release"
     - "cd bin/Release"
-    - ls
-    - dotnet nuget push *.nupkg -k $NUGET -s https://api.nuget.org/v3/index.json
+    - dotnet nuget push *.nupkg -s 'https://api.nuget.org/v3/index.json' -k $NUGET
