@@ -1,43 +1,41 @@
 image: microsoft/dotnet:latest
 
 stages:
-  - build
-  - test
+  - build 
+  - test 
   - publish
 
 variables:
   project: "NoData"
-  nuget_token: ""
 
-build:
-  stage: build
-  variables:
-    build_path: "$project"
-  script:
-    - "cd $build_path"
-    - "dotnet add package Roslynator.Analyzers"
-    - "dotnet build --no-incremental -v q /warnaserror"
-
-test:
-  stage: test
-  variables:
-    test_path: "$project.Tests"
-  script:
-    - "cd $test_path"
-    - "dotnet test"
-
+build: 
+  stage: build 
+  variables: 
+    build_path: "$project" 
+  script: 
+    - "cd $build_path" 
+    - "dotnet add package Roslynator.Analyzers" 
+    - "dotnet build --no-incremental -v q /warnaserror" 
+ 
+test: 
+  stage: test 
+  variables: 
+    test_path: "$project.Tests" 
+  script: 
+    - "cd $test_path" 
+    - "dotnet test" 
+    
 publish:
   stage: publish
   variables:
     build_path: "$project"
-    nuget_token: "$nuget_token"
+  environment:
+    name: production
   only:
   - master
-
   script:
-    - "cd $test_path"
-    - "dotnet clean"
+    - "cd $build_path"
     - "rm -rf bin"
     - "dotnet pack -v q /warnaserror -c Release"
     - "cd bin/Release"
-    - "dotnet nuget push *.nupkg -k $nuget_token -s https://api.nuget.org/v3/index.json"
+    - dotnet nuget push ./*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET
