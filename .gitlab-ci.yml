@@ -1,8 +1,6 @@
 image: microsoft/dotnet:latest
 
 stages:
-  - build
-  - test
   - publish
 
 variables:
@@ -37,5 +35,4 @@ publish:
     - "rm -rf bin"
     - "dotnet pack -v q /warnaserror -c Release"
     - "cd bin/Release"
-    - dotnet nuget setapikey $NUGET -Source https://api.nuget.org/v3/index.json
-    - dotnet nuget push *.nupkg
+    - dotnet nuget push ./*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET
