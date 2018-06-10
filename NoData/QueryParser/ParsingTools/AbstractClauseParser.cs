@@ -9,7 +9,7 @@ using TInfo = NoData.QueryParser.Graph.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    public abstract class AbstractClaseParser<TRootQueryType, TResult> : IQueryClaseParser<TResult>
+    public abstract class AbstractClaseParser<TRootQueryType, TResult> : IQueryClauseParser<TResult>
     {
         protected string QueryString;
         private IList<ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>>> GroupingTerms = new List<ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>>>();

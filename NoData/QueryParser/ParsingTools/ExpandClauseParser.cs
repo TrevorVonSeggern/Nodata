@@ -8,13 +8,13 @@ using TInfo = NoData.QueryParser.Graph.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    public class ExpandClaseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IList<Path>>
+    public class ExpandClauseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IList<Path>>
     {
         private readonly NoData.Graph.Graph Graph;
         private readonly IAcceptAdditions _SelectAdd;
         private readonly IAcceptAdditions _FilterAdd;
 
-        public ExpandClaseParser(Func<string, IList<QueueItem>> tokenFunc, string query, NoData.Graph.Graph graph, IAcceptAdditions select, IAcceptAdditions filter) : base(tokenFunc, query)
+        public ExpandClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, NoData.Graph.Graph graph, IAcceptAdditions select, IAcceptAdditions filter) : base(tokenFunc, query)
         {
             Graph = graph;
             _SelectAdd = select;
@@ -129,7 +129,7 @@ namespace NoData.QueryParser.ParsingTools
                 if (edge == null)
                     yield break;
 
-                if (tree.IsDirectPropertyAccess)
+                if (tree.IsDirectPropertyAccess())
                 {
                     var childEdgePath = new List<Edge>(currentPath);
                     childEdgePath.Add(edge);
@@ -156,6 +156,12 @@ namespace NoData.QueryParser.ParsingTools
         {
             var traverse = new TraverseExpandQueueItem(Graph, _SelectAdd.AddToClause, _FilterAdd.AddToClause);
             var result = traverse.Traverse(Graph.VertexContainingType(typeof(TRootQueryType)), expandItem).ToList();
+            return result;
+        }
+        internal static IEnumerable<Path> ExpandPropertyToEdgeList(QueueItem expandItem, NoData.Graph.Graph graph)
+        {
+            var traverse = new TraverseExpandQueueItem(graph, ignored => { }, ignored => { });
+            var result = traverse.Traverse(graph.VertexContainingType(typeof(TRootQueryType)), expandItem).ToList();
             return result;
         }
     }

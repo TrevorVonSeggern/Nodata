@@ -96,17 +96,5 @@ namespace NoData.Tests.ExpandTests
             foreach (var resultId in resultIds)
                 Assert.True(expectedIds.Contains(resultId));
         }
-
-        //[Test]
-        //public void TestMethod1()
-        //{
-        //    // endswith(Name,'eorge')
-        //    // startswith(Name,'george')
-        //    // substringof(Name,'eorg') // right is contained within the left paramter
-        //    // length(Name) gt 1
-        //    // indexof(Name, 'ame') eq 1
-        //    // replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'
-        //    // substring(Name, 'Name', 'ReplacedName') eq 'ReplacedName'
-        //}
     }
 }

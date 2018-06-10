@@ -117,6 +117,11 @@ namespace NoData.QueryParser.Graph
         public static readonly string ExpandProperty = ConstRep.NextRep("<expandProperty>");
         public static readonly string ListOfExpands = ConstRep.NextRep("<list_of_expand>");
 
+        // Sorting
+        public static readonly string SortProperty = ConstRep.NextRep("<sort_property>");
+        public static readonly string ListOfSortings = ConstRep.NextRep("<list_of_sort>");
+        public static readonly string SortOrder = ConstRep.NextRep("<sort_order>");
+
         // text symbols
         public static readonly string SemiColin = ConstRep.NextRep("<semi_colin>");
         public static readonly string ForwardSlash = ConstRep.NextRep("<forward_slash>");
@@ -188,6 +193,10 @@ namespace NoData.QueryParser.Graph
                         break;
                     case TokenTypes.expandClause:
                         Representation = ExpandClause;
+                        break;
+                    case TokenTypes.ascending:
+                    case TokenTypes.descending:
+                        Representation = SortOrder;
                         break;
                     case TokenTypes.parenthesis:
                         if (Text == "(")

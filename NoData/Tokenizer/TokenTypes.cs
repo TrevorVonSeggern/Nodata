@@ -40,5 +40,8 @@ namespace NoData.Internal.TreeParser.Tokenizer
         expandClause,
         selectClause,
         semiColin,
+
+        ascending,
+        descending,
     }
 }

@@ -3,19 +3,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using NoData.Utility;
 
 namespace NoData.Graph
 {
     public class ClassInfo : ICloneable, IMergable<ClassInfo>
     {
-        public readonly Type Type;
+        public Type Type { get; }
+
+        public string Name { get; }
+
+        public IReadOnlyList<ClassProperty> Properties { get; }
+
+
         protected List<SerializeInfo> SerializeList = new List<SerializeInfo>();
 
-        public ClassInfo() { }
-        public ClassInfo(Type type) : this(type, new[] { new SerializeInfo(NoData.Utility.ClassInfoCache.GetOrAdd(type).NonExpandablePropertyNames, NoData.Utility.ClassInfoCache.GetOrAdd(type).ExpandablePropertyNames, false) }) { }
+        public ClassInfo(Type type) : this(type, new[] { new SerializeInfo(ClassInfoCache.GetOrAdd(type).NonExpandablePropertyNames, ClassInfoCache.GetOrAdd(type).ExpandablePropertyNames, false) }) { }
         public ClassInfo(Type type, IEnumerable<SerializeInfo> enumerable)
         {
             Type = type;
+            Properties = ClassInfoCache.GetOrAdd(type).Properties.Select(x => new ClassProperty(x)).ToList();
             SerializeList.AddRange(enumerable);
         }
 

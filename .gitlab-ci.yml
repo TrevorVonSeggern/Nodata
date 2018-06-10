@@ -3,12 +3,11 @@ image: microsoft/dotnet:latest
 stages:
   - build
   - test
+  - publish
 
 variables:
   project: "NoData"
-
-before_script:
-  - "dotnet restore"
+  nuget_token: ""
 
 build:
   stage: build
@@ -26,3 +25,19 @@ test:
   script:
     - "cd $test_path"
     - "dotnet test"
+
+publish:
+  stage: publish
+  variables:
+    build_path: "$project"
+    nuget_token: "$nuget_token"
+  only:
+  - master
+
+  script:
+    - "cd $test_path"
+    - "dotnet clean"
+    - "rm -rf bin"
+    - "dotnet pack -v q /warnaserror -c Release"
+    - "cd bin/Release"
+    - "dotnet nuget push *.nupkg -k $nuget_token -s https://api.nuget.org/v3/index.json"
