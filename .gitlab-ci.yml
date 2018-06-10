@@ -31,12 +31,8 @@ publish:
   variables:
     build_path: "$project"
     nuget_token: "$nuget_token"
-  only:
-  - master
-
   script:
-    - "cd $test_path"
-    - "dotnet clean"
+    - "cd $build_path"
     - "rm -rf bin"
     - "dotnet pack -v q /warnaserror -c Release"
     - "cd bin/Release"
