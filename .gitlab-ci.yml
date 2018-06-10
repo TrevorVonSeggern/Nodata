@@ -30,7 +30,6 @@ publish:
   stage: publish
   variables:
     build_path: "$project"
-    nuget_token: "$nuget_token"
   environment:
     name: production
   script:
