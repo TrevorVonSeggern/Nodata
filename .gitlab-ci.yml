@@ -1,10 +1,30 @@
 image: microsoft/dotnet:latest
 
 stages:
+  - build
+  - test
   - publish
 
 variables:
   project: "NoData"
+  nuget_token: ""
+
+build:
+  stage: build
+  variables:
+    build_path: "$project"
+  script:
+    - "cd $build_path"
+    - "dotnet add package Roslynator.Analyzers"
+    - "dotnet build --no-incremental -v q /warnaserror"
+
+test:
+  stage: test
+  variables:
+    test_path: "$project.Tests"
+  script:
+    - "cd $test_path"
+    - "dotnet test"
 
 publish:
   stage: publish
@@ -17,5 +37,4 @@ publish:
     - "rm -rf bin"
     - "dotnet pack -v q /warnaserror -c Release"
     - "cd bin/Release"
-    - echo $NUGET
     - dotnet nuget push ./*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET
