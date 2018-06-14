@@ -33,8 +33,8 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 var edgeSort = new Graph.Edge(root, sortDirection.Root);
 
                 return ITuple.Create(new QueueItem(root, new[] {
-                    ITuple.Create(edgeExpand, new QueueItem(expandProperty.Root)),
-                    ITuple.Create(edgeSort, new QueueItem(sortDirection.Root)),
+                    ITuple.Create(edgeExpand, expandProperty),
+                    ITuple.Create(edgeSort, sortDirection),
                 }), list.Count - 1);
             });
 

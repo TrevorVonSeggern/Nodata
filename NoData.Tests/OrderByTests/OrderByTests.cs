@@ -124,5 +124,15 @@ namespace NoData.Tests.OrderByTests
 
             Assert.AreEqual(dtos, dtos.OrderBy(x => x.id).ThenBy(x => x.Name));
         }
+
+        [Test]
+        public void OrderBy_DtoChildId_InOrder_Default()
+        {
+            string query = $"{nameof(Dto.favorite)}/{nameof(DtoChild.id)}";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en", favorite = new DtoChild { id = x % 5 } });
+            var dtos = new NoData.NoDataQuery<Dto>(nameof(Dto.favorite), null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderBy(x => x.favorite.id));
+        }
     }
 }
