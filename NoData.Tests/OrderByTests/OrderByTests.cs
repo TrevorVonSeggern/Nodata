@@ -54,5 +54,85 @@ namespace NoData.Tests.OrderByTests
             var names = new NoData.NoDataQuery<Dto>(null, null, null, $"{nameof(Dto.Name)} desc").ApplyQueryable(dtoEnum.AsQueryable()).Select(x => x.Name).ToList();
             Assert.AreEqual(names, names.OrderByDescending(x => x));
         }
+
+        [Test]
+        public void OrderBy_NameThenId_InOrder_Asc()
+        {
+            string query = $"{nameof(Dto.Name)} asc,{nameof(Dto.id)} asc";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en" });
+            var dtos = new NoData.NoDataQuery<Dto>(null, null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderBy(x => x.Name).ThenBy(x => x.id));
+        }
+
+        [Test]
+        public void OrderBy_IdThenName_InOrder_Asc()
+        {
+            string query = $"{nameof(Dto.id)} asc,{nameof(Dto.Name)} asc";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en" });
+            var dtos = new NoData.NoDataQuery<Dto>(null, null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderBy(x => x.id).ThenBy(x => x.Name));
+        }
+
+        [Test]
+        public void OrderBy_IdThenName_InOrder_Desc()
+        {
+            string query = $"{nameof(Dto.id)} desc,{nameof(Dto.Name)} desc";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en" });
+            var dtos = new NoData.NoDataQuery<Dto>(null, null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderByDescending(x => x.id).ThenByDescending(x => x.Name));
+        }
+
+        [Test]
+        public void OrderBy_IdThenId_InOrder()
+        {
+            string query = $"{nameof(Dto.id)} asc,{nameof(Dto.id)} asc";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en" });
+            var dtos = new NoData.NoDataQuery<Dto>(null, null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderBy(x => x.id));
+        }
+
+        [Test]
+        public void OrderBy_IdThenId_InOrder_Desc()
+        {
+            string query = $"{nameof(Dto.id)} desc,{nameof(Dto.id)} desc";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en" });
+            var dtos = new NoData.NoDataQuery<Dto>(null, null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderByDescending(x => x.id));
+        }
+
+        [Test]
+        public void OrderBy_IdAscThenIdDesc_InOrder_Asc()
+        {
+            string query = $"{nameof(Dto.id)} asc,{nameof(Dto.id)} desc";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en" });
+            var dtos = new NoData.NoDataQuery<Dto>(null, null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderBy(x => x.id));
+        }
+
+        [Test]
+        public void OrderBy_IdThenName_InOrder_Default_Asc()
+        {
+            string query = $"{nameof(Dto.id)},{nameof(Dto.Name)}";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en" });
+            var dtos = new NoData.NoDataQuery<Dto>(null, null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderBy(x => x.id).ThenBy(x => x.Name));
+        }
+
+        [Test]
+        public void OrderBy_DtoChildId_InOrder_Default()
+        {
+            string query = $"{nameof(Dto.favorite)}/{nameof(DtoChild.id)}";
+            var dtoEnum = Enumerable.Range(0, 100).Select(x => new Dto { id = x, Name = (x % 3).ToString(), region_code = "en", favorite = new DtoChild { id = x % 5 } });
+            var dtos = new NoData.NoDataQuery<Dto>(nameof(Dto.favorite), null, null, query).ApplyQueryable(dtoEnum.AsQueryable()).ToList();
+
+            Assert.AreEqual(dtos, dtos.OrderBy(x => x.favorite.id));
+        }
     }
 }

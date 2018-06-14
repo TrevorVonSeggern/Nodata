@@ -39,8 +39,6 @@ namespace NoData.QueryParser.ParsingTools
                 throw new ArgumentException(invalidQueryText);
             else if (clause.Representation == TInfo.ListOfExpands || clause.Representation == TInfo.ListOfSortings)
             {
-                if (clause.Children.SingleOrDefault() is null)
-                    throw new ArgumentException("Only one property is allowed for an order by clause.");
                 foreach (var child in clause.Children.Select(x => x.Item2))
                     AddToClause(child);
             }
@@ -85,9 +83,9 @@ namespace NoData.QueryParser.ParsingTools
         public static Expression GetOrderByExpression(Expression dto, PathToProperty sortPath)
         {
             Expression memberExpression = dto;
-            sortPath.Traverse(x => memberExpression = Expression.MakeMemberAccess(memberExpression, dto.Type.GetProperty(x.Value.PropertyName)));
+            sortPath.Traverse(x => memberExpression = Expression.PropertyOrField(memberExpression, x.Value.PropertyName));
 
-            var property = dto.Type.GetProperty(sortPath.Property.Name);
+            var property = memberExpression.Type.GetProperty(sortPath.Property.Name);
             var propertyAccess = Expression.MakeMemberAccess(memberExpression, property);
 
             return propertyAccess;
