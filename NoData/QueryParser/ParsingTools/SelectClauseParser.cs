@@ -64,29 +64,6 @@ namespace NoData.QueryParser.ParsingTools
             return new PathToProperty(edges, propertyName);
         }
 
-        public static Path PathFromExpandItem(QueueItem addition, NoData.Graph.Graph graph, Type RootQueryType)
-        {
-            // add to path list.
-            var edges = new List<Edge>();
-            void traverseExpandTree(Vertex from, QueueItem parsedSelection)
-            {
-                if (parsedSelection?.Root?.Value.Representation != TInfo.ExpandProperty) return;
-                if (!parsedSelection.Children.Any())
-                    return;
-
-                // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
-                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == parsedSelection.Root.Value.Value);
-                if (edge is null)
-                    return;
-                edges.Add(edge);
-                foreach (var child in parsedSelection.Children)
-                    traverseExpandTree(edge.To, child.Item2);
-            }
-            var rootQueryVertex = graph.VertexContainingType(RootQueryType);
-            traverseExpandTree(rootQueryVertex, addition);
-            return new Path(edges);
-        }
-
         public void AddToClause(QueueItem clause)
         {
             if (clause is null || (clause.Representation != TInfo.ListOfExpands && clause.Representation != TInfo.ExpandProperty))
