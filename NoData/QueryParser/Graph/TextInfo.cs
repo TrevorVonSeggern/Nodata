@@ -140,7 +140,6 @@ namespace NoData.QueryParser.Graph
 
 
         public TextInfo() { }
-        public TextInfo(Token token, Type type) : this(token) { Type = type; }
         public TextInfo(Token token)
         {
             Value = token.Value;

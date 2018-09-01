@@ -7,5 +7,5 @@
         ".vscode": true,
     },
     "dotnet-test-explorer.testProjectPath": "NoData.Tests",
-   "editor.formatOnSave": true,
+    "editor.formatOnSave": true
 }
