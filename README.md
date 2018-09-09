@@ -1,3 +1,5 @@
+This project has (at least for recent future) moved to GitLab. https://gitlab.com/tvo/Nodata
+
 # NOData
 Not only data, but a queryable interface!
 ![TravisCI Badge](https://travis-ci.org/TrevorVonSeggern/Nodata.svg?branch=master)
