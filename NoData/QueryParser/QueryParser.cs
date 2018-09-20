@@ -1,17 +1,19 @@
-﻿using NoData.Internal.TreeParser.Tokenizer;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using NoData.Graph.Base;
+using Graph;
 using System.Linq.Expressions;
+using NoData.Internal.TreeParser.Tokenizer;
 using NoData.QueryParser.ParsingTools;
 using NoData.QueryParser.ParsingTools.Groupings;
-using NoData.Graph;
+using NoData.GraphImplementations.Schema;
+
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using ParserVertex = NoData.GraphImplementations.QueryParser.Vertex;
 
 namespace NoData.QueryParser
 {
-    internal class QueryParser<TRootVertex>
+    public class QueryParser<TRootVertex>
     {
         public bool IsParsed { get; private set; }
         private static readonly Type RootQueryType = typeof(TRootVertex);
@@ -22,11 +24,11 @@ namespace NoData.QueryParser
         private OrderByClauseParser<TRootVertex> OrderBy { get; set; }
 
         private readonly IEnumerable<string> ClassProperties;
-        private readonly NoData.Graph.Graph _Graph;
+        private readonly GraphSchema _Graph;
 
-        private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new Graph.Vertex(t))).ToList();
+        private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new ParserVertex(t))).ToList();
 
-        public QueryParser(QueryParameters parameters, NoData.Graph.Graph graph)
+        public QueryParser(QueryParameters parameters, GraphSchema graph)
         {
             IsParsed = false;
 
@@ -83,8 +85,8 @@ namespace NoData.QueryParser
                 throw new Exception("Need to parse before the this is available.");
         }
 
-        private NoData.Graph.Tree _selectionTree { get; set; }
-        public NoData.Graph.Tree SelectionTree
+        private Tree _selectionTree { get; set; }
+        public Tree SelectionTree
         {
             get
             {
@@ -92,7 +94,7 @@ namespace NoData.QueryParser
                 if (_selectionTree is null)
                 {
                     var rootQueryVertex = _Graph.VertexContainingType(RootQueryType);
-                    _selectionTree = NoData.Graph.Tree.CreateFromPathsTree(rootQueryVertex, Expand.Result.Where(p => p.Edges.Any()), Select.Result);
+                    _selectionTree = Tree.CreateFromPathsTree(rootQueryVertex, Expand.Result.Where(p => p.Edges.Any()), Select.Result);
                 }
                 return _selectionTree;
             }

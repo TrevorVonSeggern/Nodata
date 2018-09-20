@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NoData.Graph;
-using NoData.Graph.Base;
-using NoData.QueryParser.Graph;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using TInfo = NoData.QueryParser.Graph.TextInfo;
+using Graph;
+using NoData.GraphImplementations;
+using NoData.GraphImplementations.QueryParser;
+
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using ParserVertex = NoData.GraphImplementations.QueryParser.Vertex;
+using ParserEdge = NoData.GraphImplementations.QueryParser.Edge;
 
 namespace NoData.QueryParser.ParsingTools
 {
@@ -35,10 +37,10 @@ namespace NoData.QueryParser.ParsingTools
                 and.Text = "and";
                 and.Value = TextInfo.LogicalComparison;
                 and.Representation = TextInfo.LogicalComparison;
-                var rootAnd = new NoData.QueryParser.Graph.Vertex(and);
+                var rootAnd = new ParserVertex(and);
                 var childrenWithEdges = new[]{
-                    ITuple.Create(new Graph.Edge(rootAnd, clause.Root), clause),
-                    ITuple.Create(new Graph.Edge(rootAnd, Result.Root), Result)
+                    ITuple.Create(new ParserEdge(rootAnd, clause.Root), clause),
+                    ITuple.Create(new ParserEdge(rootAnd, Result.Root), Result)
                 };
                 Result = new QueueItem(rootAnd, childrenWithEdges);
             }

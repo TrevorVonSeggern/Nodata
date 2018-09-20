@@ -1,9 +1,12 @@
-﻿using NoData.Graph.Base;
+﻿using Graph;
 using System;
 using System.Collections.Generic;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using TInfo = NoData.QueryParser.Graph.TextInfo;
-using TGrouping = NoData.Graph.Base.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.QueryParser.Graph.Tree>, NoData.Graph.Base.ITuple<NoData.QueryParser.Graph.Tree, int>>>;
+using System.Linq;
+using NoData.GraphImplementations.QueryParser;
+
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
+using TGrouping = Graph.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, Graph.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
 
 namespace NoData.QueryParser.ParsingTools.Groupings
 {
@@ -15,19 +18,19 @@ namespace NoData.QueryParser.ParsingTools.Groupings
         {
             yield return Create(TInfo.Inverse + $"({TInfo.BooleanValue}|{TInfo.ExpandProperty})", list =>
             {
-                var root = new Graph.Vertex(new TInfo { Value = "!", Representation = TInfo.BooleanValue });
+                var root = new Vertex(new TInfo { Value = "!", Representation = TInfo.BooleanValue });
                 var child = list[1];
-                var edge = new Graph.Edge(root, child.Root);
+                var edge = new Edge(root, child.Root);
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 1);
             });
 
             ITuple<QueueItem, int> valueItemValue(IList<QueueItem> list)
             {
-                var root = new Graph.Vertex(new TInfo { Value = list[1].Root.Value.Representation, Text = list[1].Root.Value.Text, Representation = TInfo.BooleanValue });
+                var root = new Vertex(new TInfo { Value = list[1].Root.Value.Representation, Text = list[1].Root.Value.Text, Representation = TInfo.BooleanValue });
                 var left = list[0];
                 var right = list[2];
-                var edgeLeft = new Graph.Edge(root, left.Root);
-                var edgeRight = new Graph.Edge(root, right.Root);
+                var edgeLeft = new Edge(root, left.Root);
+                var edgeRight = new Edge(root, right.Root);
                 return ITuple.Create(new QueueItem(root, new[] {
                     ITuple.Create(edgeLeft, left),
                     ITuple.Create(edgeRight, right),

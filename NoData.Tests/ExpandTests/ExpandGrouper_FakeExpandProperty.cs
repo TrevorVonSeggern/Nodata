@@ -1,22 +1,23 @@
-using NUnit.Framework;
 using NoData.Tests.SharedExampleClasses;
 using NoData.QueryParser.ParsingTools;
 using System.Collections.Generic;
-using QueueItem = NoData.QueryParser.Graph.Tree;
 using NoData.Internal.TreeParser.Tokenizer;
 using System.Linq;
 using NoData.QueryParser.ParsingTools.Groupings;
+using Xunit;
+
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using NoData.GraphImplementations.QueryParser;
 
 namespace NoData.Tests.ExpandTests
 {
-    [TestFixture]
     public class ExpandGrouper_FakeExpandProperty
     {
 
-        private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new NoData.QueryParser.Graph.Vertex(t))).ToList();
+        private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new Vertex(t))).ToList();
         private readonly IEnumerable<string> ClassProperties = NoData.Utility.ClassInfoCache.GetOrAdd(typeof(Dto)).PropertyNames;
 
-        [Test]
+        [Fact]
         public void ExpandGrouper_CanGroupExpandPropertyCorrectly()
         {
             // setup
@@ -32,7 +33,7 @@ namespace NoData.Tests.ExpandTests
             Assert.False(parsed.IsFakeExpandProperty());
         }
 
-        [Test]
+        [Fact]
         public void ExpandGrouper_CanGroupFakeExpandPropertyCorrectly()
         {
             // setup
@@ -55,7 +56,7 @@ namespace NoData.Tests.ExpandTests
             Assert.NotNull(parsed);
             Assert.NotNull(parsed.Root);
             Assert.NotNull(parsed.Children);
-            Assert.NotZero(parsed.Children.Count());
+            Assert.NotEmpty(parsed.Children);
             foreach (var child in parsed.Children.Select(x => x.Item2))
             {
                 Assert.True(child.IsPropertyAccess());

@@ -1,11 +1,10 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using NoData.Tests.SharedExampleClasses;
+using Xunit;
 
 namespace NoData.Tests.FilterTests
 {
-    [TestFixture]
     public class FilterPropertyIgnoreTest
     {
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
@@ -60,16 +59,16 @@ namespace NoData.Tests.FilterTests
             }
         }
 
-        [Test]
+        [Fact]
         public void FilterExpand_Deserialized_SelectNameIdAndNameOfPartner_SelectInsideExpand_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>("partner($filter=Name eq 'Jane')", null, "Name");
+            var filter = new NoData.NoDataQueryBuilder<Dto>("partner($filter=Name eq 'Jane')", null, "Name");
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is an array");
             Assert.True(serialized.Contains("]"), "is an array");
 
-            Assert.True(serialized.Contains("Name"));
+            Assert.Contains("Name", serialized);
             Assert.True(serialized.Contains("John"), "Name is selected and should appear.");
             Assert.True(serialized.Contains("Jane"), "Name is selected and should appear.");
 

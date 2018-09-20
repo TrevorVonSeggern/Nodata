@@ -1,0 +1,11 @@
+using System.Collections.Generic;
+
+namespace NoData.Tests.SharedExampleClasses.Database.Entity
+{
+	public class GrandChild
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public string Region_code { get; set; }
+	}
+}

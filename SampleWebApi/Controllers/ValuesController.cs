@@ -66,12 +66,12 @@ namespace nodata.Controllers
 
         // GET api/values
         [HttpGet]
-        public string Get([FromQuery] NoDataQuery<Dto> f)
+        public string Get([FromServices] NoDataQueryBuilder<Dto> f)
         {
             string response = "";
             try
             {
-                response =  f.JsonResult(ParentCollection.AsQueryable());
+                response = f.JsonResult(ParentCollection.AsQueryable());
             }
             catch (Exception e)
             {

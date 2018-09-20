@@ -1,14 +1,13 @@
-using NoData.Graph.Base;
-using NUnit.Framework;
+using Graph;
 using NoData.Tests.SharedExampleClasses;
+using Xunit;
 
 namespace NoData.Tests.BloomFilterTests
 {
 
-    [TestFixture]
     public class BloomFilterTests
     {
-        [Test]
+        [Fact]
         public void Bloom_Nothing_PropertyDoesntExist_Success()
         {
             var filter = new BloomFilter();
@@ -16,7 +15,7 @@ namespace NoData.Tests.BloomFilterTests
             Assert.False(filter.PossiblyExists(item));
         }
 
-        [Test]
+        [Fact]
         public void Bloom_AddToBloom_PropertyExist_Success()
         {
             var filter = new BloomFilter();
@@ -25,7 +24,7 @@ namespace NoData.Tests.BloomFilterTests
             Assert.True(filter.PossiblyExists(item));
         }
 
-        [Test]
+        [Fact]
         public void Bloom_AddToBloom_PropertyDoesntExist_Success()
         {
             var filter = new BloomFilter();
@@ -36,7 +35,7 @@ namespace NoData.Tests.BloomFilterTests
             Assert.False(filter.PossiblyExists(item2));
         }
 
-        [Test]
+        [Fact]
         public void Bloom_SamePropertiesAdded_DuplicateExistsInFilter_Success()
         {
             var filter = new BloomFilter();
@@ -48,7 +47,7 @@ namespace NoData.Tests.BloomFilterTests
             Assert.True(filter.PossiblyExists(item2));
         }
 
-        [Test]
+        [Fact]
         public void Bloom_SameProperties_DuplicateExistsInFilter_Success()
         {
             var filter = new BloomFilter();

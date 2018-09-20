@@ -4,7 +4,6 @@
         "**/obj": true,
         "LICENSE": true,
         ".travis.yml": true,
-        ".vscode": true,
     },
     "dotnet-test-explorer.testProjectPath": "NoData.Tests",
     "editor.formatOnSave": true

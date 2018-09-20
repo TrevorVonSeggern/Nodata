@@ -1,16 +1,17 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using NoData.GraphImplementations.Schema;
 
 namespace NoData
 {
     public class DynamicContractResolver : DefaultContractResolver
     {
-        public readonly Graph.Graph Graph;
+        public readonly GraphSchema Graph;
 
-        public DynamicContractResolver(Graph.Graph graph)
+        public DynamicContractResolver(GraphSchema graph)
         {
             Graph = graph;
         }

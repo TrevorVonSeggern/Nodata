@@ -1,11 +1,10 @@
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 using System.Linq;
 using NoData.Tests.SharedExampleClasses;
 
 namespace NoData.Tests.SelectTests
 {
-    [TestFixture]
     public class SelectPropertyIgnoreTest
     {
 
@@ -61,161 +60,182 @@ namespace NoData.Tests.SelectTests
             }
         }
 
-        [Test]
+        public class DtoWithNullPartnerId
+        {
+            public int id { get; set; }
+            public string Name { get; set; }
+            public string region_code { get; set; }
+            public int? partnerId { get; set; }
+        }
+
+        [Fact]
+        public void Select_Deserialized_Null_PartnerIdExists_Success()
+        {
+            var filter = new NoData.NoDataQueryBuilder<DtoWithNullPartnerId>(null, null, null);
+            var input = new[] { new DtoWithNullPartnerId { partnerId = 1 } };
+            var serialized = filter.JsonResult(input.AsQueryable());
+            Assert.NotNull(serialized);
+            Assert.Contains("[", serialized);
+            Assert.Contains("]", serialized);
+
+            Assert.Contains("1", serialized);
+        }
+
+        [Fact]
         public void Select_Deserialized_SelectName_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>(null, null, "Name");
+            var filter = new NoData.NoDataQueryBuilder<Dto>(null, null, "Name");
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
-            Assert.True(serialized.Contains("["), "is an array");
-            Assert.True(serialized.Contains("]"), "is an array");
+            Assert.Contains("[", serialized);
+            Assert.Contains("]", serialized);
 
-            Assert.True(serialized.Contains("Name"));
-            Assert.True(serialized.Contains("John"), "Name is selected and should appear.");
-            Assert.True(serialized.Contains("Jane"), "Name is selected and should appear.");
+            Assert.Contains("Name", serialized);
+            Assert.Contains("John", serialized);
+            Assert.Contains("Jane", serialized);
 
-            Assert.False(serialized.Contains("id"), "id ");
-            Assert.False(serialized.Contains("1"));
-            Assert.False(serialized.Contains("2"));
+            Assert.DoesNotContain("id", serialized);
+            Assert.DoesNotContain("1", serialized);
+            Assert.DoesNotContain("2", serialized);
 
-            Assert.False(serialized.Contains("region_code"), "region_code is not selected");
-            Assert.False(serialized.Contains("en"), "region_code is not selected");
-            Assert.False(serialized.Contains("en"), "region_code is not selected");
+            Assert.DoesNotContain("region_code", serialized);
+            Assert.DoesNotContain("en", serialized);
+            Assert.DoesNotContain("en", serialized);
 
-            Assert.False(serialized.Contains("partner"), "not expanded on partner");
-            Assert.False(serialized.Contains("children"), "not expanded on children");
-            Assert.False(serialized.Contains("favorite"), "not expanded on favorite");
-            Assert.False(serialized.Contains("null"), "Correlates to navigation properties that are serialized, but have a null value when they should not be serialized.");
+            Assert.DoesNotContain("partner", serialized);
+            Assert.DoesNotContain("children", serialized);
+            Assert.DoesNotContain("favorite", serialized);
+            Assert.DoesNotContain("null", serialized);
         }
 
-        [Test]
+        [Fact]
         public void SelectExpand_Deserialized_ExpandPartnerSelectId_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>("partner", null, "id");
+            var filter = new NoData.NoDataQueryBuilder<Dto>("partner", null, "id");
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
-            Assert.True(serialized.Contains("["), "is an array");
-            Assert.True(serialized.Contains("]"), "is an array");
+            Assert.Contains("[", serialized);
+            Assert.Contains("]", serialized);
 
-            Assert.True(serialized.Contains("Name"), "Name should appear in the partner object.");
-            Assert.True(serialized.Contains("John"), "The partners name, John, should not be limited");
-            Assert.True(serialized.Contains("Jane"), "The partners name, Jane, should not be limited.");
+            Assert.Contains("Name", serialized);
+            Assert.Contains("John", serialized);
+            Assert.Contains("Jane", serialized);
 
-            Assert.True(serialized.Contains("id"), "id is selected.");
-            Assert.True(serialized.Contains("1"), "id is selected. Johns id should appear.");
-            Assert.True(serialized.Contains("2"), "id is selected. Janes Id should appear.");
-            Assert.False(serialized.Contains("10"), "children ids should not appear upon which they are not expanded.");
+            Assert.Contains("id", serialized);
+            Assert.Contains("1", serialized);
+            Assert.Contains("2", serialized);
+            Assert.DoesNotContain("10", serialized);
 
-            Assert.True(serialized.Contains("partner"), "Expanded on partner");
-            Assert.False(serialized.Contains("children"), "not expanded on children");
-            Assert.False(serialized.Contains("favorite"), "not expanded on favorite");
-            Assert.False(serialized.Contains("null"), "Correlates to navigation properties that are serialized, but have a null value when they should not be serialized.");
+            Assert.Contains("partner", serialized);
+            Assert.DoesNotContain("children", serialized);
+            Assert.DoesNotContain("favorite", serialized);
+            Assert.DoesNotContain("null", serialized);
         }
 
-        [Test]
+        [Fact]
         public void SelectExpand_Deserialized_ExpandChildren_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>("children", null, "id");
+            var filter = new NoData.NoDataQueryBuilder<Dto>("children", null, "id");
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
-            Assert.True(serialized.Contains("["), "is an array");
-            Assert.True(serialized.Contains("]"), "is an array");
+            Assert.Contains("[", serialized);
+            Assert.Contains("]", serialized);
 
-            Assert.True(serialized.Contains("Name"), "Name should appear in children objects.");
-            Assert.False(serialized.Contains("\"John\""), "Name is not selected.");
-            Assert.False(serialized.Contains("\"Jane\""), "Name is not selected.");
+            Assert.Contains("Name", serialized);
+            Assert.DoesNotContain(serialized, ("\"John\""));
+            Assert.DoesNotContain(serialized, ("\"Jane\""));
 
-            Assert.True(serialized.Contains("id"), "id is selected.");
-            Assert.True(serialized.Contains("1"), "id is selected. Johns id should appear.");
-            Assert.True(serialized.Contains("2"), "id is selected. Janes Id should appear.");
-            Assert.True(serialized.Contains("10"), "children are expanded. Their ids should appear.");
+            Assert.Contains("id", serialized);
+            Assert.Contains("1", serialized);
+            Assert.Contains("2", serialized);
+            Assert.Contains("10", serialized);
 
-            Assert.True(serialized.Contains("children"), "expanded on children");
-            Assert.False(serialized.Contains("partner"), "not expanded on partner");
-            Assert.False(serialized.Contains("favorite"), "not expanded on favorite");
-            Assert.False(serialized.Contains("null"), "Correlates to navigation properties that are serialized, but have a null value when they should not be serialized.");
+            Assert.Contains("children", serialized);
+            Assert.DoesNotContain("partner", serialized);
+            Assert.DoesNotContain("favorite", serialized);
+            Assert.DoesNotContain("null", serialized);
         }
 
 
-        [Test]
+        [Fact]
         public void SelectExpand_Deserialized_SelectNameAndNameOfPartner_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>("partner", null, "Name,partner/Name");
+            var filter = new NoData.NoDataQueryBuilder<Dto>("partner", null, "Name,partner/Name");
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
-            Assert.True(serialized.Contains("["), "is an array");
-            Assert.True(serialized.Contains("]"), "is an array");
+            Assert.Contains("[", serialized);
+            Assert.Contains("]", serialized);
 
-            Assert.True(serialized.Contains("Name"));
-            Assert.True(serialized.Contains("John"), "Name is selected and should appear.");
-            Assert.True(serialized.Contains("Jane"), "Name is selected and should appear.");
+            Assert.Contains("Name", serialized);
+            Assert.Contains("John", serialized);
+            Assert.Contains("Jane", serialized);
 
-            Assert.False(serialized.Contains("id"), "id ");
-            Assert.False(serialized.Contains("1"));
-            Assert.False(serialized.Contains("2"));
+            Assert.DoesNotContain("id", serialized);
+            Assert.DoesNotContain("1", serialized);
+            Assert.DoesNotContain("2", serialized);
 
-            Assert.False(serialized.Contains("region_code"), "region_code is not selected");
-            Assert.False(serialized.Contains("en"), "region_code is not selected");
-            Assert.False(serialized.Contains("en"), "region_code is not selected");
+            Assert.DoesNotContain("region_code", serialized);
+            Assert.DoesNotContain("en", serialized);
+            Assert.DoesNotContain("en", serialized);
 
-            Assert.True(serialized.Contains("partner"), "Expanded on partner");
-            Assert.False(serialized.Contains("children"), "not expanded on children");
-            Assert.False(serialized.Contains("favorite"), "not expanded on favorite");
-            Assert.False(serialized.Contains("null"), "Correlates to navigation properties that are serialized, but have a null value when they should not be serialized.");
+            Assert.Contains("partner", serialized);
+            Assert.DoesNotContain("children", serialized);
+            Assert.DoesNotContain("favorite", serialized);
+            Assert.DoesNotContain("null", serialized);
         }
 
-        [Test]
+        [Fact]
         public void SelectExpand_Deserialized_SelectNameAndNameOfPartner_SelectInsideExpand_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>("partner($select=Name)", null, "Name");
+            var filter = new NoData.NoDataQueryBuilder<Dto>("partner($select=Name)", null, "Name");
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
-            Assert.True(serialized.Contains("["), "is an array");
-            Assert.True(serialized.Contains("]"), "is an array");
+            Assert.Contains("[", serialized);
+            Assert.Contains("]", serialized);
 
-            Assert.True(serialized.Contains("Name"));
-            Assert.True(serialized.Contains("John"), "Name is selected and should appear.");
-            Assert.True(serialized.Contains("Jane"), "Name is selected and should appear.");
+            Assert.Contains("Name", serialized);
+            Assert.Contains("John", serialized);
+            Assert.Contains("Jane", serialized);
 
-            Assert.False(serialized.Contains("id"), "id ");
-            Assert.False(serialized.Contains("1"));
-            Assert.False(serialized.Contains("2"));
+            Assert.DoesNotContain("id", serialized);
+            Assert.DoesNotContain("1", serialized);
+            Assert.DoesNotContain("2", serialized);
 
-            Assert.False(serialized.Contains("region_code"), "region_code is not selected");
-            Assert.False(serialized.Contains("en"), "region_code is not selected");
-            Assert.False(serialized.Contains("en"), "region_code is not selected");
+            Assert.DoesNotContain("region_code", serialized);
+            Assert.DoesNotContain("en", serialized);
+            Assert.DoesNotContain("en", serialized);
 
-            Assert.True(serialized.Contains("partner"), "Expanded on partner");
-            Assert.False(serialized.Contains("children"), "not expanded on children");
-            Assert.False(serialized.Contains("favorite"), "not expanded on favorite");
-            Assert.False(serialized.Contains("null"), "Correlates to navigation properties that are serialized, but have a null value when they should not be serialized.");
+            Assert.Contains("partner", serialized);
+            Assert.DoesNotContain("children", serialized);
+            Assert.DoesNotContain("favorite", serialized);
+            Assert.DoesNotContain("null", serialized);
         }
 
-        [Test]
+        [Fact]
         public void SelectExpand_Deserialized_SelectNameIdAndNameOfPartner_SelectInsideExpand_Success()
         {
-            var filter = new NoData.NoDataQuery<Dto>("partner($select=Name,id)", null, "Name,id");
+            var filter = new NoData.NoDataQueryBuilder<Dto>("partner($select=Name,id)", null, "Name,id");
             var serialized = filter.JsonResult(ParentCollection.AsQueryable());
             Assert.NotNull(serialized);
-            Assert.True(serialized.Contains("["), "is an array");
-            Assert.True(serialized.Contains("]"), "is an array");
+            Assert.Contains("[", serialized);
+            Assert.Contains("]", serialized);
 
-            Assert.True(serialized.Contains("Name"));
-            Assert.True(serialized.Contains("John"), "Name is selected and should appear.");
-            Assert.True(serialized.Contains("Jane"), "Name is selected and should appear.");
+            Assert.Contains("Name", serialized);
+            Assert.Contains("John", serialized);
+            Assert.Contains("Jane", serialized);
 
-            Assert.True(serialized.Contains("id"), "id ");
-            Assert.True(serialized.Contains("1"));
-            Assert.True(serialized.Contains("2"));
+            Assert.Contains("id", serialized);
+            Assert.Contains("1", serialized);
+            Assert.Contains("2", serialized);
 
-            Assert.False(serialized.Contains("region_code"), "region_code is not selected");
-            Assert.False(serialized.Contains("en"), "region_code is not selected");
-            Assert.False(serialized.Contains("en"), "region_code is not selected");
+            Assert.DoesNotContain("region_code", serialized);
+            Assert.DoesNotContain("en", serialized);
+            Assert.DoesNotContain("en", serialized);
 
-            Assert.True(serialized.Contains("partner"), "Expanded on partner");
-            Assert.False(serialized.Contains("children"), "not expanded on children");
-            Assert.False(serialized.Contains("favorite"), "not expanded on favorite");
-            Assert.False(serialized.Contains("null"), "Correlates to navigation properties that are serialized, but have a null value when they should not be serialized.");
+            Assert.Contains("partner", serialized);
+            Assert.DoesNotContain("children", serialized);
+            Assert.DoesNotContain("favorite", serialized);
+            Assert.DoesNotContain("null", serialized);
         }
     }
 }
