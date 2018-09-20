@@ -1,7 +1,7 @@
-﻿using NoData.Graph.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using QueueItem = NoData.QueryParser.Graph.Tree;
+using Graph;
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 
 namespace NoData.QueryParser.ParsingTools
 {

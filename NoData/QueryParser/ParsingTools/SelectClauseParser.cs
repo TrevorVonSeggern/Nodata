@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using NoData.Graph;
-using NoData.Graph.Base;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using TInfo = NoData.QueryParser.Graph.TextInfo;
+using Graph;
+using NoData.GraphImplementations.Schema;
+
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
@@ -16,12 +17,12 @@ namespace NoData.QueryParser.ParsingTools
 
     class SelectClauseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IEnumerable<PathToProperty>>, IAcceptAdditions
     {
-        private readonly NoData.Graph.Graph Graph;
+        private readonly GraphSchema Graph;
         public override IEnumerable<PathToProperty> Result => ResultList;
         private List<PathToProperty> ResultList = new List<PathToProperty>();
 
 
-        public SelectClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, NoData.Graph.Graph graph) : base(tokenFunc, query)
+        public SelectClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph) : base(tokenFunc, query)
         {
             Graph = graph;
         }
@@ -37,11 +38,11 @@ namespace NoData.QueryParser.ParsingTools
                 QueryString += "," + clause;
         }
 
-        public static PathToProperty PathAndPropertyFromExpandItem(QueueItem addition, NoData.Graph.Graph graph, Type RootQueryType)
+        public static PathToProperty PathAndPropertyFromExpandItem(QueueItem addition, GraphSchema graph, Type RootQueryType)
         {
             // add to path list.
             var edges = new List<Edge>();
-            ClassProperty propertyName = null;
+            Property propertyName = null;
             void traverseExpandTree(Vertex from, QueueItem parsedSelection)
             {
                 if (parsedSelection?.Root?.Value.Representation != TInfo.ExpandProperty) return;

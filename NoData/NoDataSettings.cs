@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CodeTools;
 
 namespace NoData
 {
@@ -11,6 +12,7 @@ namespace NoData
         AllowFilteringOnNonExplicitlyExpandedExpansions,
     }
 
+    [Immutable]
     public class NoDataSettings
     {
     }

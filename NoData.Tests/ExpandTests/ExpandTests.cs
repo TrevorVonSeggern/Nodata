@@ -1,11 +1,10 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
 using NoData.Tests.SharedExampleClasses;
+using Xunit;
 
 namespace NoData.Tests.ExpandTests
 {
-    [TestFixture]
     public class ExpandTest
     {
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
@@ -61,40 +60,41 @@ namespace NoData.Tests.ExpandTests
             }
         }
 
-        [TestCase("", 1, 2, 3, 4, 5, 6)] // returns everything.
-        [TestCase("partner", 1, 2, 3, 4, 5, 6, 1, 2)] // one expand
-        [TestCase("children", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60)]
-        [TestCase("favorite", 1, 2, 3, 4, 5, 6, 10, 40)]
-        [TestCase("favorite/favorite", 1, 2, 3, 4, 5, 6, 10, 40, 300)]
-        [TestCase("partner,children", 1, 2, 3, 4, 5, 6, 1, 2, 10, 30, 40, 50, 60)] // multiple expands.
-        [TestCase("children/partner", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60, 10, 60)]
-        [TestCase("partner,children/partner", 1, 2, 3, 4, 5, 6, 6, 1, 10, 30, 40, 50, 60, 60, 10/*, 100, 200, 300, 400, 500, 600*/)]
-        [TestCase("partner/children,partner/favorite", 1, 2, 3, 4, 5, 6, /*root*/ 1, 2, /*partner*/ 10, /*partner/children*/ 10 /*partner/favorite*/ )]
-        [TestCase("partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)] // one expand
-        [TestCase("partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)] // one expand
-        [TestCase("partner/partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)] // one expand
-        [TestCase("partner($expand=partner)", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)]
-        [TestCase("partner($expand=partner($expand=partner))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)]
-        [TestCase("partner($expand=partner($expand=partner($expand=partner)))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)]
-        [TestCase("partner($expand=partner($expand=partner($expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
-        [TestCase("partner($expand=partner;$filter=id eq 1)", 2, 1, 2)]
-        [TestCase("partner($expand=partner($expand=partner($expand=partner;$filter=id eq 1;$select=id)))", 2, 1, 2, 1, 2)]
-        [TestCase("partner($expand=partner;$filter=id eq 1;$select=id)", 2, 1, 2)]
-        [TestCase("partner($expand=partner($expand=partner($select=id;$expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
-        [TestCase("partner($select=id;$expand=partner;$filter=id eq 1)", 2, 1, 2)]
-        [TestCase("partner($select=id,Name;$expand=partner($select=id,region_code;$expand=partner($select=id;$select=id;$expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
+        [Theory]
+        [InlineData("", 1, 2, 3, 4, 5, 6)] // returns everything.
+        [InlineData("partner", 1, 2, 3, 4, 5, 6, 1, 2)] // one expand
+        [InlineData("children", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60)]
+        [InlineData("favorite", 1, 2, 3, 4, 5, 6, 10, 40)]
+        [InlineData("favorite/favorite", 1, 2, 3, 4, 5, 6, 10, 40, 300)]
+        [InlineData("partner,children", 1, 2, 3, 4, 5, 6, 1, 2, 10, 30, 40, 50, 60)] // multiple expands.
+        [InlineData("children/partner", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60, 10, 60)]
+        [InlineData("partner,children/partner", 1, 2, 3, 4, 5, 6, 6, 1, 10, 30, 40, 50, 60, 60, 10/*, 100, 200, 300, 400, 500, 600*/)]
+        [InlineData("partner/children,partner/favorite", 1, 2, 3, 4, 5, 6, /*root*/ 1, 2, /*partner*/ 10, /*partner/children*/ 10 /*partner/favorite*/ )]
+        [InlineData("partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)] // one expand
+        [InlineData("partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)] // one expand
+        [InlineData("partner/partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)] // one expand
+        [InlineData("partner($expand=partner)", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner($expand=partner)))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner($expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner;$filter=id eq 1)", 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner($expand=partner;$filter=id eq 1;$select=id)))", 2, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner;$filter=id eq 1;$select=id)", 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner($select=id;$expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
+        [InlineData("partner($select=id;$expand=partner;$filter=id eq 1)", 2, 1, 2)]
+        [InlineData("partner($select=id,Name;$expand=partner($select=id,region_code;$expand=partner($select=id;$select=id;$expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
         public void Expand_Expression(string expression, params int[] expectedIds)
         {
-            var ft = new NoData.NoDataQuery<Dto>(expression, null, null);
-            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
+            var ft = new NoData.NoDataQueryBuilder<Dto>(expression, null, null);
+            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection));
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
             Assert.NotNull(result);
 
-            Assert.AreEqual(expectedIds.Length, resultIds.Count);
+            Assert.Equal(expectedIds.Length, resultIds.Count);
             foreach (var resultId in resultIds)
-                Assert.True(expectedIds.Contains(resultId));
+                Assert.Contains(resultId, expectedIds);
         }
     }
 }

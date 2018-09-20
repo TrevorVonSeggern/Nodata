@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Graph</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>Trevor Von Seggern</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CodeTools\CodeTools.csproj"/>
+  </ItemGroup>
+
+</Project>

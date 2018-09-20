@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using NoData.Graph.Base;
-using NoData.QueryParser.Graph;
+using Graph;
+using NoData.GraphImplementations.QueryParser;
 using NoData.QueryParser.ParsingTools.Groupers;
 
 namespace NoData.QueryParser.ParsingTools

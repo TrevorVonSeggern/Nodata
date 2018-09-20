@@ -2,22 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using NoData.Graph.Base;
-using NoData.QueryParser.Graph;
+using CodeTools;
+using NoData.GraphImplementations.QueryParser;
+using GraphSchema = NoData.GraphImplementations.Schema.GraphSchema;
 
 namespace NoData.QueryParser.ParsingTools
 {
+    [Immutable]
     public static class TreeExpressionExtensions
     {
         public static bool IsPropertyAccess(this Tree tree) => tree.Root.Value.Representation == TextInfo.ExpandProperty || tree.Root.Value.Representation == TextInfo.ClassProperty;
         public static bool IsDirectPropertyAccess(this Tree tree) => tree.IsPropertyAccess() && !tree.Children.Any();
-        public static bool IsCollectionPropertyAccess(this Tree tree, NoData.Graph.Graph graph) => tree.IsPropertyAccess();
+        public static bool IsCollectionPropertyAccess(this Tree tree, GraphSchema graph) => tree.IsPropertyAccess();
         public static bool IsFakeExpandProperty(this Tree tree) => tree.IsPropertyAccess() && tree.Root.Value.Type == typeof(TextInfo);
     }
 
+    [Immutable]
     public class FilterTreeExpressionBuilder
     {
-        public FilterTreeExpressionBuilder(NoData.Graph.Graph graph)
+        public FilterTreeExpressionBuilder(GraphSchema graph)
         {
 
         }
@@ -44,7 +47,7 @@ namespace NoData.QueryParser.ParsingTools
 
         private Expression ComparisonExpression(Tree tree, Expression dto)
         {
-            var children = new List<ITuple<Edge, Tree>>(tree.Children);
+            var children = new List<Graph.ITuple<Edge, Tree>>(tree.Children);
             if (children.Count != 2)
                 return null;
 
@@ -118,7 +121,7 @@ namespace NoData.QueryParser.ParsingTools
 
         private Expression LogicalExpression(Tree tree, Expression dto)
         {
-            var children = new List<ITuple<Edge, Tree>>(tree.Children);
+            var children = new List<Graph.ITuple<Edge, Tree>>(tree.Children);
             if (children.Count != 2) return null;
 
             var left = FilterExpression(children[0].Item2, dto);

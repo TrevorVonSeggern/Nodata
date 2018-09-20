@@ -1,11 +1,12 @@
-﻿using NoData.Graph.Base;
+﻿using Graph;
 using System;
 using System.Collections.Generic;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using TInfo = NoData.QueryParser.Graph.TextInfo;
-using TGrouping = NoData.Graph.Base.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.QueryParser.Graph.Tree>, NoData.Graph.Base.ITuple<NoData.QueryParser.Graph.Tree, int>>>;
 using System.Linq;
-using NoData.QueryParser.Graph;
+using NoData.GraphImplementations.QueryParser;
+
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
+using TGrouping = Graph.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, Graph.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
 
 namespace NoData.QueryParser.ParsingTools.Groupings
 {
@@ -16,21 +17,21 @@ namespace NoData.QueryParser.ParsingTools.Groupings
         public static TGrouping SortOrderProperty =
             Create($"{TInfo.ExpandProperty}({TInfo.SortOrder})?", list =>
             {
-                var root = new Graph.Vertex(new TInfo { Representation = TInfo.SortProperty });
+                var root = new Vertex(new TInfo { Representation = TInfo.SortProperty });
 
                 var expandProperty = list[0];
-                var edgeExpand = new Graph.Edge(root, expandProperty.Root);
+                var edgeExpand = new Edge(root, expandProperty.Root);
 
                 var sortDirection = list.Count == 2 ?
                                         list[1] :
-                                        new QueueItem(new NoData.QueryParser.Graph.Vertex(
+                                        new QueueItem(new Vertex(
                                             new TextInfo()
                                             {
                                                 Representation = TextInfo.SortOrder,
                                                 Value = "asc",
                                                 Text = "asc"
                                             }));
-                var edgeSort = new Graph.Edge(root, sortDirection.Root);
+                var edgeSort = new Edge(root, sortDirection.Root);
 
                 return ITuple.Create(new QueueItem(root, new[] {
                     ITuple.Create(edgeExpand, expandProperty),
@@ -44,9 +45,9 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 var filtered = list.Where(x => x.Representation == TInfo.SortProperty).ToList();
                 var children = new Queue<QueueItem>(filtered);
 
-                var root = new Graph.Vertex(new TInfo { Representation = TInfo.ListOfSortings });
-                var edges = children.Select(t => new Graph.Edge(root, t.Root));
-                var childrenItems = new List<ITuple<Graph.Edge, QueueItem>>();
+                var root = new Vertex(new TInfo { Representation = TInfo.ListOfSortings });
+                var edges = children.Select(t => new Edge(root, t.Root));
+                var childrenItems = new List<ITuple<Edge, QueueItem>>();
                 foreach (var child in children)
                     childrenItems.Add(ITuple.Create(edges.First(e => e.To == child.Root), child));
 

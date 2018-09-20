@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using NoData.Graph;
-using NoData.Graph.Base;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using TInfo = NoData.QueryParser.Graph.TextInfo;
+using Graph;
+using NoData.GraphImplementations.Schema;
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
     class OrderByClauseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IEnumerable<ITuple<PathToProperty, SortDirection>>>, IAcceptAdditions
     {
-        private readonly NoData.Graph.Graph Graph;
+        private readonly GraphSchema Graph;
         private List<ITuple<PathToProperty, SortDirection>> ResultList = new List<ITuple<PathToProperty, SortDirection>>();
         public override IEnumerable<ITuple<PathToProperty, SortDirection>> Result => ResultList;
 
-        public OrderByClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, NoData.Graph.Graph graph) : base(tokenFunc, query)
+        public OrderByClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph) : base(tokenFunc, query)
         {
             Graph = graph;
         }
