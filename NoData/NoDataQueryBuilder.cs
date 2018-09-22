@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Collections.Generic;
 using NoData.QueryParser.ParsingTools;
 using NoData.GraphImplementations.Schema;
-using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using System;
@@ -55,7 +54,6 @@ namespace NoData
                 {
                     string currentInclude = path.First();
                     func(currentInclude);
-                    query = query.Include(currentInclude);
                     foreach (var inc in path.Skip(1))
                     {
                         currentInclude += "." + inc;
@@ -64,10 +62,10 @@ namespace NoData
                 }
             }
 
-            ApplyFunc(x => query = query.Include(x));
+            // ApplyFunc(x => query = query.Include(x));
             var projectList = new List<string>();
             ApplyFunc(x => projectList.Add(x));
-            // var source = query.Include("Favorite").Include("Favorite.Favorite");
+
             var projected = query.ProjectTo<TDto>(config, null, projectList.ToArray());
 
             Load(projected);

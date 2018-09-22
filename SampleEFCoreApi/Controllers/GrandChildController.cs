@@ -44,6 +44,7 @@ namespace SampleEFCoreApi.Controllers
         {
             if (Query.Any(x => x.Id.Equals(value.Id)))
                 return;
+
             Context.GrandChildren.Add(_mapper.Map<DbModel>(value));
             Context.SaveChanges();
         }

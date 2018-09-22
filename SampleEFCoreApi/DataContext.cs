@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using SampleEFCoreApi.Database;
 
 namespace SampleEFCoreApi
@@ -7,7 +8,9 @@ namespace SampleEFCoreApi
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
+            Database.EnsureCreated();
 
+            SaveChanges();
         }
 
         public DbSet<Person> People { get; set; }
@@ -17,6 +20,8 @@ namespace SampleEFCoreApi
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Person>().HasOne(x => x.Partner);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
