@@ -1,10 +1,12 @@
-﻿using NoData.Graph.Base;
+﻿using Graph;
 using System;
 using System.Collections.Generic;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using TInfo = NoData.QueryParser.Graph.TextInfo;
-using TGrouping = NoData.Graph.Base.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.QueryParser.Graph.Tree>, NoData.Graph.Base.ITuple<NoData.QueryParser.Graph.Tree, int>>>;
 using System.Linq;
+using NoData.GraphImplementations.QueryParser;
+
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
+using TGrouping = Graph.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, Graph.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
 
 namespace NoData.QueryParser.ParsingTools.Groupings
 {
@@ -13,68 +15,43 @@ namespace NoData.QueryParser.ParsingTools.Groupings
         private static TGrouping Create(string pattern, Func<IList<QueueItem>, ITuple<QueueItem, int>> addFunc) => ITuple.Create(pattern, addFunc);
 
         public static TGrouping SortOrderProperty =
-            Create(TInfo.ExpandProperty + TInfo.SortOrder, list =>
+            Create($"{TInfo.ExpandProperty}({TInfo.SortOrder})?", list =>
             {
-                var root = new Graph.Vertex(new TInfo { Representation = TInfo.SortProperty });
+                var root = new Vertex(new TInfo { Representation = TInfo.SortProperty });
+
                 var expandProperty = list[0];
-                var edgeExpand = new Graph.Edge(root, expandProperty.Root);
-                var sortDirection = list[1];
-                var edgeSort = new Graph.Edge(root, sortDirection.Root);
+                var edgeExpand = new Edge(root, expandProperty.Root);
+
+                var sortDirection = list.Count == 2 ?
+                                        list[1] :
+                                        new QueueItem(new Vertex(
+                                            new TextInfo()
+                                            {
+                                                Representation = TextInfo.SortOrder,
+                                                Value = "asc",
+                                                Text = "asc"
+                                            }));
+                var edgeSort = new Edge(root, sortDirection.Root);
+
                 return ITuple.Create(new QueueItem(root, new[] {
-                    ITuple.Create(edgeExpand, new QueueItem(expandProperty.Root)),
-                    ITuple.Create(edgeSort, new QueueItem(sortDirection.Root)),
-                }), 1);
+                    ITuple.Create(edgeExpand, expandProperty),
+                    ITuple.Create(edgeSort, sortDirection),
+                }), list.Count - 1);
             });
 
         public static IEnumerable<TGrouping> ListOfSorting = new TGrouping[] {
-            Create(TInfo.ListOfSortings + TInfo.Comma + TInfo.SortProperty, list =>
-            {
-                var filtered = list.Where(x => x.Root.Value.Representation != TInfo.Comma).ToList();
-                var grouped = filtered[0];
-                var expand = filtered[1];
-                var children = new List<ITuple<Graph.Edge, QueueItem>>(grouped.Children)
-                {
-                    ITuple.Create(new Graph.Edge(grouped.Root, expand.Root), expand)
-                };
-
-                return ITuple.Create(new QueueItem(grouped.Root, children), 2);
-            }),
-            Create(TInfo.SortProperty + TInfo.Comma + TInfo.ListOfSortings, list =>
-            {
-                var filtered = list.Where(x => x.Root.Value.Representation != TInfo.Comma).ToList();
-                var grouped = filtered[1];
-                var expand = filtered[0];
-                var children = new List<ITuple<Graph.Edge, QueueItem>>(grouped.Children)
-                {
-                    ITuple.Create(new Graph.Edge(grouped.Root, expand.Root), expand)
-                };
-
-                return ITuple.Create(new QueueItem(grouped.Root, children), 2);
-            }),
-            Create(TInfo.ListOfSortings + TInfo.Comma + TInfo.ListOfSortings, list =>
-            {
-                var filtered = list.Where(x => x.Root.Value.Representation != TInfo.Comma).ToList();
-                var grouped = filtered[0];
-                var otherGrouped = filtered[1];
-                var children = new List<ITuple<Graph.Edge, QueueItem>>(grouped.Children);
-                foreach (var child in otherGrouped.Children)
-                    children.Add(child);
-                var raw = new List<string>();
-
-                return ITuple.Create(new QueueItem(grouped.Root, children), 2);
-            }),
             Create($"{TInfo.SortProperty}({TInfo.Comma}{TInfo.SortProperty})*", list =>
             {
                 var filtered = list.Where(x => x.Representation == TInfo.SortProperty).ToList();
                 var children = new Queue<QueueItem>(filtered);
 
-                var root = new Graph.Vertex(new TInfo { Representation = TInfo.ListOfSortings });
-                var edges = children.Select(t => new Graph.Edge(root, t.Root));
-                var childrenItems = new List<ITuple<Graph.Edge, QueueItem>>();
+                var root = new Vertex(new TInfo { Representation = TInfo.ListOfSortings });
+                var edges = children.Select(t => new Edge(root, t.Root));
+                var childrenItems = new List<ITuple<Edge, QueueItem>>();
                 foreach (var child in children)
                     childrenItems.Add(ITuple.Create(edges.First(e => e.To == child.Root), child));
 
-                return ITuple.Create(new QueueItem(root, childrenItems), (list.Count - filtered.Count) - 1);
+                return ITuple.Create(new QueueItem(root, childrenItems), list.Count - 1);
             })
         };
     }

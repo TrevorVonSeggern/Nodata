@@ -5,28 +5,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
+using Cache;
+using CodeTools;
+using Graph;
 using IBaseList = System.Collections.IEnumerable;
 
 namespace NoData.Utility
 {
     public static class ClassInfoCache
     {
-        private static IDictionary<Type, ClassInfoUtility> cache = new ConcurrentDictionary<Type, ClassInfoUtility>();
-        
+        private static ICache<ClassInfoUtility> cache = new DictionaryCache<ClassInfoUtility>();
+
         public static ClassInfoUtility GetOrAdd(Type type)
         {
-            if (cache.TryGetValue(type, out var result))
-                return result;
-            result = new ClassInfoUtility(type);
-            cache.Add(type, result);
-            return result;
+            return cache.GetOrAdd(type.FullName, () => new ClassInfoUtility(type));
         }
     }
 
-    public struct ClassInfoUtility
+    [Immutable]
+    public class ClassInfoUtility
     {
-        private static readonly IEnumerable<Type> PrimitiveTypeWhiteList = new[] {
+        private static Type GetNullableType(Type type)
+        {
+            if (Nullable.GetUnderlyingType(type) != null)
+                return type;
+            if (type?.IsPrimitive == false)
+                return type;
+            type = typeof(Nullable<>).MakeGenericType(type);
+            return type;
+        }
+
+        private IEnumerable<Type> PrimitiveTypeWhiteList => new[] {
             typeof(bool),
             typeof(byte),
             typeof(Int16),
@@ -39,7 +48,7 @@ namespace NoData.Utility
             typeof(DateTimeKind),
             typeof(DateTimeOffset),
             typeof(string),
-        };
+        }.Select(x => new Type[] { x, GetNullableType(x) }.Distinct()).SelectMany(x => x);
 
         internal ClassInfoUtility(Type t)
         {
@@ -51,11 +60,11 @@ namespace NoData.Utility
             var nonExpandProperties = NonExpandableProperties;
 
             ExpandableProperties = Properties.Where(p => !nonExpandProperties.Contains(p));
-                //(!x.PropertyType.Assembly.GetName().Name.StartsWith("System.") ||
-                //(x.PropertyType.IsNestedPublic || x.PropertyType.IsInterface))
-                //);
+            //(!x.PropertyType.Assembly.GetName().Name.StartsWith("System.") ||
+            //(x.PropertyType.IsNestedPublic || x.PropertyType.IsInterface))
+            //);
             Collections = ExpandableProperties.Where(x => typeof(IBaseList).IsAssignableFrom(x.PropertyType));
-            
+
             var collections = Collections;
 
             NavigationProperties = ExpandableProperties.Where(p => !collections.Contains(p));
@@ -66,12 +75,11 @@ namespace NoData.Utility
             CollectionNames = GetNames(Collections);
             NavigationPropertyNames = GetNames(NavigationProperties);
 
-            AccessProperties = Properties.Select(p => Graph.Base.ITuple.Create<string, Func<object, object>>(p.Name, p.GetValue))
+            AccessProperties = Properties.Select(p => ITuple.Create<string, Func<object, object>>(p.Name, p.GetValue))
                 .ToDictionary(x => x.Item1, x => x.Item2);
         }
 
         public readonly IDictionary<string, Func<object, object>> AccessProperties;
-
         public readonly IEnumerable<PropertyInfo> Properties;
         public readonly IDictionary<string, Type> PropertyAndType;
         public readonly IEnumerable<PropertyInfo> ExpandableProperties;

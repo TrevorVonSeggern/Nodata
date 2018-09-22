@@ -1,11 +1,10 @@
-using NUnit.Framework;
+using Xunit;
 using System.Collections.Generic;
 using System.Linq;
 using NoData.Tests.SharedExampleClasses;
 
 namespace NoData.Tests.SelectTests
 {
-    [TestFixture]
     public class SelectTest
     {
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
@@ -61,69 +60,67 @@ namespace NoData.Tests.SelectTests
             }
         }
 
-        [Test]
+        [Fact]
         public void Select_Blank_AllPropertiesArePresent()
         {
-            var ft = new NoData.NoDataQuery<Dto>(null, null, null);
+            var ft = new NoData.NoDataQueryBuilder<Dto>(null, null, null);
             var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
             Assert.NotNull(result);
             int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
-            Assert.AreEqual(expectedIds.Length, resultIds.Count);
+            Assert.Equal(expectedIds.Length, resultIds.Count);
             foreach (var resultId in resultIds)
-                Assert.True(expectedIds.Contains(resultId));
+                Assert.Contains(resultId, expectedIds);
 
             foreach (var dto in result)
             {
                 Assert.NotNull(dto);
-                Assert.NotNull(dto.id);
                 Assert.NotNull(dto.Name);
                 Assert.NotNull(dto.region_code);
                 Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
             }
         }
 
-        [Test]
+        [Fact]
         public void Select_id_OnlyReturnsId_Success()
         {
-            var ft = new NoData.NoDataQuery<Dto>(null, null, "id");
+            var ft = new NoData.NoDataQueryBuilder<Dto>(null, null, "id");
             var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
             Assert.NotNull(result);
             int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
-            Assert.AreEqual(expectedIds.Length, resultIds.Count);
+            Assert.Equal(expectedIds.Length, resultIds.Count);
             foreach (var resultId in resultIds)
-                Assert.True(expectedIds.Contains(resultId));
+                Assert.Contains(resultId, expectedIds);
 
             foreach (var dto in result)
             {
                 Assert.NotNull(dto);
-                Assert.NotNull(dto.id);
                 Assert.Null(dto.Name);
                 Assert.Null(dto.region_code);
                 Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
             }
         }
 
-        [Test]
+        [Fact]
         public void Select_Name_OnlyReturnsName_Success()
         {
-            var ft = new NoData.NoDataQuery<Dto>(null, null, "Name");
+            var ft = new NoData.NoDataQueryBuilder<Dto>(null, null, "Name");
             var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
             Assert.NotNull(result);
-            Assert.AreEqual(ParentCollection.Count(), resultIds.Count);
+            Assert.Equal(ParentCollection.Count(), resultIds.Count);
 
             foreach (var dto in result)
             {
                 Assert.NotNull(dto);
-                Assert.AreEqual(dto.id, 0); // int cannot be null, defaults to 0 when not selected.
+                Assert.Equal(0, dto.id); // int cannot be null, defaults to 0 when not selected.
                 Assert.NotNull(dto.Name);
                 Assert.Null(dto.region_code);
                 Assert.Null(dto.favorite);

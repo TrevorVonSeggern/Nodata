@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using NoData.Graph.Base;
+using Graph;
 
 namespace NoData.QueryParser.ParsingTools.Groupers
 {

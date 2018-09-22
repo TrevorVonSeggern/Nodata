@@ -1,29 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>NoData</PackageId>
-    <Version>0.0.3</Version>
+    <Version>0.1.0</Version>
     <Authors>Trevor Von Seggern</Authors>
   </PropertyGroup>
-
-
   <ItemGroup>
-    <Compile Remove="ExpandExpressionParser\**" />
-    <Compile Remove="FilterExpressionParser\**" />
-    <Compile Remove="Nodes\**" />
-    <EmbeddedResource Remove="ExpandExpressionParser\**" />
-    <EmbeddedResource Remove="FilterExpressionParser\**" />
-    <EmbeddedResource Remove="Nodes\**" />
-    <None Remove="ExpandExpressionParser\**" />
-    <None Remove="FilterExpressionParser\**" />
-    <None Remove="Nodes\**" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.0.3"/>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1"/>
+    <!-- <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.3"/> -->
+    <PackageReference Include="AutoMapper" Version="7.0.1"/>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.0.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-    <PackageReference Include="Roslynator.Analyzers" Version="1.8.0" />
+    <ProjectReference Include="..\Graph\Graph.csproj"/>
+    <ProjectReference Include="..\CodeTools\CodeTools.csproj"/>
+    <ProjectReference Include="..\Cache\Cache.csproj"/>
   </ItemGroup>
-
 </Project>

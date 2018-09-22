@@ -4,28 +4,27 @@ using NoData.QueryParser;
 using System.Linq.Expressions;
 using System.Collections.Generic;
 using NoData.QueryParser.ParsingTools;
+using NoData.GraphImplementations.Schema;
+using System;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace NoData
 {
     public class NoDataQuery<TDto> : QueryParameters where TDto : class, new()
     {
-        [JsonIgnore]
-        private static readonly Graph.Graph baseGraph = Graph.Graph.CreateFromGeneric<TDto>();
-        [JsonIgnore]
-        private Graph.Graph graph;
-        [JsonIgnore]
-        internal IQueryable<TDto> query;
-        [JsonIgnore]
-        QueryParser<TDto> QueryParser;
+        private static readonly GraphSchema baseGraph = GraphSchema.CreateFromGeneric<TDto>();
+        protected GraphSchema graph;
+        protected IQueryable<TDto> query = null;
+        protected QueryParser<TDto> QueryParser;
 
-        [JsonIgnore]
         private ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
-        [JsonIgnore]
         private Expression FilterExpression = null;
+        public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
 
-        public NoDataQuery()
+        public NoDataQuery(IHttpContextAccessor context) : base(context)
         {
-            graph = baseGraph.Clone() as Graph.Graph;
+            graph = baseGraph.Clone() as GraphSchema;
             QueryParser = new QueryParser<TDto>(this as QueryParameters, graph);
         }
 
@@ -39,21 +38,29 @@ namespace NoData
             bool count = false)
             : base(expand, filter, select, orderBy, top, skip, count)
         {
-            graph = baseGraph.Clone() as Graph.Graph;
+            graph = baseGraph.Clone() as GraphSchema;
             QueryParser = new QueryParser<TDto>(this as QueryParameters, graph);
         }
 
-        public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
+        public NoDataQuery<TDto> Load(IEnumerable<TDto> enumerable) => Load(enumerable.AsQueryable());
+        public NoDataQuery<TDto> Load(IQueryable<TDto> query)
+        {
+            if (this.query != null)
+                throw new Exception("Loaded a query twice.");
+            this.query = query;
+            return this;
+        }
+
 
         private bool parsed = false;
-        private void ValidateParsed()
+        protected void Parse()
         {
             if (!parsed)
             {
                 QueryParser.Parse();
                 FilterExpression = QueryParser.ApplyFilterExpression(ParameterDtoExpression);
+                parsed = true;
             }
-            parsed = true;
         }
 
         /// <summary>
@@ -117,13 +124,13 @@ namespace NoData
             return this;
         }
 
+
         /// <summary>
-        /// Parses and then applies the filtering to the queryable without enumerating it.
+        /// Parses and then applies the filtering to the queryable, without enumerating it.
         /// </summary>
-        public NoDataQuery<TDto> BuildQueryable(IQueryable<TDto> query)
+        public NoDataQuery<TDto> BuildExpression()
         {
-            this.query = query;
-            ValidateParsed();
+            Parse();
             switch (FilterSecurity)
             {
                 default:
@@ -141,36 +148,9 @@ namespace NoData
         }
 
         /// <summary>
-        /// Returns the json result of the queryable with all query commands parsed and applied.
+        /// Applies the odata options to the queryable without enumerating it.
         /// </summary>
-        public string JsonResult(IQueryable<TDto> query)
-        {
-            ApplyQueryable(query);
-            var list = this.query.ToList();
-            QueryParser.SelectionTree.AddInstances(list);
-            var sGraph = Graph.Utility.TreeUtility.Flatten(QueryParser.SelectionTree);
-            return JsonConvert.SerializeObject(
-                list,
-                Formatting.Indented,
-                new JsonSerializerSettings
-                {
-                    PreserveReferencesHandling = PreserveReferencesHandling.None,
-                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                    MaxDepth = 5,
-
-                    ContractResolver = new DynamicContractResolver(sGraph)
-                });
-        }
-
-        /// <summary>
-        /// Applies the filtering to the queryable without enumerating it.
-        /// </summary>
-        public IQueryable<TDto> ApplyQueryable(IQueryable<TDto> query) => BuildQueryable(query).query;
-
-        /// <summary>
-        /// Applies the filtering to the queryable without enumerating it.
-        /// </summary>
-        public IQueryable<TDto> ApplyQueryable(IEnumerable<TDto> query) => BuildQueryable(query.AsQueryable()).query;
+        public IQueryable<TDto> Apply() => BuildExpression().query;
     }
 
 }

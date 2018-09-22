@@ -286,3 +286,10 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+
+#code coverage reports
+lcov.info
+CodeTools/asdf/
+
+*.dll
