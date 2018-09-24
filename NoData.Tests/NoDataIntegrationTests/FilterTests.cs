@@ -51,8 +51,9 @@ namespace NoData.Tests.FilterTests
         [InlineData("partner/partner/id eq 1", 1, 1, 10)] // duplication doesn't matter.
         public void Filter_Expression(string expression, params int[] expectedIds)
         {
-            var ft = new NoData.NoDataQueryBuilder<Dto>("partner/partner", expression, null);
-            var result = ft.ApplyQueryable(new List<Dto>(SampleCollection).AsQueryable());
+            var queryable = SampleCollection.ToList().AsQueryable();
+            var ft = new NoData.NoDataBuilder<Dto>("partner/partner", expression, null);
+            var result = ft.Load(queryable).BuildQueryable();
 
             var ids = result.SelectMany(r => r.GetAllIds()).ToList();
 

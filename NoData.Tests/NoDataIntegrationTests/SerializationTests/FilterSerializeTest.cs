@@ -62,8 +62,8 @@ namespace NoData.Tests.FilterTests
         [Fact]
         public void FilterExpand_Deserialized_SelectNameIdAndNameOfPartner_SelectInsideExpand_Success()
         {
-            var filter = new NoData.NoDataQueryBuilder<Dto>("partner($filter=Name eq 'Jane')", null, "Name");
-            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            var filter = new NoData.NoDataBuilder<Dto>("partner($filter=Name eq 'Jane')", null, "Name");
+            var serialized = filter.Load(ParentCollection.AsQueryable()).AsJson();
             Assert.NotNull(serialized);
             Assert.True(serialized.Contains("["), "is an array");
             Assert.True(serialized.Contains("]"), "is an array");

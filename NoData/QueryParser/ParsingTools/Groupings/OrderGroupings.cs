@@ -17,7 +17,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
         public static TGrouping SortOrderProperty =
             Create($"{TInfo.ExpandProperty}({TInfo.SortOrder})?", list =>
             {
-                var root = new Vertex(new TInfo { Representation = TInfo.SortProperty });
+                var root = new Vertex(TInfo.FromRepresentation(TInfo.SortProperty));
 
                 var expandProperty = list[0];
                 var edgeExpand = new Edge(root, expandProperty.Root);
@@ -25,12 +25,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 var sortDirection = list.Count == 2 ?
                                         list[1] :
                                         new QueueItem(new Vertex(
-                                            new TextInfo()
-                                            {
-                                                Representation = TextInfo.SortOrder,
-                                                Value = "asc",
-                                                Text = "asc"
-                                            }));
+                                            new TextInfo("asc", "asc", TextInfo.SortOrder)));
                 var edgeSort = new Edge(root, sortDirection.Root);
 
                 return ITuple.Create(new QueueItem(root, new[] {
@@ -45,7 +40,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 var filtered = list.Where(x => x.Representation == TInfo.SortProperty).ToList();
                 var children = new Queue<QueueItem>(filtered);
 
-                var root = new Vertex(new TInfo { Representation = TInfo.ListOfSortings });
+                var root = new Vertex(TInfo.FromRepresentation(TInfo.ListOfSortings));
                 var edges = children.Select(t => new Edge(root, t.Root));
                 var childrenItems = new List<ITuple<Edge, QueueItem>>();
                 foreach (var child in children)

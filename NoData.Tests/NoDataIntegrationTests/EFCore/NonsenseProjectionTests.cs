@@ -101,9 +101,9 @@ namespace NoData.Tests.EFCoreSetupTest
 
             var thingSource = context.Thing.AsNoTracking();
 
-            var nodata = new NoDataQueryBuilder<NonsenseThingOneDto>(null, null, null);
+            var nodata = new NoDataBuilder<NonsenseThingOneDto>(null, null, null);
 
-            var dest = nodata.Projection<NonsenseThingOneEntity>(thingSource, mapConfig).ToList();
+            var dest = nodata.Projection<NonsenseThingOneEntity>(thingSource, mapConfig).BuildQueryable().ToList();
             dest.Should().ContainSingle();
             var dto = dest.Single();
             dto.Should().NotBeNull();
@@ -131,9 +131,9 @@ namespace NoData.Tests.EFCoreSetupTest
 
             var thingSource = context.Thing.AsNoTracking();
 
-            var nodata = new NoDataQueryBuilder<NonsenseThingOneDto>("A,B", null, null);
+            var nodata = new NoDataBuilder<NonsenseThingOneDto>("A,B", null, null);
 
-            var dest = nodata.Projection<NonsenseThingOneEntity>(thingSource, mapConfig).ToList();
+            var dest = nodata.Projection<NonsenseThingOneEntity>(thingSource, mapConfig).BuildQueryable().ToList();
             dest.Should().ContainSingle();
             var dto = dest.Single();
             dto.Should().NotBeNull();
@@ -163,9 +163,9 @@ namespace NoData.Tests.EFCoreSetupTest
 
             var thingSource = context.Thing.AsNoTracking();
 
-            var nodata = new NoDataQueryBuilder<NonsenseThingOneDto>("A", null, null);
+            var nodata = new NoDataBuilder<NonsenseThingOneDto>("A", null, null);
 
-            var dest = nodata.Projection<NonsenseThingOneEntity>(thingSource, mapConfig).ToList();
+            var dest = nodata.Projection<NonsenseThingOneEntity>(thingSource, mapConfig).BuildQueryable().ToList();
             dest.Should().ContainSingle();
             var dto = dest.Single();
             dto.Should().NotBeNull();

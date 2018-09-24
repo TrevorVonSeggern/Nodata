@@ -18,10 +18,10 @@ namespace NoData.Utility
             {
                 foreach (var v in selection)
                 {
-                    if (vertices.ContainsKey(v.Value))
-                        vertices[v.Value].Merge(v);
-                    else
+                    if (!vertices.ContainsKey(v.Value))
                         vertices.Add(v.Value, v);
+                    // else
+                    //     vertices[v.Value].Merge(v);
                 }
             }
 

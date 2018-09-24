@@ -8,14 +8,22 @@ using Xunit;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using NoData.GraphImplementations.QueryParser;
+using NoData.Utility;
 
 namespace NoData.Tests.ExpandTests
 {
-    public class ExpandGrouper_FakeExpandProperty
+    public class ExpandGrouper_FakeExpandProperty : IClassFixture<NoData.Tests.SharedExampleClasses.CacheAndGraphFixture<Dto>>
     {
-
+        CacheAndGraphFixture<Dto> Fixture;
         private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new Vertex(t))).ToList();
-        private readonly IEnumerable<string> ClassProperties = NoData.Utility.ClassInfoCache.GetOrAdd(typeof(Dto)).PropertyNames;
+        private readonly IEnumerable<string> ClassProperties;
+
+        public ExpandGrouper_FakeExpandProperty(CacheAndGraphFixture<Dto> fixture)
+        {
+            Fixture = fixture;
+            ClassProperties = fixture.cache.GetOrAdd(typeof(Dto)).PropertyNames;
+        }
+
 
         [Fact]
         public void ExpandGrouper_CanGroupExpandPropertyCorrectly()

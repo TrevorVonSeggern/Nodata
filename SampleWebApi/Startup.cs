@@ -27,7 +27,7 @@ namespace SampleWebApi
                 options.SerializerSettings.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.None;
             });
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped(typeof(NoData.NoDataQueryBuilder<>));
+            services.AddScoped(typeof(NoData.NoDataBuilder<>));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

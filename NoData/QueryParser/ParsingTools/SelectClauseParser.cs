@@ -53,7 +53,7 @@ namespace NoData.QueryParser.ParsingTools
                 }
 
                 // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
-                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == parsedSelection.Root.Value.Value);
+                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.TypeId == from.Value.TypeId && e.Value.Name == parsedSelection.Root.Value.Value);
                 if (edge is null)
                     return;
                 edges.Add(edge);

@@ -43,7 +43,7 @@ namespace SampleEFCoreApi
             services.AddMvc().AddControllersAsServices();
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped(typeof(NoData.NoDataQueryBuilder<>));
+            services.AddScoped(typeof(NoData.NoDataBuilder<>));
 
             var connection = @"Server=localhost;Database=MyDb;User=sa;Password=YourStrong!Passw0rd;";
             services.AddDbContext<DataContext>(options => options.UseSqlServer(connection).UseLoggerFactory(MyLoggerFactory));

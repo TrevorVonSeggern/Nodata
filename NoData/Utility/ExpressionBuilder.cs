@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
+using NoData.GraphImplementations.Schema;
 
 namespace NoData.Utility
 {
@@ -45,6 +47,156 @@ namespace NoData.Utility
                 query.Expression,
                 Expression.Lambda(body, parameter)
             );
+        }
+
+
+
+        #region build queryables
+        public static IQueryable<TDto> ApplyExpand<TDto>(Tree tree, IQueryable<TDto> query, ParameterExpression parameter, IClassCache cache) where TDto : class, new()
+        {
+            if (tree is null)
+                return query;
+            var body = GetExpandExpression(tree.Root, parameter, tree, cache);
+
+            var expr = ExpressionBuilder.BuildSelectExpression(query, parameter, body);
+
+            return query.Provider.CreateQuery<TDto>(expr);
+        }
+
+        public static IQueryable<TDto> ApplyFilter<TDto>(Tree tree, IQueryable<TDto> query, ParameterExpression parameter, Expression filterExpression) where TDto : class, new()
+        {
+            if (filterExpression is null) return query;
+
+            var expr = ExpressionBuilder.BuildWhereExpression(query, parameter, filterExpression);
+
+            return query.Provider.CreateQuery<TDto>(expr);
+        }
+
+        public static IQueryable<TDto> ApplySelect<TDto>(Tree tree, IQueryable<TDto> query, ParameterExpression parameter, IClassCache cache) where TDto : class, new()
+        {
+            var selectExpression = GetSelectExpression(tree.Root, parameter, tree, cache) ?? throw new ArgumentNullException("Root filter node or resulting expression is null");
+
+            if (selectExpression is null) return query;
+
+            var expr = ExpressionBuilder.BuildSelectExpression(query, parameter, selectExpression);
+
+            return query.Provider.CreateQuery<TDto>(expr);
+        }
+
+        #endregion
+
+
+
+
+
+        private static IEnumerable<MemberBinding> BindingsForProperties(Vertex info, IEnumerable<PropertyInfo> properties, Expression dto)
+        {
+            foreach (var prop in properties)
+                yield return (Expression.Bind(prop, Expression.PropertyOrField(dto, prop.Name)));
+        }
+
+        #region Expressions for expansion
+
+        public static Expression GetExpandExpression(Vertex info, Expression dto, Tree tree, IClassCache cache) => BindingExpression(info, dto, ExpansionMemberBindings(info, dto, tree, cache));
+
+        private static IEnumerable<MemberBinding> ExpansionMemberBindings(Vertex info, Expression dto, Tree tree, IClassCache cache)
+        {
+            yield break;
+            // var classInfo = cache.GetOrAdd(info.Value.TypeId);
+            // var outgoingEdges = tree.Children.Select(c => c.Item1);
+
+            // // Bind all the non-expandable types.
+            // foreach (var prop in BindingsForProperties(info, classInfo.NonExpandableProperties, dto))
+            //     yield return prop;
+
+            // // navigation properties
+            // foreach (var prop in classInfo.NavigationProperties.Where(x => outgoingEdges.Any(c => c.Value.PropertyName == x.Name)))
+            // {
+            //     var navigationVertex = outgoingEdges.FirstOrDefault(x => x.Value.PropertyName == prop.Name).To;
+            //     var navigationTree = tree.Children.First(c => c.Item1.To == navigationVertex).Item2;
+            //     yield return (Expression.Bind(prop, GetExpandExpression(navigationVertex, Expression.PropertyOrField(dto, prop.Name), navigationTree, cache)));
+            // }
+
+            // // collections
+            // foreach (var prop in classInfo.Collections.Where(x => outgoingEdges.Any(c => c.Value.PropertyName == x.Name)))
+            // {
+            //     if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Length != 1)
+            //         continue;
+
+            //     var collectionVertex = outgoingEdges.Single(x => x.Value.PropertyName == prop.Name).To;
+            //     var navigationTree = tree.Children.First(c => c.Item1.To == collectionVertex).Item2;
+            //     var listType = typeof(List<>).MakeGenericType(collectionVertex.Value.TypeId);
+
+            //     var childrenParameter = Expression.Parameter(collectionVertex.Value.TypeId, prop.Name);
+            //     var childrenProperty = Expression.PropertyOrField(dto, prop.Name);
+            //     var select = ExpressionBuilder.BuildSelectExpression(collectionVertex.Value.TypeId,
+            //         childrenProperty,
+            //         childrenParameter, GetExpandExpression(collectionVertex, childrenParameter, navigationTree, cache));
+            //     var list = Expression.Condition(
+            //         Expression.Equal(childrenProperty, Expression.Constant(null)),
+            //         Expression.New(listType.GetConstructor(new Type[] { }), new Expression[] { }),
+            //         Expression.New(listType.GetConstructor(new Type[] { listType }), select)
+            //         );
+            //     yield return (Expression.Bind(prop, list));
+            // }
+        }
+
+        #endregion
+
+        #region Expressions for select
+
+        public static Expression GetSelectExpression(Vertex info, Expression dto, Tree tree, IClassCache cache) => BindingExpression(info, dto, SelectionMemberBindings(info, dto, tree, cache));
+
+        private static IEnumerable<MemberBinding> SelectionMemberBindings(Vertex info, Expression dto, Tree tree, IClassCache cache)
+        {
+            yield break;
+            // var classInfo = cache.GetOrAdd(info.Value.TypeId);
+            // var outgoingEdges = tree.Children.Select(c => c.Item1);
+
+            // foreach (var prop in BindingsForProperties(info, classInfo.NonExpandableProperties.Where(p => tree.Root.Value.GetSelectProperties().Contains(p.Name)), dto))
+            //     yield return prop;
+
+            // // navigation properties
+            // foreach (var prop in classInfo.NavigationProperties.Where(x => outgoingEdges.Any(c => c.Value.PropertyName == x.Name)))
+            // {
+            //     var navigationVertex = outgoingEdges.FirstOrDefault(x => x.Value.PropertyName == prop.Name).To;
+            //     var navigationTree = tree.Children.First(c => c.Item1.To == navigationVertex).Item2;
+            //     yield return (Expression.Bind(prop, GetSelectExpression(navigationVertex, Expression.PropertyOrField(dto, prop.Name), navigationTree, cache)));
+            // }
+
+            // // collections
+            // foreach (var prop in classInfo.Collections.Where(x => outgoingEdges.Any(c => c.Value.PropertyName == x.Name)))
+            // {
+            //     if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Length != 1)
+            //         continue;
+
+            //     var collectionVertex = outgoingEdges.Single(x => x.Value.PropertyName == prop.Name).To;
+            //     var navigationTree = tree.Children.First(c => c.Item1.To == collectionVertex).Item2;
+            //     var listType = typeof(List<>).MakeGenericType(collectionVertex.Value.TypeId);
+
+            //     var childrenParameter = Expression.Parameter(collectionVertex.Value.TypeId, prop.Name);
+            //     var childrenProperty = Expression.PropertyOrField(dto, prop.Name);
+            //     var select = ExpressionBuilder.BuildSelectExpression(collectionVertex.Value.TypeId,
+            //         childrenProperty,
+            //         childrenParameter, GetSelectExpression(collectionVertex, childrenParameter, navigationTree, cache));
+            //     var list = Expression.Condition(
+            //         Expression.Equal(childrenProperty, Expression.Constant(null)),
+            //         Expression.New(listType.GetConstructor(new Type[] { }), new Expression[] { }),
+            //         Expression.New(listType.GetConstructor(new Type[] { listType }), select)
+            //         );
+            //     yield return (Expression.Bind(prop, list));
+            // }
+        }
+
+        #endregion
+
+        public static Expression BindingExpression(Vertex info, Expression dto, IEnumerable<MemberBinding> bindings)
+        {
+            var newDto = Expression.New(dto.Type);
+            var selectExpression = Expression.MemberInit(newDto, bindings);
+
+            return Expression.Condition(Expression.Equal(dto, Expression.Constant(null)),
+                Expression.Constant(null, selectExpression.Type), selectExpression);
         }
     }
 }

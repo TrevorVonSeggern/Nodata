@@ -1,12 +1,13 @@
 ﻿using System.Text.RegularExpressions;
+using CodeTools;
 
 namespace NoData.Internal.TreeParser.Tokenizer
 {
     public class TokenDefinition
     {
-        public bool IsIgnored { get; set; }
-        public Regex Regex { get; set; }
-        public string Type { get; set; }
+        public bool IsIgnored { get; }
+        public Regex Regex { get; }
+        public string Type { get; }
 
         public TokenDefinition(string pattern, TokenTypes type)
         {

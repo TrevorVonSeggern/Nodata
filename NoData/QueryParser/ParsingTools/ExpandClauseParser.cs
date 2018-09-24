@@ -78,12 +78,8 @@ namespace NoData.QueryParser.ParsingTools
                     return source;
                 if (source.Representation == TInfo.ExpandProperty)
                 {
-                    var root = new ParserVertex(new TInfo()
-                    {
-                        Representation = TInfo.ExpandProperty,
-                        Text = prependEdges.First().Value.PropertyName,
-                        Value = prependEdges.First().Value.PropertyName
-                    });
+                    var text = prependEdges.First().Value.Name;
+                    var root = new ParserVertex(new TInfo(text, text, TInfo.ExpandProperty));
                     var child = AppendPathToQueueItem(prependEdges.Skip(1), source);
                     return new QueueItem(root, new[] { ITuple.Create(new ParserEdge(root, child.Root), child) });
                 }
@@ -135,7 +131,7 @@ namespace NoData.QueryParser.ParsingTools
             IEnumerable<SchemaPath> ExpandProperty(SchemaVertex from, QueueItem tree, IEnumerable<SchemaEdge> currentPath)
             {
                 // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
-                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == tree.Root.Value.Value);
+                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.TypeId == from.Value.TypeId && e.Value.Name == tree.Root.Value.Value);
                 if (edge == null)
                     yield break;
 

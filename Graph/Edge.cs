@@ -6,15 +6,15 @@ using Graph.Interfaces;
 
 namespace Graph
 {
-
+    [Immutable]
     public class Edge<TEdgeValue, TVertex, TVertexValue> : IEdge<TEdgeValue, TVertex, TVertexValue>
         where TVertex : class, IVertex<TVertexValue>
-        where TVertexValue : IMergable<TVertexValue>
-        where TEdgeValue : ICloneable
+        //where TVertexValue : IMergable<TVertexValue>
+        // where TEdgeValue : ICloneable
     {
-        public virtual TVertex From { get; protected set; }
-        public virtual TVertex To { get; protected set; }
-        public virtual TEdgeValue Value { get; protected set; }
+        public TVertex From { get; }
+        public TVertex To { get; }
+        public TEdgeValue Value { get; }
 
         public Edge(TVertex from, TVertex to, TEdgeValue value = default(TEdgeValue))
         {

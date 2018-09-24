@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CodeTools;
 
 namespace NoData.Internal.TreeParser.Tokenizer
 {
+    [Immutable]
     public class Token
     {
-        public string Value { get; set; }
-        public TokenPosition Position { get; set; }
-        public string Type { get; set; }
+        public string Value { get; }
+        public TokenPosition Position { get; }
+        public string Type { get; }
 
         public Token(string value)
         {

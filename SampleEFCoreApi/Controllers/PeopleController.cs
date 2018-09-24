@@ -28,9 +28,9 @@ namespace SampleEFCoreApi.Controllers
         }
 
         [HttpGet]
-        public IQueryable<Model> Get([FromServices] NoDataQueryBuilder<Model> nodata)
+        public IQueryable<Model> Get([FromServices] INoData<Model> nodata)
         {
-            return nodata.Projection(Query, _mapper.ConfigurationProvider);
+            return nodata.Projection(Query, _mapper.ConfigurationProvider).BuildQueryable();
         }
 
         [HttpGet("{id}")]

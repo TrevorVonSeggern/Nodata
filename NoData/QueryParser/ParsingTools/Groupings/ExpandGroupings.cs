@@ -34,14 +34,13 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                }
 
                var vertex = itemList.Pop();
-               vertex.Value.Representation = TInfo.ExpandProperty;
-               QueueItem propertyTree = new QueueItem(vertex);
+               QueueItem propertyTree = new QueueItem(new Vertex(new TextInfo(vertex.Value.Text, vertex.Value.Value, TInfo.ExpandProperty)));
 
                // build from linear list, the tree
                for (vertex = itemList.Any() ? itemList.Peek() : null; itemList.Count != 0; vertex = itemList.Pop())
                {
+                   vertex = new Vertex(new TextInfo(vertex.Value.Text, vertex.Value.Value, TInfo.ExpandProperty));
                    var edge = new Edge(vertex, propertyTree.Root);
-                   vertex.Value.Representation = TInfo.ExpandProperty;
                    propertyTree = new QueueItem(vertex, new[] { ITuple.Create(edge, propertyTree) });
                }
                return ITuple.Create(propertyTree, toRemove);
@@ -89,7 +88,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 var filtered = list.Where(x => x.Representation == TInfo.ExpandProperty).ToList();
                 var children = new Queue<QueueItem>(filtered);
 
-                var root = new Vertex(new TInfo { Representation = TInfo.ListOfExpands });
+                var root = new Vertex(TextInfo.FromRepresentation(TInfo.ListOfExpands));
                 var edges = children.Select(t => new Edge(root, t.Root));
                 var childrenItems = new List<ITuple<Edge, QueueItem>>();
                 foreach (var child in children)
@@ -108,7 +107,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             var clause = $"({expand}|{filter}|{select})";
             return Create($"{clause}({TInfo.SemiColin}{clause})*", list =>
             {
-                var root = new Vertex(new TInfo { Representation = TInfo.ListOfClause, Type = typeof(TInfo) });
+                var root = new Vertex(TInfo.FromRepresentation(TInfo.ListOfClause, typeof(TInfo))); // { Representation = TInfo.ListOfClause, Type = typeof(TInfo) });
 
                 bool IsClause(QueueItem item)
                 {
@@ -125,19 +124,19 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
         public static TGrouping FilterExpression = Create(TInfo.FilterClause + TInfo.BooleanValue, list =>
             {
-                var root = new Vertex(new TInfo { Representation = TInfo.FilterExpression });
+                var root = new Vertex(TInfo.FromRepresentation(TInfo.FilterExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), list.Count - 1);
             });
 
         public static TGrouping SelectExpression = Create(TInfo.SelectClause + TInfo.ListOfExpands, list =>
             {
-                var root = new Vertex(new TInfo { Representation = TInfo.SelectExpression });
+                var root = new Vertex(TInfo.FromRepresentation(TInfo.SelectExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), 1);
             });
 
         public static TGrouping ExpandExpression = Create(TInfo.ExpandClause + TInfo.ListOfExpands, list =>
             {
-                var root = new Vertex(new TInfo { Representation = TInfo.ExpandExpression });
+                var root = new Vertex(TInfo.FromRepresentation(TInfo.ExpandExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), 1);
             });
 

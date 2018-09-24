@@ -1,11 +1,12 @@
-using Xunit;
 using System.Collections.Generic;
 using System.Linq;
 using NoData.Tests.SharedExampleClasses;
+using NoData.Utility;
+using Xunit;
 
-namespace NoData.Tests.SelectTests
+namespace NoData.Tests.ExpandTests
 {
-    public class SelectTest
+    public class ExpandTest
     {
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
         {
@@ -60,72 +61,43 @@ namespace NoData.Tests.SelectTests
             }
         }
 
-        [Fact]
-        public void Select_Blank_AllPropertiesArePresent()
+        [Theory]
+        [InlineData(null, 1, 2, 3, 4, 5, 6)] // returns everything.
+        [InlineData("", 1, 2, 3, 4, 5, 6)] // returns everything.
+        [InlineData("partner", 1, 2, 3, 4, 5, 6, 1, 2)] // one expand
+        [InlineData("children", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60)]
+        [InlineData("favorite", 1, 2, 3, 4, 5, 6, 10, 40)]
+        [InlineData("favorite/favorite", 1, 2, 3, 4, 5, 6, 10, 40, 300)]
+        [InlineData("partner,children", 1, 2, 3, 4, 5, 6, 1, 2, 10, 30, 40, 50, 60)] // multiple expands.
+        [InlineData("children/partner", 1, 2, 3, 4, 5, 6, 10, 30, 40, 50, 60, 10, 60)]
+        [InlineData("partner,children/partner", 1, 2, 3, 4, 5, 6, 6, 1, 10, 30, 40, 50, 60, 60, 10/*, 100, 200, 300, 400, 500, 600*/)]
+        [InlineData("partner/children,partner/favorite", 1, 2, 3, 4, 5, 6, /*root*/ 1, 2, /*partner*/ 10, /*partner/children*/ 10 /*partner/favorite*/ )]
+        [InlineData("partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)] // one expand
+        [InlineData("partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)] // one expand
+        [InlineData("partner/partner/partner/partner", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)] // one expand
+        [InlineData("partner($expand=partner)", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner($expand=partner)))", 1, 2, 3, 4, 5, 6, 1, 2, 1, 2, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner($expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner;$filter=id eq 1)", 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner($expand=partner;$filter=id eq 1;$select=id)))", 2, 1, 2, 1, 2)]
+        [InlineData("partner($expand=partner;$filter=id eq 1;$select=id)", 2, 1, 2)]
+        [InlineData("partner($expand=partner($expand=partner($select=id;$expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
+        [InlineData("partner($select=id;$expand=partner;$filter=id eq 1)", 2, 1, 2)]
+        [InlineData("partner($select=id,Name;$expand=partner($select=id,region_code;$expand=partner($select=id;$select=id;$expand=partner;$filter=id eq 1)))", 2, 1, 2, 1, 2)]
+        public void Expand_Expression(string expression, params int[] expectedIds)
         {
-            var ft = new NoData.NoDataQueryBuilder<Dto>(null, null, null);
-            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
+            var queryable = new List<Dto>(ParentCollection).AsQueryable();
+            var ft = new NoData.NoDataBuilder<Dto>(new Parameters(expression));
+            var result = ft.Load(queryable).BuildQueryable().ToList();
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
 
             Assert.NotNull(result);
-            int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
+
             Assert.Equal(expectedIds.Length, resultIds.Count);
             foreach (var resultId in resultIds)
                 Assert.Contains(resultId, expectedIds);
-
-            foreach (var dto in result)
-            {
-                Assert.NotNull(dto);
-                Assert.NotNull(dto.Name);
-                Assert.NotNull(dto.region_code);
-                Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
-            }
-        }
-
-        [Fact]
-        public void Select_id_OnlyReturnsId_Success()
-        {
-            var ft = new NoData.NoDataQueryBuilder<Dto>(null, null, "id");
-            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
-
-            var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
-
-            Assert.NotNull(result);
-            int[] expectedIds = new[] { 1, 2, 3, 4, 5, 6 };
-            Assert.Equal(expectedIds.Length, resultIds.Count);
-            foreach (var resultId in resultIds)
-                Assert.Contains(resultId, expectedIds);
-
-            foreach (var dto in result)
-            {
-                Assert.NotNull(dto);
-                Assert.Null(dto.Name);
-                Assert.Null(dto.region_code);
-                Assert.Null(dto.favorite ?? dto.children?.FirstOrDefault());
-            }
-        }
-
-        [Fact]
-        public void Select_Name_OnlyReturnsName_Success()
-        {
-            var ft = new NoData.NoDataQueryBuilder<Dto>(null, null, "Name");
-            var result = ft.ApplyQueryable(new List<Dto>(ParentCollection).AsQueryable());
-
-            var resultIds = result.SelectMany(x => x.GetAllIds()).ToList();
-
-            Assert.NotNull(result);
-            Assert.Equal(ParentCollection.Count(), resultIds.Count);
-
-            foreach (var dto in result)
-            {
-                Assert.NotNull(dto);
-                Assert.Equal(0, dto.id); // int cannot be null, defaults to 0 when not selected.
-                Assert.NotNull(dto.Name);
-                Assert.Null(dto.region_code);
-                Assert.Null(dto.favorite);
-                Assert.Null(dto.children);
-            }
         }
     }
 }

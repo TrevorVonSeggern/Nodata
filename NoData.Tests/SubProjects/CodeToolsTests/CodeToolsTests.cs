@@ -19,7 +19,7 @@ namespace NoData.Utility
             {
                 return new[] {
                     System.Reflection.Assembly.GetExecutingAssembly(),
-                    Assembly.GetAssembly(typeof(NoDataSettings)),
+                    Assembly.GetAssembly(typeof(Settings)),
                     Assembly.GetAssembly(typeof(Graph.Graph<,,,>)),
                 };
             }

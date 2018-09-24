@@ -10,6 +10,7 @@ using AutoMapper.QueryableExtensions;
 
 using Model = SampleEFCoreApi.Models.DtoGrandChild;
 using DbModel = SampleEFCoreApi.Database.GrandChild;
+using Microsoft.EntityFrameworkCore;
 
 namespace SampleEFCoreApi.Controllers
 {
@@ -18,7 +19,7 @@ namespace SampleEFCoreApi.Controllers
     {
         private readonly DataContext Context;
         private readonly IMapper _mapper;
-        private IQueryable<DbModel> Query => Context.GrandChildren;
+        private IQueryable<DbModel> Query => Context.GrandChildren.AsNoTracking();
 
         public GrandChildController(DataContext context, IMapper mapper)
         {
@@ -27,10 +28,9 @@ namespace SampleEFCoreApi.Controllers
         }
 
         [HttpGet]
-        public IQueryable<Model> Get([FromServices] NoDataQueryBuilder<Model> nodata)
+        public IQueryable<Model> Get([FromServices] INoData<Model> nodata)
         {
-            nodata.Projection(Query, _mapper.ConfigurationProvider);
-            return nodata.Apply();
+            return nodata.Projection(Query, _mapper.ConfigurationProvider).BuildQueryable();
         }
 
         [HttpGet("{id}")]

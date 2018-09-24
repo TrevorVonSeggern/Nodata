@@ -9,11 +9,11 @@ namespace NoData
     {
         AllowOnlyVisibleValues,
         AllowFilteringOnPropertiesThatAreNotDisplayed,
-        AllowFilteringOnNonExplicitlyExpandedExpansions,
+        AllowFilteringOnNonExplicitlyExpandedItems,
     }
 
     [Immutable]
-    public class NoDataSettings
+    public class Settings
     {
     }
 }

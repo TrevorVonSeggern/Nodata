@@ -11,15 +11,22 @@ namespace NoData.Tests.GraphTests
 
     public class GraphTests
     {
+        IClassCache cache;
+
+        public GraphTests()
+        {
+            cache = new ClassCache();
+        }
+
         [Fact]
         public void Graph_VertexContainsTypes_Success()
         {
-            var graph = GraphSchema.CreateFromGeneric<Dto>();
+            var graph = GraphSchema.Cache<Dto>.Graph;
 
-            var types = graph.Vertices.Select(v => (v.Value as ClassInfo)?.Type).ToList();
-            Assert.Contains(typeof(Dto), types); // must contain dto vertex
-            Assert.Contains(typeof(DtoChild), types); // must contain child dto vertex
-            Assert.Contains(typeof(DtoGrandChild), types); // must contain grand child dto vertex
+            var types = graph.Vertices.Select(v => v.Value.TypeId).ToList();
+            Assert.Contains(typeof(Dto).GetHashCode(), types); // must contain dto vertex
+            Assert.Contains(typeof(DtoChild).GetHashCode(), types); // must contain child dto vertex
+            Assert.Contains(typeof(DtoGrandChild).GetHashCode(), types); // must contain grand child dto vertex
 
             Assert.Equal(3, graph.Vertices.Count());
         }
@@ -33,12 +40,12 @@ namespace NoData.Tests.GraphTests
         [InlineData(typeof(DtoChild), typeof(DtoChild), nameof(DtoChild.partner), false)]
         public void Graph_Edges_SingleExists_Success(Type from, Type to, string propertyName, bool isCollection)
         {
-            var graph = GraphSchema.CreateFromGeneric<Dto>();
+            var graph = GraphSchema.Cache<Dto>.Graph;
 
             var edge = graph.Edges.SingleOrDefault(e =>
-                (e.From.Value as ClassInfo).Type == from &&
-                (e.To.Value as ClassInfo).Type == to &&
-                e.Value.PropertyName == propertyName &&
+                (e.From.Value as ClassInfo).TypeId == from.GetHashCode() &&
+                (e.To.Value as ClassInfo).TypeId == to.GetHashCode() &&
+                e.Value.Name == propertyName &&
                 e.Value.IsCollection == isCollection
             );
 

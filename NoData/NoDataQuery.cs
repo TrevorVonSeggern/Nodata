@@ -8,149 +8,166 @@ using NoData.GraphImplementations.Schema;
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using NoData.Utility;
+using Graph;
+using CodeTools;
 
 namespace NoData
 {
-    public class NoDataQuery<TDto> : QueryParameters where TDto : class, new()
+    [Immutable]
+    public class NoDataQuery<TDto> : INoDataQuery<TDto>
+        where TDto : class, new()
     {
-        private static readonly GraphSchema baseGraph = GraphSchema.CreateFromGeneric<TDto>();
-        protected GraphSchema graph;
-        protected IQueryable<TDto> query = null;
-        protected QueryParser<TDto> QueryParser;
+        public FilterSecurityTypes FilterSecurity { get; } = FilterSecurityTypes.AllowOnlyVisibleValues;
 
-        private ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
-        private Expression FilterExpression = null;
-        public FilterSecurityTypes FilterSecurity = FilterSecurityTypes.AllowOnlyVisibleValues;
 
-        public NoDataQuery(IHttpContextAccessor context) : base(context)
+        // Properties that represent the object model. Ie setup operations
+        public Parameters Parameters { get; }
+        protected GraphSchema Graph { get; }
+        protected IQueryable<TDto> Source { get; }
+
+
+        // Properties that are a result of parsing.
+        protected Tree SelectionTree { get; }
+        protected IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath { get; }
+        private ParameterExpression DtoExpression { get; }
+        private Expression FilterExpression { get; }
+
+
+
+        private IClassCache Cache { get; }
+
+        public NoDataQuery(IQueryable<TDto> source, Parameters parameters, GraphSchema graph, IClassCache cache, Tree selectionTree, IEnumerable<ITuple<PathToProperty, SortDirection>> orderBy, Expression filterExpression, ParameterExpression dtoParameterExpression)
         {
-            graph = baseGraph.Clone() as GraphSchema;
-            QueryParser = new QueryParser<TDto>(this as QueryParameters, graph);
+            Source = source;
+            Parameters = parameters;
+            Graph = graph;
+
+            DtoExpression = dtoParameterExpression;
+            FilterExpression = filterExpression;
+            SelectionTree = selectionTree;
+            OrderByPath = orderBy;
+
+            Cache = cache;
         }
 
-        public NoDataQuery(
-            string expand = null,
-            string filter = null,
-            string select = null,
-            string orderBy = null,
-            int? top = null,
-            int? skip = null,
-            bool count = false)
-            : base(expand, filter, select, orderBy, top, skip, count)
-        {
-            graph = baseGraph.Clone() as GraphSchema;
-            QueryParser = new QueryParser<TDto>(this as QueryParameters, graph);
-        }
-
-        public NoDataQuery<TDto> Load(IEnumerable<TDto> enumerable) => Load(enumerable.AsQueryable());
-        public NoDataQuery<TDto> Load(IQueryable<TDto> query)
-        {
-            if (this.query != null)
-                throw new Exception("Loaded a query twice.");
-            this.query = query;
-            return this;
-        }
-
-
-        private bool parsed = false;
-        protected void Parse()
-        {
-            if (!parsed)
-            {
-                QueryParser.Parse();
-                FilterExpression = QueryParser.ApplyFilterExpression(ParameterDtoExpression);
-                parsed = true;
-            }
-        }
 
         /// <summary>
         /// Applies the top term.
         /// </summary>
-        private NoDataQuery<TDto> ApplyTop()
+        private IQueryable<TDto> ApplyTop(IQueryable<TDto> query)
         {
-            if (Top.HasValue)
-                query = query.Take(Top.Value);
-            return this;
+            if (Parameters.Top.HasValue)
+                query = query.Take(Parameters.Top.Value);
+            return query;
         }
 
         /// <summary>
         /// Applies the skip term
         /// </summary>
-        private NoDataQuery<TDto> ApplySkip()
+        private IQueryable<TDto> ApplySkip(IQueryable<TDto> query)
         {
-            if (Skip.HasValue)
-                query = query.Skip(Skip.Value);
-            return this;
+            if (Parameters.Skip.HasValue)
+                query = query.Skip(Parameters.Skip.Value);
+            return query;
         }
 
         /// <summary>
         /// Applies the filter query string the queryable.
         /// </summary>
-        private NoDataQuery<TDto> ApplyFilter()
+        private IQueryable<TDto> ApplyFilter(IQueryable<TDto> query)
         {
-            if (FilterExpression != null)
-                query = QueryParser.SelectionTree.ApplyFilter(query, ParameterDtoExpression, FilterExpression);
-            return this;
+            if (FilterExpression != null || !string.IsNullOrWhiteSpace(Parameters.Filter))
+                query = Utility.ExpressionBuilder.ApplyFilter(SelectionTree, query, DtoExpression, FilterExpression);
+            return query;
         }
 
         /// <summary>
         /// Applies the expansion property to the queryable.
         /// </summary>
-        private NoDataQuery<TDto> ApplyExpand()
+        private IQueryable<TDto> ApplyExpand(IQueryable<TDto> query)
         {
-            query = QueryParser.SelectionTree.ApplyExpand(query, ParameterDtoExpression);
-            return this;
+            query = Utility.ExpressionBuilder.ApplyExpand(SelectionTree, query, DtoExpression, Cache);
+            return query;
         }
 
         /// <summary>
         /// Selects a subset of properties
         /// </summary>
         /// <remarks>May require that Apply Expand is called first.</remarks>
-        private NoDataQuery<TDto> ApplySelect()
+        private IQueryable<TDto> ApplySelect(IQueryable<TDto> query)
         {
-            if (!string.IsNullOrEmpty(Select))
-                query = QueryParser.SelectionTree.ApplySelect(query, ParameterDtoExpression);
-            return this;
+            if (!string.IsNullOrEmpty(Parameters.Select))
+                query = Utility.ExpressionBuilder.ApplySelect(SelectionTree, query, DtoExpression, Cache);
+            return query;
         }
 
         /// <summary>
         /// Selects a subset of properties
         /// </summary>
         /// <remarks>May require that Apply Expand is called first.</remarks>
-        private NoDataQuery<TDto> ApplyOrderBy()
+        private IQueryable<TDto> ApplyOrderBy(IQueryable<TDto> query)
         {
-            if (!string.IsNullOrEmpty(OrderBy))
-                query = OrderByClauseParser<TDto>.OrderBy(query, QueryParser.OrderByPath, ParameterDtoExpression);
-            return this;
+            if (!string.IsNullOrEmpty(Parameters.OrderBy))
+                query = OrderByClauseParser<TDto>.OrderBy(query, OrderByPath, DtoExpression);
+            return query;
         }
-
 
         /// <summary>
         /// Parses and then applies the filtering to the queryable, without enumerating it.
         /// </summary>
-        public NoDataQuery<TDto> BuildExpression()
+        private IQueryable<TDto> Apply()
         {
-            Parse();
+            var query = this.Source;
             switch (FilterSecurity)
             {
                 default:
                 case FilterSecurityTypes.AllowOnlyVisibleValues:
-                    ApplyExpand().ApplySelect().ApplyFilter().ApplyOrderBy().ApplySkip().ApplyTop();
+                    query = ApplyExpand(query);
+                    query = ApplySelect(query);
+                    query = ApplyFilter(query);
                     break;
                 case FilterSecurityTypes.AllowFilteringOnPropertiesThatAreNotDisplayed:
-                    ApplyExpand().ApplyFilter().ApplySelect().ApplyOrderBy().ApplySkip().ApplyTop();
+                    query = ApplyExpand(query);
+                    query = ApplyFilter(query);
+                    query = ApplySelect(query);
                     break;
-                case FilterSecurityTypes.AllowFilteringOnNonExplicitlyExpandedExpansions:
-                    ApplyFilter().ApplyExpand().ApplySelect().ApplyOrderBy().ApplySkip().ApplyTop();
+                case FilterSecurityTypes.AllowFilteringOnNonExplicitlyExpandedItems:
+                    query = ApplyFilter(query);
+                    query = ApplyExpand(query);
+                    query = ApplySelect(query);
                     break;
             }
-            return this;
+            query = ApplyOrderBy(query);
+            query = ApplySkip(query);
+            return ApplyTop(query);
         }
 
+        public IQueryable<TDto> BuildQueryable() => Apply();
+
         /// <summary>
-        /// Applies the odata options to the queryable without enumerating it.
+        /// Returns the json result of the queryable with all query commands parsed and applied.
         /// </summary>
-        public IQueryable<TDto> Apply() => BuildExpression().query;
+        public string AsJson()
+        {
+            var q = Apply();
+            var list = q.ToList();
+            return "bad input";
+            // Query.QueryParser.SelectionTree.AddInstances(list);
+            // var sGraph = Query.QueryParser.SelectionTree.Flatten();
+            // return JsonConvert.SerializeObject(
+            //     list,
+            //     Formatting.Indented,
+            //     new JsonSerializerSettings
+            //     {
+            //         PreserveReferencesHandling = PreserveReferencesHandling.None,
+            //         ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+            //         MaxDepth = 5,
+
+            //         ContractResolver = new DynamicContractResolver(sGraph)
+            //     });
+        }
+
     }
 
 }

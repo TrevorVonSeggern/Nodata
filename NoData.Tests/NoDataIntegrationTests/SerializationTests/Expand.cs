@@ -62,8 +62,8 @@ namespace NoData.Tests.ExpandTests
         [Fact]
         public void Expand_Ignore_Deserialized_Success()
         {
-            var filter = new NoData.NoDataQueryBuilder<Dto>(null, null, null);
-            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            var filter = new NoData.NoDataBuilder<Dto>(null, null, null);
+            var serialized = filter.Load(ParentCollection.AsQueryable()).AsJson();
             Assert.NotNull(serialized);
             Assert.Contains("[", serialized);// returns list
             Assert.Contains("id", serialized); // basic properties
@@ -80,8 +80,8 @@ namespace NoData.Tests.ExpandTests
         [Fact]
         public void Expand_Ignore_Deserialized_ExpandPartner_Success()
         {
-            var filter = new NoData.NoDataQueryBuilder<Dto>("partner", null, null);
-            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            var filter = new NoData.NoDataBuilder<Dto>("partner", null, null);
+            var serialized = filter.Load(ParentCollection.AsQueryable()).AsJson();
             Assert.NotNull(serialized);
             Assert.Contains("[", serialized);// returns list
             Assert.Contains("id", serialized); // basic properties
@@ -101,8 +101,8 @@ namespace NoData.Tests.ExpandTests
         [Fact]
         public void Expand_Ignore_Deserialized_ExpandChildren_Success()
         {
-            var filter = new NoData.NoDataQueryBuilder<Dto>("children", null, null);
-            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            var filter = new NoData.NoDataBuilder<Dto>("children", null, null);
+            var serialized = filter.Load(ParentCollection.AsQueryable()).AsJson();
             Assert.NotNull(serialized);
             Assert.Contains("[", serialized);// returns list
             Assert.Contains("id", serialized); // basic properties
@@ -120,8 +120,8 @@ namespace NoData.Tests.ExpandTests
         [Fact]
         public void Expand_Ignore_Deserialized_ExpandChildrenOfChildren_Success()
         {
-            var filter = new NoData.NoDataQueryBuilder<Dto>("children/children", null, null);
-            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            var filter = new NoData.NoDataBuilder<Dto>("children/children", null, null);
+            var serialized = filter.Load(ParentCollection.AsQueryable()).AsJson();
             Assert.NotNull(serialized);
             Assert.Contains("[", serialized);// returns list
             Assert.Contains("id", serialized); // basic properties
@@ -142,8 +142,8 @@ namespace NoData.Tests.ExpandTests
         [Fact]
         public void Expand_Ignore_Deserialized_ExpandPartnerPartner_Success()
         {
-            var filter = new NoData.NoDataQueryBuilder<Dto>("partner/partner", null, null);
-            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            var filter = new NoData.NoDataBuilder<Dto>("partner/partner", null, null);
+            var serialized = filter.Load(ParentCollection.AsQueryable()).AsJson();
             Assert.NotNull(serialized);
             Assert.Contains("[", serialized);// returns list
             Assert.Contains("id", serialized); // basic properties
@@ -166,8 +166,8 @@ namespace NoData.Tests.ExpandTests
         [Fact]
         public void Expand_Ignore_Deserialized_ExpandPartnerPartner_SelectId_Success()
         {
-            var filter = new NoData.NoDataQueryBuilder<Dto>("partner/partner($select=id)", null, null);
-            var serialized = filter.JsonResult(ParentCollection.AsQueryable());
+            var filter = new NoData.NoDataBuilder<Dto>("partner/partner($select=id)", null, null);
+            var serialized = filter.Load(ParentCollection.AsQueryable()).AsJson();
             Assert.NotNull(serialized);
             Assert.Contains("[", serialized);// returns list
             Assert.Contains("id", serialized); // basic properties

@@ -10,11 +10,13 @@ using NoData.GraphImplementations.Schema;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using ParserVertex = NoData.GraphImplementations.QueryParser.Vertex;
+using NoData.Utility;
 
 namespace NoData.QueryParser
 {
     public class QueryParser<TRootVertex>
     {
+        public IClassCache Cache { get; }
         public bool IsParsed { get; private set; }
         private static readonly Type RootQueryType = typeof(TRootVertex);
 
@@ -28,13 +30,13 @@ namespace NoData.QueryParser
 
         private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new ParserVertex(t))).ToList();
 
-        public QueryParser(QueryParameters parameters, GraphSchema graph)
+        public QueryParser(Parameters parameters, GraphSchema graph, IClassCache cache)
         {
             IsParsed = false;
 
             ClassProperties = graph.Vertices
-                .Select(v => Utility.ClassInfoCache.GetOrAdd(v.Value.Type))
-                .SelectMany(cp => cp.PropertyNames)
+                .Select(v => v.Value.Properties)
+                .SelectMany(x => x).Select(x => x.Name)
                 .Distinct();
 
             OrderBy = new OrderByClauseParser<TRootVertex>(x => _GetTokens(x), parameters.OrderBy, graph);
@@ -61,9 +63,12 @@ namespace NoData.QueryParser
             Expand.AddGroupingTerms(ExpandGroupings.ListOfClauseExpressions());
 
             _Graph = graph;
+            Cache = cache;
+
+            Parse();
         }
 
-        public void Parse()
+        private void Parse()
         {
             do
             {
@@ -117,7 +122,7 @@ namespace NoData.QueryParser
             _AssertParsed();
             if (Filter.Result is null)
                 return null;
-            return new FilterTreeExpressionBuilder(_Graph).FilterExpression(Filter.Result, parameter);
+            return new FilterTreeExpressionBuilder(_Graph).FilterExpression(Filter.Result, parameter, Cache);
         }
     }
 }

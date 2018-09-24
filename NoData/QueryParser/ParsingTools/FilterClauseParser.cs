@@ -33,10 +33,7 @@ namespace NoData.QueryParser.ParsingTools
             }
             else
             {
-                var and = new TextInfo();
-                and.Text = "and";
-                and.Value = TextInfo.LogicalComparison;
-                and.Representation = TextInfo.LogicalComparison;
+                var and = new TextInfo("and", TextInfo.LogicalComparison, TextInfo.LogicalComparison);
                 var rootAnd = new ParserVertex(and);
                 var childrenWithEdges = new[]{
                     ITuple.Create(new ParserEdge(rootAnd, clause.Root), clause),

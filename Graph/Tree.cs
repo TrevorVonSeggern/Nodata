@@ -8,13 +8,14 @@ using Graph.Interfaces;
 namespace Graph
 {
 
+    [Immutable]
     public class Tree<TVertex, TEdge, TVertexValue, TEdgeValue> : ITree<TVertex, TEdge, TVertexValue, TEdgeValue>
         where TVertex : class, IVertex<TVertexValue>
         where TEdge : class, IEdge<TEdgeValue, TVertex, TVertexValue>
     {
-        public virtual TVertex Root { get; protected set; }
+        public TVertex Root { get; }
 
-        public virtual IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> Children { get; }
+        public IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> Children { get; }
 
         public Tree(TVertex root, IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> children)
         {
@@ -107,17 +108,20 @@ namespace Graph
         }
 
 
-        //public virtual IGraph Flatten()
-        //{
-        //    var edges = new List<IEdge>();
-        //    Traverse(edges.Add);
-        //    var vertices = new List<IVertex>();
-        //    vertices.Add(root);
-        //    vertices.AddRange(edges.Select(e => e.From).Where(v => v != root));
-        //    vertices.AddRange(edges.Select(e => e.To));
-        //    vertices = vertices.Distinct().ToList();
-        //    return new Graph(vertices, edges);
-        //}
+        public virtual ISubGraph<TVertex, TEdge, TVertexValue, TEdgeValue> Flatten()
+        {
+            var edges = new List<TEdge>();
+            var vertices = new List<TVertex>();
+            vertices.Add(Root);
+            TraverseDepthFirstSearch(e =>
+            {
+                if (!edges.Contains(e))
+                    edges.Add(e);
+                if (!vertices.Contains(e.To))
+                    vertices.Add(e.To);
+            });
+            return new SubGraph<TVertex, TEdge, TVertexValue, TEdgeValue>(vertices, edges);
+        }
     }
 
     // outside of class because It has to implement IMergable<TVertex>. I don't want the tree class to enforce that generic constraint.

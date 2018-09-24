@@ -5,15 +5,23 @@ using System.Linq;
 using NoData.Tests.SharedExampleClasses;
 using NoData.GraphImplementations.Schema;
 using NoData.Utility;
+using FluentAssertions;
 
 namespace NoData.Tests.GraphTests
 {
     public class TreeTests
     {
+        IClassCache cache = new ClassCache();
+        GraphSchema graph;
+
+        public TreeTests()
+        {
+            graph = GraphSchema.Cache<Dto>.Graph;
+        }
+
         [Fact]
         public void Tree_Traverse_Success()
         {
-            var graph = GraphSchema.CreateFromGeneric<Dto>();
             var root = graph.VertexContainingType(typeof(Dto));
             var childVertex = graph.VertexContainingType(typeof(DtoChild));
 
@@ -34,7 +42,6 @@ namespace NoData.Tests.GraphTests
         [Fact]
         public void Tree_Flatten_Success()
         {
-            var graph = GraphSchema.CreateFromGeneric<Dto>();
             var root = graph.VertexContainingType(typeof(Dto));
             var childVertex = graph.VertexContainingType(typeof(DtoChild));
 
@@ -58,7 +65,6 @@ namespace NoData.Tests.GraphTests
         [Fact]
         public void Tree_TraverseVertexEdges_Success()
         {
-            var graph = GraphSchema.CreateFromGeneric<Dto>();
             var root = graph.VertexContainingType(typeof(Dto));
             var childVertex = graph.VertexContainingType(typeof(DtoChild));
             var edgeRootToChildAsChildren = graph.Edges.Single(e => e.From == root && e.To == childVertex && e.Value.IsCollection == false);
@@ -70,13 +76,16 @@ namespace NoData.Tests.GraphTests
                 }
             );
 
-            var list = new List<string>();
-            tree.TraverseDepthFirstSearch((Vertex v, IEnumerable<Edge> c) => list.Add($"{v.ToString()} - {string.Join(",", c.Select(e => e.ToString()))}"));
+            var list = new List<Vertex>();
+            tree.TraverseDepthFirstSearch((Vertex v, IEnumerable<Edge> c) => list.Add(v));
 
             Assert.Equal(3, list.Count);
-            Assert.StartsWith("Dto - ", list[0]);
-            Assert.Equal("DtoChild - ", list[1]);
-            Assert.Equal("Dto - ", list[2]);
+            var dtoTypeId = typeof(Dto).GetHashCode();
+            var dotChildTypeId = typeof(DtoChild).GetHashCode();
+
+            list[0].Value.TypeId.Should().Be(dtoTypeId);
+            list[1].Value.TypeId.Should().Be(dotChildTypeId);
+            list[2].Value.TypeId.Should().Be(dtoTypeId);
         }
     }
 }

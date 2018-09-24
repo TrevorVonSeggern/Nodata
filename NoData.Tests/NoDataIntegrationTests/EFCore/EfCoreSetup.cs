@@ -135,10 +135,10 @@ namespace NoData.Tests.EFCoreSetupTest
             context.People.Add(new Person { Id = 1, Region_code = "en-US", Name = "parent", FavoriteId = 10 });
             context.SaveChanges();
 
-            var nodata = new NoData.NoDataQueryBuilder<DtoPerson>("Favorite");
+            var nodata = new NoData.NoDataBuilder<DtoPerson>("Favorite");
             var source = context.People.AsNoTracking();
 
-            var projected = nodata.Projection(source, configProvider);
+            var projected = nodata.Projection(source, configProvider).BuildQueryable();
 
             var parent = projected.First();
             Assert.NotNull(parent);
@@ -158,10 +158,10 @@ namespace NoData.Tests.EFCoreSetupTest
             context.People.Add(new Person { Id = 1, Region_code = "en-US", Name = "parent", FavoriteId = 10 });
             context.SaveChanges();
 
-            var nodata = new NoData.NoDataQueryBuilder<DtoPerson>("Favorite/Favorite");
+            var nodata = new NoData.NoDataBuilder<DtoPerson>("Favorite/Favorite");
             var source = context.People.AsNoTracking();
 
-            var projected = nodata.Projection(source, configProvider);
+            var projected = nodata.Projection(source, configProvider).BuildQueryable();
 
             var parent = projected.First();
             Assert.NotNull(parent);

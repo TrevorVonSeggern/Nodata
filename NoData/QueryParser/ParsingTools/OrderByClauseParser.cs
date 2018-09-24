@@ -83,7 +83,7 @@ namespace NoData.QueryParser.ParsingTools
         public static Expression GetOrderByExpression(Expression dto, PathToProperty sortPath)
         {
             Expression memberExpression = dto;
-            sortPath.Traverse(x => memberExpression = Expression.PropertyOrField(memberExpression, x.Value.PropertyName));
+            sortPath.Traverse(x => memberExpression = Expression.PropertyOrField(memberExpression, x.Value.Name));
 
             var property = memberExpression.Type.GetProperty(sortPath.Property.Name);
             var propertyAccess = Expression.MakeMemberAccess(memberExpression, property);

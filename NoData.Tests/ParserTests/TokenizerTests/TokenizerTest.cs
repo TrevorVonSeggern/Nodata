@@ -9,6 +9,18 @@ namespace NoData.Tests.TokenizerTests
     {
         static readonly string[] abcProperties = new string[] { "a", "b", "c" };
 
+        [Theory]
+        [InlineData("token")]
+        [InlineData("tokenadsfasdf")]
+        [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
+        [InlineData("a")]
+        [InlineData("_this_is_a_test_")]
+        public void Test1(string data)
+        {
+            var t = new Token(data);
+            Assert.Equal(data, t.Value);
+        }
+
         [Fact]
         public void TestABC()
         {
