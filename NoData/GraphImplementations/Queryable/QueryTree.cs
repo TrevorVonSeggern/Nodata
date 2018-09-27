@@ -13,5 +13,9 @@ namespace NoData.GraphImplementations.Queryable
         public QueryTree(QueryVertex root, IEnumerable<ITuple<QueryEdge, ITree<QueryVertex, QueryEdge, QueryClass, Property>>> children) : base(root, children)
         {
         }
+
+        public QueryTree(IEnumerable<IEnumerable<QueryEdge>> expandPaths) : base(expandPaths)
+        {
+        }
     }
 }

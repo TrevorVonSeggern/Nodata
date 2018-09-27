@@ -17,7 +17,7 @@ namespace NoData.GraphImplementations.Schema
         public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }
         public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children) : base(root, children) { }
 
-        public Tree(Vertex root, IEnumerable<Path> expandPaths) : base(root, expandPaths)
+        public Tree(IEnumerable<Path> expandPaths) : base(expandPaths)
         {
         }
 

@@ -20,15 +20,12 @@ namespace NoData
     {
         public FilterSecurityTypes FilterSecurity { get; } = FilterSecurityTypes.AllowOnlyVisibleValues;
 
-
         // Properties that represent the object model. Ie setup operations
         public Parameters Parameters { get; }
-        protected GraphSchema Graph { get; }
         protected IQueryable<TDto> Source { get; }
 
 
         // Properties that are a result of parsing.
-        protected Tree SelectionTree { get; }
         protected IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath { get; }
         private ParameterExpression DtoExpression { get; }
         private Expression FilterExpression { get; }
@@ -37,15 +34,27 @@ namespace NoData
 
         private IClassCache Cache { get; }
 
-        public NoDataQuery(IQueryable<TDto> source, Parameters parameters, GraphSchema graph, IClassCache cache, Tree selectionTree, IEnumerable<ITuple<PathToProperty, SortDirection>> orderBy, Expression filterExpression, ParameterExpression dtoParameterExpression)
+        public NoDataQuery(
+            IQueryable<TDto> source,
+            Parameters parameters,
+            IClassCache cache,
+            IEnumerable<ITuple<PathToProperty, SortDirection>> orderBy,
+            Expression selectExpandExpression,
+            Expression filterExpression,
+            ParameterExpression dtoParameterExpression)
         {
             Source = source;
             Parameters = parameters;
-            Graph = graph;
+            // /////////////
+
+
+            // Note to self: Need to build a way to parse the QueryTree into an expression.
+
+
+            // /////////////////
 
             DtoExpression = dtoParameterExpression;
             FilterExpression = filterExpression;
-            SelectionTree = selectionTree;
             OrderByPath = orderBy;
 
             Cache = cache;

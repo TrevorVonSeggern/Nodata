@@ -79,10 +79,12 @@ namespace Graph
         }
         public IEnumerable<IPath<TEdge, TVertex, TEdgeValue, TVertexValue>> EnumerateAllPaths() => EnumerateAllPaths(edges => new Path<TEdge, TVertex, TEdgeValue, TVertexValue>(edges));
 
-        public Tree(TVertex root, IEnumerable<IEnumerable<TEdge>> expandPaths)
+        public Tree(IEnumerable<IEnumerable<TEdge>> expandPaths)
         {
-            Root = root;
+            Root = expandPaths.FirstOrDefault(x => x.Any())?.First()?.From;
             var children = new List<ITuple<TEdge, Tree<TVertex, TEdge, TVertexValue, TEdgeValue>>>();
+
+            if (Root is null) return;
 
             if (expandPaths is null)
                 expandPaths = new List<List<TEdge>>();
@@ -93,17 +95,14 @@ namespace Graph
                 return;
 
             // Validate each path starts with root.
-            if (!expandPaths.All(p => p.First().From.Equals(root)))
+            if (!expandPaths.All(p => p.First().From.Equals(Root)))
                 throw new ArgumentException("Paths don't all begin at the same vertex");
 
             // each path that has the the same root.
             foreach (var path in expandPaths.GroupBy(x => x.First()))
             {
                 var childPaths = path.Select(p => p.Skip(1)).Where(p => p.Any());
-                var edgeToChild = path.Key;
-                var childRoot = edgeToChild.To;
-
-                children.Add(ITuple.Create(edgeToChild, new Tree<TVertex, TEdge, TVertexValue, TEdgeValue>(childRoot, childPaths)));
+                children.Add(ITuple.Create(path.Key, new Tree<TVertex, TEdge, TVertexValue, TEdgeValue>(childPaths)));
             }
             Children = children;
         }

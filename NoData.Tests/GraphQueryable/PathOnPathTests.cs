@@ -1,11 +1,11 @@
-using Xunit;
+using System.Linq;
 using System.Collections.Generic;
+using Xunit;
+using FluentAssertions;
 using NoData.Utility;
 
 namespace NoData.Tests.GraphQueryable
 {
-    using System.Linq;
-    using FluentAssertions;
     using SharedTypes;
 
     public class PathOnPathTests
@@ -45,7 +45,7 @@ namespace NoData.Tests.GraphQueryable
             var p2_too_long = new Path(new[] { e1, e2 });
             var paths_just_right = new[] { p1 };
             var paths = new[] { p1, p2_too_long };
-            var t1 = new Tree(v1, paths_just_right);
+            var t1 = new Tree(paths_just_right);
             var paths_from_tree = t1.EnumerateAllPaths<Path>(edges => new Path(edges)).ToList();
 
             //When
@@ -71,7 +71,7 @@ namespace NoData.Tests.GraphQueryable
             var p2 = new Path(new[] { e1, e2 }); // included in the tree.
             var p3 = new Path(new[] { e1, e2, e3 });
             var all_paths = new[] { p1, p2, p3 };
-            var t1 = new Tree(v1, new[] { p2 });
+            var t1 = new Tree(new[] { p2 });
             var paths_from_tree = t1.EnumerateAllPaths<Path>(edges => new Path(edges)).ToList();
 
             //When
