@@ -107,7 +107,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             var clause = $"({expand}|{filter}|{select})";
             return Create($"{clause}({TInfo.SemiColin}{clause})*", list =>
             {
-                var root = new Vertex(TInfo.FromRepresentation(TInfo.ListOfClause, typeof(TInfo))); // { Representation = TInfo.ListOfClause, Type = typeof(TInfo) });
+                var root = new Vertex(TInfo.FromRepresentation(TInfo.ListOfClause, typeof(TInfo)));
 
                 bool IsClause(QueueItem item)
                 {

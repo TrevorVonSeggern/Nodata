@@ -25,6 +25,8 @@ namespace Cache
             cache[key] = item;
         }
 
+        public bool HasKey(TKey key) => PrimitiveContains(key);
+
         public virtual void Add(TKey key, T item)
         {
             cacheLock.EnterWriteLock();

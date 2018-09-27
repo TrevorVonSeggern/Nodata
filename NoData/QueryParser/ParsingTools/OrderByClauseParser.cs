@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using Graph;
 using NoData.GraphImplementations.Schema;
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
@@ -15,7 +16,7 @@ namespace NoData.QueryParser.ParsingTools
         private List<ITuple<PathToProperty, SortDirection>> ResultList = new List<ITuple<PathToProperty, SortDirection>>();
         public override IEnumerable<ITuple<PathToProperty, SortDirection>> Result => ResultList;
 
-        public OrderByClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph) : base(tokenFunc, query)
+        public OrderByClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph, IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms) : base(tokenFunc, query, groupingTerms)
         {
             Graph = graph;
         }

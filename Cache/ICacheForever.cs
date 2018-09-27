@@ -8,6 +8,8 @@ namespace Cache
 
     public interface ICacheForever<in TKey, T>
     {
+        bool HasKey(TKey key);
+        
         void Add(TKey key, T item);
 
         T Get(TKey key);

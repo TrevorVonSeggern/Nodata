@@ -12,19 +12,25 @@ using IBaseList = System.Collections.IEnumerable;
 
 namespace NoData.Utility
 {
-    public interface IClassCache : ICacheForever<ClassInfoUtility>
+    public interface IClassCache : ICacheForever<int, ClassInfoUtility>
     {
         ClassInfoUtility GetOrAdd(Type keyType, Func<ClassInfoUtility> addItemFactory);
         ClassInfoUtility GetOrAdd(Type keyType);
+        Type GetTypeFromId(int typeId);
+        ClassInfoUtility ClassFromTypeId(int typeId);
     }
 
-    public class ClassCache : DictionaryCache<ClassInfoUtility>, IClassCache
+    public class ClassCache : DictionaryCache<int, ClassInfoUtility>, IClassCache
     {
         public ClassInfoUtility GetOrAdd(Type keyType, Func<ClassInfoUtility> addItemFactory)
         {
-            return base.GetOrAdd(keyType.Name, addItemFactory);
+            return base.GetOrAdd(keyType.GetHashCode(), addItemFactory);
         }
         public ClassInfoUtility GetOrAdd(Type keyType) => GetOrAdd(keyType, () => new ClassInfoUtility(keyType));
+
+        public Type GetTypeFromId(int typeId) => Get(typeId).Type;
+
+        public ClassInfoUtility ClassFromTypeId(int typeId) => base.Get(typeId);
     }
 
     [Immutable]

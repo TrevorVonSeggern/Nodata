@@ -17,17 +17,25 @@ namespace NoData.GraphImplementations.Schema
 
         public static class Cache<TDto>
         {
-            public static readonly GraphSchema Graph = CreateFromGeneric<TDto>(new ClassCache());
+            public static readonly GraphSchema Graph = CreateFromGeneric<TDto>(_Cache);
         }
+        public static readonly IClassCache _Cache = new ClassCache();
 
         private static GraphSchema CreateFromGeneric<TDto>(IClassCache cache)
         {
             var vertices = new List<StatefulVertex<ClassInfo>>();
             var edges = new List<Edge>();
+            var types = new HashSet<Type>();
 
             // Helper funcs
             // get the class info from type via the cache.
-            ClassInfoUtility GetClassInfoFromType(Type t) => cache.GetOrAdd(t);
+            ClassInfoUtility GetClassInfoFromType(Type t)
+            {
+                int hash = t.GetHashCode();
+                if (cache.HasKey(hash))
+                    return cache.Get(hash);
+                return cache.GetOrAdd(t);
+            }
 
             bool VerticesContainType(Type type) => vertices.Any(v => v.Vertex.Value.TypeId == type.GetHashCode());
             StatefulVertex<ClassInfo> GetOrAddVertex(Type type)
@@ -39,6 +47,7 @@ namespace NoData.GraphImplementations.Schema
                 {
                     vertex = new StatefulVertex<ClassInfo>(new Vertex(new ClassInfo(GetClassInfoFromType(type))), type);
                     vertices.Add(vertex);
+                    types.Add(type);
                 }
                 return vertex;
             }
@@ -63,12 +72,14 @@ namespace NoData.GraphImplementations.Schema
 
                 foreach (var childNavigationProperty in vertex.Vertex.Value.Properties.Where(p => p.IsNavigationProperty))
                 {
-                    var type = classInfo.NavigationProperties.First(x => x.Name == childNavigationProperty.Name).PropertyType;
+                    var type = classInfo.NavigationProperties.FirstOrDefault(x => x.Name == childNavigationProperty.Name)?.PropertyType;
+                    if (type is null) continue;
                     EstablishConnection(type, childNavigationProperty);
                 }
                 foreach (var childCollection in vertex.Vertex.Value.Properties.Where(p => p.IsCollection))
                 {
-                    var type = classInfo.Collections.First(x => x.Name == childCollection.Name).PropertyType.GetGenericArguments()[0];
+                    var type = classInfo.Collections.FirstOrDefault(x => x.Name == childCollection.Name)?.PropertyType.GetGenericArguments()[0];
+                    if (type is null) continue;
                     EstablishConnection(type, childCollection);
                 }
 

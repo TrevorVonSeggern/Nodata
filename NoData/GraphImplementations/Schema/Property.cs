@@ -23,7 +23,7 @@ namespace NoData.GraphImplementations.Schema
             if (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) || typeof(IList).IsAssignableFrom(prop.PropertyType) || typeof(ICollection).IsAssignableFrom(prop.PropertyType))
             {
                 IsCollection = true;
-                IsNavigationProperty = true;
+                IsNavigationProperty = false;
             }
             else if (Utility.ClassInfoUtility.PrimitiveTypeWhiteList.Contains(prop.PropertyType))
             {

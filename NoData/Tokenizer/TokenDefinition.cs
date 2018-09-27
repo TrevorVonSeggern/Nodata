@@ -11,14 +11,14 @@ namespace NoData.Internal.TreeParser.Tokenizer
 
         public TokenDefinition(string pattern, TokenTypes type)
         {
-            Regex = new Regex(pattern, RegexOptions.Compiled);
+            Regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.Singleline);
             Type = type.ToString();
             IsIgnored = false;
         }
 
         public TokenDefinition(string pattern, string type)
         {
-            Regex = new Regex(pattern, RegexOptions.Compiled);
+            Regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.Singleline);
             Type = type;
             IsIgnored = false;
         }

@@ -97,8 +97,8 @@ namespace NoData
         /// <remarks>May require that Apply Expand is called first.</remarks>
         private IQueryable<TDto> ApplySelect(IQueryable<TDto> query)
         {
-            if (!string.IsNullOrEmpty(Parameters.Select))
-                query = Utility.ExpressionBuilder.ApplySelect(SelectionTree, query, DtoExpression, Cache);
+            // if (!string.IsNullOrEmpty(Parameters.Select))
+            //     query = Utility.ExpressionBuilder.ApplySelect(SelectionTree, query, DtoExpression, Cache);
             return query;
         }
 

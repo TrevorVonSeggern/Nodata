@@ -10,11 +10,31 @@ namespace NoData.Utility
 
     internal static class GenericHelper
     {
+        public static int HashOfList<T>(this IEnumerable<T> source)
+        {
+            int hash = 17;
+            unchecked
+            {
+                foreach (var item in source)
+                    hash = hash * 31 + source.GetHashCode();
+            }
+            return hash;
+        }
+        public static int AndHash<T>(this int hash, T source)
+        {
+            unchecked
+            {
+                hash = hash * 31 + source.GetHashCode();
+            }
+            return hash;
+        }
+
+
         public static object CreateAndCallMethodOnClass(
             Type classType,
-            Type[] classGenerics, 
-            object[] ctorArguments, 
-            string methodName, 
+            Type[] classGenerics,
+            object[] ctorArguments,
+            string methodName,
             Type[] methodArgumentTypes,
             object[] methodArguments)
         {
@@ -26,8 +46,8 @@ namespace NoData.Utility
 
         public static object CreateAndCallMethodOnStaticClass(
             Type classType,
-            Type[] methodGenerics, 
-            string methodName, 
+            Type[] methodGenerics,
+            string methodName,
             Type[] methodArgumentTypes,
             object[] methodArguments)
         {
@@ -43,6 +63,6 @@ namespace NoData.Utility
             object[] methodArguments
             )
         => (TResult)CreateAndCallMethodOnClass(typeof(TClass), classGenerics, ctorArguments, methodName, methodArgumentTypes, methodArguments);
-        
+
     }
 }

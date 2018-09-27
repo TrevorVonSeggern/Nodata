@@ -8,7 +8,7 @@ using CodeTools;
 namespace Graph
 {
     [Immutable]
-    public class Path<TEdge, TVertex, TEdgeValue, TVertexValue> : IPath<TEdge, TVertex, TEdgeValue, TVertexValue>
+    public class Path<TEdge, TVertex, TEdgeValue, TVertexValue> : IPath<TEdge, TVertex, TEdgeValue, TVertexValue>, IEnumerable<TEdge>
         where TEdge : IEdge<TEdgeValue, TVertex, TVertexValue>
         where TVertex : IVertex<TVertexValue>
     {

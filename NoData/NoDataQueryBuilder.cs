@@ -14,10 +14,10 @@ using NoData.Utility;
 
 namespace NoData
 {
-    internal static class SharedClassCache
-    {
-        public static readonly IClassCache Cache = new ClassCache();
-    }
+    // internal static class SharedClassCache
+    // {
+    //     public static readonly IClassCache Cache = new ClassCache();
+    // }
 
     public class NoDataBuilder<TDto> : INoData<TDto>
         where TDto : class, new()
@@ -46,7 +46,7 @@ namespace NoData
 
         private QueryParser<TDto> ParseQuery()
         {
-            var parser = new QueryParser<TDto>(Parameters, Graph, SharedClassCache.Cache);
+            var parser = new QueryParser<TDto>(Parameters, Graph, GraphSchema._Cache);
 
             return parser;
         }
@@ -62,7 +62,7 @@ namespace NoData
         {
             Expression filterExpr = parser.ApplyFilterExpression(ParameterDtoExpression);
 
-            return new NoDataQuery<TDto>(sourceQueryable, Parameters, Graph, SharedClassCache.Cache, parser.SelectionTree, parser.OrderByPath, filterExpr, ParameterDtoExpression);
+            return new NoDataQuery<TDto>(sourceQueryable, Parameters, Graph, GraphSchema._Cache, parser.SelectionTree, parser.OrderByPath, filterExpr, ParameterDtoExpression);
         }
 
         public INoDataQuery<TDto> Projection<TEntity>(IQueryable<TEntity> sourceQueryable, IConfigurationProvider mapperConfiguration)

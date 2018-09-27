@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using Cache;
 using NoData.GraphImplementations.Schema;
 
 namespace NoData.Utility
@@ -88,11 +89,17 @@ namespace NoData.Utility
 
 
 
-
+        private static ICacheForever<int, List<MemberBinding>> _propertyBindingCache = new DictionaryCache<int, List<MemberBinding>>();
         private static IEnumerable<MemberBinding> BindingsForProperties(Vertex info, IEnumerable<PropertyInfo> properties, Expression dto)
         {
+            // var hash = (info.GetHashCode() + properties.Sum(x => x.PropertyType.GetHashCode()) + dto.GetHashCode()) % int.MaxValue;
+            // return _propertyBindingCache.GetOrAdd(info.Value.TypeId, () =>
+            // {
+            var result = new List<MemberBinding>();
             foreach (var prop in properties)
-                yield return (Expression.Bind(prop, Expression.PropertyOrField(dto, prop.Name)));
+                result.Add(Expression.Bind(prop, Expression.PropertyOrField(dto, prop.Name)));
+            return result;
+            // });
         }
 
         #region Expressions for expansion
@@ -101,44 +108,45 @@ namespace NoData.Utility
 
         private static IEnumerable<MemberBinding> ExpansionMemberBindings(Vertex info, Expression dto, Tree tree, IClassCache cache)
         {
-            yield break;
-            // var classInfo = cache.GetOrAdd(info.Value.TypeId);
-            // var outgoingEdges = tree.Children.Select(c => c.Item1);
+            var classInfo = cache.Get(info.Value.TypeId);
+            var outgoingEdges = tree.Children.Select(c => c.Item1);
 
-            // // Bind all the non-expandable types.
-            // foreach (var prop in BindingsForProperties(info, classInfo.NonExpandableProperties, dto))
-            //     yield return prop;
+            // Bind all the non-expandable types.
+            foreach (var prop in BindingsForProperties(info, classInfo.NonExpandableProperties, dto))
+                yield return prop;
 
-            // // navigation properties
-            // foreach (var prop in classInfo.NavigationProperties.Where(x => outgoingEdges.Any(c => c.Value.PropertyName == x.Name)))
-            // {
-            //     var navigationVertex = outgoingEdges.FirstOrDefault(x => x.Value.PropertyName == prop.Name).To;
-            //     var navigationTree = tree.Children.First(c => c.Item1.To == navigationVertex).Item2;
-            //     yield return (Expression.Bind(prop, GetExpandExpression(navigationVertex, Expression.PropertyOrField(dto, prop.Name), navigationTree, cache)));
-            // }
+            // navigation properties
+            foreach (var prop in classInfo.NavigationProperties.Where(x => outgoingEdges.Any(c => c.Value.Name == x.Name)))
+            {
+                var navigationVertex = outgoingEdges.FirstOrDefault(x => x.Value.Name == prop.Name).To;
+                var navigationTree = tree.Children.First(c => c.Item1.To == navigationVertex).Item2;
+                yield return (Expression.Bind(prop, GetExpandExpression(navigationVertex, Expression.PropertyOrField(dto, prop.Name), navigationTree, cache)));
+            }
 
             // // collections
-            // foreach (var prop in classInfo.Collections.Where(x => outgoingEdges.Any(c => c.Value.PropertyName == x.Name)))
-            // {
-            //     if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Length != 1)
-            //         continue;
+            foreach (var prop in classInfo.Collections.Where(x => outgoingEdges.Any(c => c.Value.Name == x.Name)))
+            {
+                if (!prop.PropertyType.IsGenericType && prop.PropertyType.GenericTypeArguments.Length != 1)
+                    continue;
 
-            //     var collectionVertex = outgoingEdges.Single(x => x.Value.PropertyName == prop.Name).To;
-            //     var navigationTree = tree.Children.First(c => c.Item1.To == collectionVertex).Item2;
-            //     var listType = typeof(List<>).MakeGenericType(collectionVertex.Value.TypeId);
+                var collectionVertex = outgoingEdges.Single(x => x.Value.Name == prop.Name).To;
+                var navigationTree = tree.Children.First(c => c.Item1.To == collectionVertex).Item2;
+                var collectionType = cache.GetTypeFromId(collectionVertex.Value.TypeId);
 
-            //     var childrenParameter = Expression.Parameter(collectionVertex.Value.TypeId, prop.Name);
-            //     var childrenProperty = Expression.PropertyOrField(dto, prop.Name);
-            //     var select = ExpressionBuilder.BuildSelectExpression(collectionVertex.Value.TypeId,
-            //         childrenProperty,
-            //         childrenParameter, GetExpandExpression(collectionVertex, childrenParameter, navigationTree, cache));
-            //     var list = Expression.Condition(
-            //         Expression.Equal(childrenProperty, Expression.Constant(null)),
-            //         Expression.New(listType.GetConstructor(new Type[] { }), new Expression[] { }),
-            //         Expression.New(listType.GetConstructor(new Type[] { listType }), select)
-            //         );
-            //     yield return (Expression.Bind(prop, list));
-            // }
+                var listType = typeof(List<>).MakeGenericType(collectionType);
+
+                var childrenParameter = Expression.Parameter(collectionType, prop.Name);
+                var childrenProperty = Expression.PropertyOrField(dto, prop.Name);
+                var select = ExpressionBuilder.BuildSelectExpression(collectionType,
+                    childrenProperty,
+                    childrenParameter, GetExpandExpression(collectionVertex, childrenParameter, navigationTree, cache));
+                var list = Expression.Condition(
+                    Expression.Equal(childrenProperty, Expression.Constant(null)),
+                    Expression.New(listType.GetConstructor(new Type[] { }), new Expression[] { }),
+                    Expression.New(listType.GetConstructor(new Type[] { listType }), select)
+                    );
+                yield return (Expression.Bind(prop, list));
+            }
         }
 
         #endregion

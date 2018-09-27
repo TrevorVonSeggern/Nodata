@@ -100,11 +100,8 @@ namespace NoData.GraphImplementations.QueryParser
                 'Z',
             };
             public static string NextRep() => possibleChars[index++].ToString();
-#if DEBUG
-            public static string NextRep(string regex) => Regex.Escape(regex);
-#else
+            // public static string NextRep(string regex) => Regex.Escape(regex);
             public static string NextRep(string regex) => NextRep();
-#endif
         }
 
         // value types

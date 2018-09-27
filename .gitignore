@@ -293,3 +293,7 @@ lcov.info
 CodeTools/asdf/
 
 *.dll
+
+*.data
+
+*.old

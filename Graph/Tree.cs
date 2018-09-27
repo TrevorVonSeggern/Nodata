@@ -15,7 +15,7 @@ namespace Graph
     {
         public TVertex Root { get; }
 
-        public IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> Children { get; }
+        public IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> Children { get; } = new List<ITuple<TEdge, Tree<TVertex, TEdge, TVertexValue, TEdgeValue>>>();
 
         public Tree(TVertex root, IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> children)
         {
@@ -61,7 +61,8 @@ namespace Graph
             }
         }
 
-        public IEnumerable<IPath<TEdge, TVertex, TEdgeValue, TVertexValue>> EnumerateAllPaths()
+        public IEnumerable<P> EnumerateAllPaths<P>(Func<IEnumerable<TEdge>, P> ctorFunc)
+            where P : IPath<TEdge, TVertex, TEdgeValue, TVertexValue>
         {
             if (!Children.Any())
                 yield break;
@@ -71,11 +72,12 @@ namespace Graph
                 var toPrepend = new List<IPath<TEdge, TVertex, TEdgeValue, TVertexValue>>();
                 foreach (var cpath in cPaths)
                 {
-                    yield return ((cpath.PrependEdge(childPath.Item1)));
+                    yield return ctorFunc((cpath.Prepend(childPath.Item1)));
                 }
-                yield return new Path<TEdge, TVertex, TEdgeValue, TVertexValue>(new[] { childPath.Item1 });
+                yield return ctorFunc(new[] { childPath.Item1 });
             }
         }
+        public IEnumerable<IPath<TEdge, TVertex, TEdgeValue, TVertexValue>> EnumerateAllPaths() => EnumerateAllPaths(edges => new Path<TEdge, TVertex, TEdgeValue, TVertexValue>(edges));
 
         public Tree(TVertex root, IEnumerable<IEnumerable<TEdge>> expandPaths)
         {
@@ -103,7 +105,6 @@ namespace Graph
 
                 children.Add(ITuple.Create(edgeToChild, new Tree<TVertex, TEdge, TVertexValue, TEdgeValue>(childRoot, childPaths)));
             }
-
             Children = children;
         }
 

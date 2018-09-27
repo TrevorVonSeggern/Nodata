@@ -8,12 +8,13 @@ using NoData.GraphImplementations.QueryParser;
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using ParserVertex = NoData.GraphImplementations.QueryParser.Vertex;
 using ParserEdge = NoData.GraphImplementations.QueryParser.Edge;
+using System.Text.RegularExpressions;
 
 namespace NoData.QueryParser.ParsingTools
 {
     public class FilterClauseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, QueueItem>, IAcceptAdditions
     {
-        public FilterClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query) : base(tokenFunc, query) { }
+        public FilterClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms) : base(tokenFunc, query, groupingTerms) { }
 
         public void AddToClause(string clause)
         {

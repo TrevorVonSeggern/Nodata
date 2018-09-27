@@ -10,7 +10,7 @@ namespace NoData.QueryParser.ParsingTools
     public class QueueGrouper<T> : AbstractGrouper<T>, IGrouper<T> where T : IRepresent
     {
         public QueueGrouper() : base() { }
-        public QueueGrouper(IDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms) : base(terms) { }
+        public QueueGrouper(IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms) : base(terms) { }
 
         private int GetListIndexInRepString(int stringIndex, IList<T> list)
         {

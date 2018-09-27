@@ -14,7 +14,7 @@ using SchemaPath = NoData.GraphImplementations.Schema.Path;
 using SchemaEdge = NoData.GraphImplementations.Schema.Edge;
 using SchemaVertex = NoData.GraphImplementations.Schema.Vertex;
 using GraphSchema = NoData.GraphImplementations.Schema.GraphSchema;
-
+using System.Text.RegularExpressions;
 
 namespace NoData.QueryParser.ParsingTools
 {
@@ -24,7 +24,14 @@ namespace NoData.QueryParser.ParsingTools
         private readonly IAcceptAdditions _SelectAdd;
         private readonly IAcceptAdditions _FilterAdd;
 
-        public ExpandClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph, IAcceptAdditions select, IAcceptAdditions filter) : base(tokenFunc, query)
+        public ExpandClauseParser(
+            Func<string, IList<QueueItem>> tokenFunc,
+            string query,
+            GraphSchema graph,
+            IAcceptAdditions select,
+            IAcceptAdditions filter,
+            IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms)
+                : base(tokenFunc, query, groupingTerms)
         {
             Graph = graph;
             _SelectAdd = select;

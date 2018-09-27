@@ -9,6 +9,10 @@ using Xunit;
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using NoData.GraphImplementations.QueryParser;
 using NoData.Utility;
+using NoData.QueryParser;
+using System;
+using System.Text.RegularExpressions;
+using Graph;
 
 namespace NoData.Tests.ExpandTests
 {
@@ -31,9 +35,10 @@ namespace NoData.Tests.ExpandTests
             // setup
             var queryString = nameof(Dto.partner);
             var tokens = _GetTokens(queryString);
-
-            var grouper = new QueueGrouper<QueueItem>();
-            grouper.AddGroupingTerms(ExpandGroupings.ExpandProperty);
+            var dict = new Dictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>>();
+            var term = ExpandGroupings.ExpandProperty;
+            dict.Add(new Regex(term.Item1, RegexOptions.Compiled | RegexOptions.Singleline), term.Item2);
+            var grouper = new QueueGrouper<QueueItem>(dict);
             var parsed = grouper.ParseToSingle(tokens);
 
             Assert.NotNull(parsed);
@@ -48,16 +53,7 @@ namespace NoData.Tests.ExpandTests
             var queryString = $"{nameof(Dto.partner)}($expand={nameof(Dto.partner)}($expand={nameof(Dto.partner)}))";
             var tokens = _GetTokens(queryString);
 
-            var grouper = new OrderdGrouper<QueueItem>();
-
-            grouper.AddGroupingTerms(ExpandGroupings.ExpandProperty);
-            grouper.AddGroupingTerms(FilterGroupings.AddTermsForFilter());
-            grouper.AddGroupingTerms(ExpandGroupings.ExpandExpression);
-            grouper.AddGroupingTerms(ExpandGroupings.FilterExpression);
-            grouper.AddGroupingTerms(ExpandGroupings.SelectExpression);
-            grouper.AddGroupingTerms(ExpandGroupings.ListOfClauseExpressions());
-            grouper.AddGroupingTerms(ExpandGroupings.ExpandPropertyWithListOfClauses);
-            grouper.AddGroupingTerms(ExpandGroupings.ListOfExpand);
+            var grouper = new OrderdGrouper<QueueItem>(_TermHelper.ExpandTerms);
 
             var parsed = grouper.ParseToSingle(tokens);
 

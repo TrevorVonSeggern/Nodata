@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using Graph;
 using NoData.GraphImplementations.Schema;
 
@@ -22,7 +23,7 @@ namespace NoData.QueryParser.ParsingTools
         private List<PathToProperty> ResultList = new List<PathToProperty>();
 
 
-        public SelectClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph) : base(tokenFunc, query)
+        public SelectClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph, IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms) : base(tokenFunc, query, groupingTerms)
         {
             Graph = graph;
         }
