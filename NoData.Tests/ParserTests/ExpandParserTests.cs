@@ -14,15 +14,15 @@ using System;
 using System.Text.RegularExpressions;
 using Graph;
 
-namespace NoData.Tests.ExpandTests
+namespace NoData.Tests.ParserTests
 {
-    public class ExpandGrouper_FakeExpandProperty : IClassFixture<NoData.Tests.SharedExampleClasses.CacheAndGraphFixture<Dto>>
+    public class ExpandParserTests : IClassFixture<NoData.Tests.SharedExampleClasses.CacheAndGraphFixture<Dto>>
     {
         CacheAndGraphFixture<Dto> Fixture;
         private IList<QueueItem> _GetTokens(string parmeter) => new Tokenizer(ClassProperties).Tokenize(parmeter).Select(t => new QueueItem(new Vertex(t))).ToList();
         private readonly IEnumerable<string> ClassProperties;
 
-        public ExpandGrouper_FakeExpandProperty(CacheAndGraphFixture<Dto> fixture)
+        public ExpandParserTests(CacheAndGraphFixture<Dto> fixture)
         {
             Fixture = fixture;
             ClassProperties = fixture.cache.GetOrAdd(typeof(Dto)).PropertyNames;

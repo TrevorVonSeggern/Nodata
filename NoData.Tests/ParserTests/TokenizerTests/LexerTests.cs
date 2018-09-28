@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using Xunit;
 using NoData.Internal.TreeParser.Tokenizer;
 
-namespace NoData.Tests.TokenizerTests
+namespace NoData.Tests.ParserTests.TokenizerTests
 {
-    public class LexerTest
+    public class LexerTests
     {
         [Fact]
         public void TestABC()

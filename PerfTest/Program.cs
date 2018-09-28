@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using NoData.Tests.ExpandTests;
+using NoData.Tests.IntegrationTests;
 
 namespace PerfTest
 {
@@ -51,7 +51,7 @@ namespace PerfTest
 
         void Test(string expand, params int[] expectedIds)
         {
-            var tst = new ExpandTest();
+            var tst = new ExpandTests();
             tst.Expand_Expression(expand, expectedIds);
         }
 

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using NoData.Utility;
 using Graph;
 using CodeTools;
+using NoData.GraphImplementations.Queryable;
 
 namespace NoData
 {
@@ -24,13 +25,12 @@ namespace NoData
         public Parameters Parameters { get; }
         protected IQueryable<TDto> Source { get; }
 
-
         // Properties that are a result of parsing.
         protected IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath { get; }
         private ParameterExpression DtoExpression { get; }
         private Expression FilterExpression { get; }
-
-
+        private Expression SelectExpandExpression { get; }
+        private QueryTree SelectionTree { get; }
 
         private IClassCache Cache { get; }
 
@@ -41,18 +41,14 @@ namespace NoData
             IEnumerable<ITuple<PathToProperty, SortDirection>> orderBy,
             Expression selectExpandExpression,
             Expression filterExpression,
-            ParameterExpression dtoParameterExpression)
+            ParameterExpression dtoParameterExpression,
+            QueryTree selectionTree)
         {
             Source = source;
             Parameters = parameters;
-            // /////////////
 
-
-            // Note to self: Need to build a way to parse the QueryTree into an expression.
-
-
-            // /////////////////
-
+            SelectionTree = selectionTree;
+            SelectExpandExpression = selectExpandExpression;
             DtoExpression = dtoParameterExpression;
             FilterExpression = filterExpression;
             OrderByPath = orderBy;
@@ -92,22 +88,12 @@ namespace NoData
         }
 
         /// <summary>
-        /// Applies the expansion property to the queryable.
-        /// </summary>
-        private IQueryable<TDto> ApplyExpand(IQueryable<TDto> query)
-        {
-            query = Utility.ExpressionBuilder.ApplyExpand(SelectionTree, query, DtoExpression, Cache);
-            return query;
-        }
-
-        /// <summary>
         /// Selects a subset of properties
         /// </summary>
         /// <remarks>May require that Apply Expand is called first.</remarks>
         private IQueryable<TDto> ApplySelect(IQueryable<TDto> query)
         {
-            // if (!string.IsNullOrEmpty(Parameters.Select))
-            //     query = Utility.ExpressionBuilder.ApplySelect(SelectionTree, query, DtoExpression, Cache);
+            query = Utility.ExpressionBuilder.ApplySelectExpand(DtoExpression, SelectExpandExpression, query);
             return query;
         }
 
@@ -128,25 +114,8 @@ namespace NoData
         private IQueryable<TDto> Apply()
         {
             var query = this.Source;
-            switch (FilterSecurity)
-            {
-                default:
-                case FilterSecurityTypes.AllowOnlyVisibleValues:
-                    query = ApplyExpand(query);
-                    query = ApplySelect(query);
-                    query = ApplyFilter(query);
-                    break;
-                case FilterSecurityTypes.AllowFilteringOnPropertiesThatAreNotDisplayed:
-                    query = ApplyExpand(query);
-                    query = ApplyFilter(query);
-                    query = ApplySelect(query);
-                    break;
-                case FilterSecurityTypes.AllowFilteringOnNonExplicitlyExpandedItems:
-                    query = ApplyFilter(query);
-                    query = ApplyExpand(query);
-                    query = ApplySelect(query);
-                    break;
-            }
+            query = ApplySelect(query);
+            query = ApplyFilter(query);
             query = ApplyOrderBy(query);
             query = ApplySkip(query);
             return ApplyTop(query);
@@ -176,7 +145,5 @@ namespace NoData
             //         ContractResolver = new DynamicContractResolver(sGraph)
             //     });
         }
-
     }
-
 }

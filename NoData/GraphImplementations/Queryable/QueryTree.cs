@@ -8,13 +8,13 @@ using Property = NoData.GraphImplementations.Schema.Property;
 namespace NoData.GraphImplementations.Queryable
 {
     [Immutable]
-    public class QueryTree : Graph.Tree<QueryVertex, QueryEdge, QueryClass, Property>
+    public class QueryTree : Graph.Tree<QueryTree, QueryVertex, QueryEdge, QueryClass, Property>
     {
-        public QueryTree(QueryVertex root, IEnumerable<ITuple<QueryEdge, ITree<QueryVertex, QueryEdge, QueryClass, Property>>> children) : base(root, children)
+        public QueryTree(QueryVertex root, IEnumerable<ITuple<QueryEdge, QueryTree>> children = null) : base(root, children)
         {
         }
 
-        public QueryTree(IEnumerable<IEnumerable<QueryEdge>> expandPaths) : base(expandPaths)
+        public QueryTree(IEnumerable<IEnumerable<QueryEdge>> expandPaths) : base(expandPaths, ePaths => new QueryTree(ePaths), v => new QueryTree(v))
         {
         }
     }

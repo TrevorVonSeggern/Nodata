@@ -2,7 +2,7 @@ using Graph;
 using NoData.Tests.SharedExampleClasses;
 using Xunit;
 
-namespace NoData.Tests.BloomFilterTests
+namespace NoData.Tests.SubProjects.BloomFilterTests
 {
 
     public class BloomFilterTests

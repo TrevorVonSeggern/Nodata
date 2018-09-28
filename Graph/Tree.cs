@@ -9,18 +9,19 @@ namespace Graph
 {
 
     [Immutable]
-    public class Tree<TVertex, TEdge, TVertexValue, TEdgeValue> : ITree<TVertex, TEdge, TVertexValue, TEdgeValue>
+    public class Tree<TTree, TVertex, TEdge, TVertexValue, TEdgeValue> : ITree<TTree, TVertex, TEdge, TVertexValue, TEdgeValue>
         where TVertex : class, IVertex<TVertexValue>
         where TEdge : class, IEdge<TEdgeValue, TVertex, TVertexValue>
+        where TTree : class, ITree<TTree, TVertex, TEdge, TVertexValue, TEdgeValue>
     {
         public TVertex Root { get; }
 
-        public IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> Children { get; } = new List<ITuple<TEdge, Tree<TVertex, TEdge, TVertexValue, TEdgeValue>>>();
+        public IEnumerable<ITuple<TEdge, TTree>> Children { get; } = new List<ITuple<TEdge, TTree>>();
 
-        public Tree(TVertex root, IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> children)
+        public Tree(TVertex root, IEnumerable<ITuple<TEdge, TTree>> children = null)
         {
             Root = root;
-            Children = children ?? new List<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>>();
+            Children = children ?? new List<ITuple<TEdge, TTree>>();
             if (Children.Any(c => !root.Equals(c.Item1.From)))
                 throw new ArgumentException("Children edges must all be from the root.");
         }
@@ -79,10 +80,10 @@ namespace Graph
         }
         public IEnumerable<IPath<TEdge, TVertex, TEdgeValue, TVertexValue>> EnumerateAllPaths() => EnumerateAllPaths(edges => new Path<TEdge, TVertex, TEdgeValue, TVertexValue>(edges));
 
-        public Tree(IEnumerable<IEnumerable<TEdge>> expandPaths)
+        public Tree(IEnumerable<IEnumerable<TEdge>> expandPaths, Func<IEnumerable<IEnumerable<TEdge>>, TTree> childCtor, Func<TVertex, TTree> childCtor2)
         {
             Root = expandPaths.FirstOrDefault(x => x.Any())?.First()?.From;
-            var children = new List<ITuple<TEdge, Tree<TVertex, TEdge, TVertexValue, TEdgeValue>>>();
+            var children = new List<ITuple<TEdge, TTree>>();
 
             if (Root is null) return;
 
@@ -95,14 +96,17 @@ namespace Graph
                 return;
 
             // Validate each path starts with root.
-            if (!expandPaths.All(p => p.First().From.Equals(Root)))
+            if (expandPaths.Any(p => p.First().From != Root))
                 throw new ArgumentException("Paths don't all begin at the same vertex");
 
             // each path that has the the same root.
             foreach (var path in expandPaths.GroupBy(x => x.First()))
             {
                 var childPaths = path.Select(p => p.Skip(1)).Where(p => p.Any());
-                children.Add(ITuple.Create(path.Key, new Tree<TVertex, TEdge, TVertexValue, TEdgeValue>(childPaths)));
+                if (childPaths.Any())
+                    children.Add(ITuple.Create(path.Key, childCtor(childPaths)));
+                else
+                    children.Add(ITuple.Create(path.Key, childCtor2(path.Key.To)));
             }
             Children = children;
         }
@@ -127,13 +131,14 @@ namespace Graph
     // outside of class because It has to implement IMergable<TVertex>. I don't want the tree class to enforce that generic constraint.
     public static class TreeExtension
     {
-        public static Graph<TVertex, TEdge, TVertexValue, TEdgeValue> Flatten<TVertex, TEdge, TVertexValue, TEdgeValue>(this Tree<TVertex, TEdge, TVertexValue, TEdgeValue> selectionTree)
+        public static Graph<TVertex, TEdge, TVertexValue, TEdgeValue> Flatten<TTree, TVertex, TEdge, TVertexValue, TEdgeValue>(this TTree selectionTree)
                 where TVertex : class, IVertex<TVertexValue>, IMergable<TVertex>
                 where TEdge : class, IEdge<TEdgeValue, TVertex, TVertexValue>
+                where TTree : class, ITree<TTree, TVertex, TEdge, TVertexValue, TEdgeValue>
         {
             return Interfaces.TreeExtension.Flatten<
                     Graph<TVertex, TEdge, TVertexValue, TEdgeValue>,
-                    Tree<TVertex, TEdge, TVertexValue, TEdgeValue>,
+                    TTree,
                     TVertex,
                     TEdge,
                     TVertexValue,

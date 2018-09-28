@@ -3,9 +3,9 @@ using Xunit;
 using NoData.Internal.TreeParser.Tokenizer;
 using System;
 
-namespace NoData.Tests.TokenizerTests
+namespace NoData.Tests.ParserTests.TokenizerTests
 {
-    public class TokenizerTest
+    public class TokenizerTests
     {
         static readonly string[] abcProperties = new string[] { "a", "b", "c" };
 

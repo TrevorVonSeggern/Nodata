@@ -9,9 +9,9 @@ using AutoMapper.QueryableExtensions;
 using System.Collections.Generic;
 using Xunit;
 
-namespace NoData.Tests.EFCoreSetupTest
+namespace NoData.Tests.IntegrationTests.EFCore
 {
-    public class EfCoreSetup
+    public class EFCoreSetup
     {
         private DataContext GetDataContext => SharedExampleClasses.Database.DataContext.GetInMemoryDatabase();
         private IMapper GetMapper => SharedExampleClasses.Automapper.AutoMapperConfig.CreateConfig();

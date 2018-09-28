@@ -3,9 +3,9 @@ using System.Linq;
 using NoData.Tests.SharedExampleClasses;
 using Xunit;
 
-namespace NoData.Tests.ExpandTests
+namespace NoData.Tests.IntegrationTests.SerializationTests
 {
-    public class PropertyIgnoreTest
+    public class ExpandTests
     {
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
         {

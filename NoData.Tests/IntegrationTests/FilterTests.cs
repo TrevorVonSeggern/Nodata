@@ -4,10 +4,10 @@ using System.Linq;
 using NoData.Tests.SharedExampleClasses;
 using Xunit;
 
-namespace NoData.Tests.FilterTests
+namespace NoData.Tests.IntegrationTests
 {
 
-    public class FilterTest
+    public class FilterTests
     {
         public static IEnumerable<Dto> SampleCollection
         {

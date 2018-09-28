@@ -3,7 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace NoData.Tests.CacheTests
+namespace NoData.Tests.SubProjects.CacheTests
 {
     public class DictionaryCacheTests
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using NoData.Tests.SharedExampleClasses;
 using FluentAssertions;
 
-namespace NoData.Tests.SelectTests
+namespace NoData.Tests.IntegrationTests
 {
-    public class SelectTest
+    public class SelectTests
     {
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
         {
@@ -129,7 +129,7 @@ namespace NoData.Tests.SelectTests
                 Assert.NotNull(dto.Name);
                 Assert.Null(dto.region_code);
                 Assert.Null(dto.favorite);
-                Assert.Null(dto.children);
+                Assert.Empty(dto.children);
             }
         }
     }

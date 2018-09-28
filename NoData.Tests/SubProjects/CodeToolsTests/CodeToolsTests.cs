@@ -9,7 +9,7 @@ using Xunit;
 
 // Thanks to https://blogs.msdn.microsoft.com/kevinpilchbisson/2007/11/20/enforcing-immutability-in-code/
 
-namespace NoData.Utility
+namespace NoData.Tests.SubProjects.CodeToolsTests
 {
     public class CodeToolsTests
     {

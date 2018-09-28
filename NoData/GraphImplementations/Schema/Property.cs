@@ -20,14 +20,15 @@ namespace NoData.GraphImplementations.Schema
         {
             Name = prop.Name;
 
-            if (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) || typeof(IList).IsAssignableFrom(prop.PropertyType) || typeof(ICollection).IsAssignableFrom(prop.PropertyType))
-            {
-                IsCollection = true;
-                IsNavigationProperty = false;
-            }
-            else if (Utility.ClassInfoUtility.PrimitiveTypeWhiteList.Contains(prop.PropertyType))
+
+            if (Utility.ClassInfoUtility.PrimitiveTypeWhiteList.Contains(prop.PropertyType))
             {
                 IsCollection = false;
+                IsNavigationProperty = false;
+            }
+            else if (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) || typeof(IList).IsAssignableFrom(prop.PropertyType) || typeof(ICollection).IsAssignableFrom(prop.PropertyType))
+            {
+                IsCollection = true;
                 IsNavigationProperty = false;
             }
             else

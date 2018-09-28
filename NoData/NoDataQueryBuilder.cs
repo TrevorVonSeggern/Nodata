@@ -61,8 +61,9 @@ namespace NoData
         private INoDataQuery<TDto> buildQuery(IQueryable<TDto> sourceQueryable, QueryParser<TDto> parser)
         {
             Expression filterExpr = parser.ApplyFilterExpression(ParameterDtoExpression);
-
-            return new NoDataQuery<TDto>(sourceQueryable, Parameters, Graph, GraphSchema._Cache, parser.SelectionTree, parser.OrderByPath, filterExpr, ParameterDtoExpression);
+            var selectionTree = Utility.SchemaToQueryable.TranslateTree2(parser.SelectionTree, parser.SelectPaths);
+            var selectExpandExpression = Utility.ExpressionBuilder.GetExpandExpression(ParameterDtoExpression, selectionTree, GraphSchema._Cache);
+            return new NoDataQuery<TDto>(sourceQueryable, Parameters, GraphSchema._Cache, parser.OrderByPath, selectExpandExpression, filterExpr, ParameterDtoExpression, selectionTree);
         }
 
         public INoDataQuery<TDto> Projection<TEntity>(IQueryable<TEntity> sourceQueryable, IConfigurationProvider mapperConfiguration)

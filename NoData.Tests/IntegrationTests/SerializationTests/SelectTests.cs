@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NoData.Tests.SharedExampleClasses;
 
-namespace NoData.Tests.SelectTests
+namespace NoData.Tests.IntegrationTests.SerializationTests
 {
-    public class SelectPropertyIgnoreTest
+    public class SelectTests
     {
 
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>

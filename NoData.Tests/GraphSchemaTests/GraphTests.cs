@@ -6,9 +6,8 @@ using NoData.Utility;
 using NoData.Tests.SharedExampleClasses;
 using Xunit;
 
-namespace NoData.Tests.GraphTests
+namespace NoData.Tests.GraphSchemaTests
 {
-
     public class GraphTests
     {
         IClassCache cache;

@@ -7,7 +7,7 @@ using NoData.GraphImplementations.Schema;
 using NoData.Utility;
 using FluentAssertions;
 
-namespace NoData.Tests.GraphTests
+namespace NoData.Tests.GraphSchemaTests
 {
     public class TreeTests
     {

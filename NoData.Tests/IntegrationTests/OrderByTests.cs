@@ -3,7 +3,7 @@ using FluentAssertions;
 using NoData.Tests.SharedExampleClasses;
 using Xunit;
 
-namespace NoData.Tests.OrderByTests
+namespace NoData.Tests.IntegrationTests
 {
     public class OrderByTests
     {

@@ -95,9 +95,29 @@ namespace NoData.QueryParser
                 if (_selectionTree is null)
                 {
                     var rootQueryVertex = _Graph.VertexContainingType(RootQueryType);
-                    _selectionTree = Tree.CreateFromPathsTree(rootQueryVertex, Expand.Result.Where(p => p.Edges.Any()), Select.Result);
+                    var expandPaths = Expand.Result.Where(p => p.Edges.Any()).ToList();
+                    if (!expandPaths.Any())
+                    {
+                        _selectionTree = new Tree(rootQueryVertex);
+                    }
+                    else
+                        _selectionTree = new Tree(Expand.Result.Where(p => p.Edges.Any()));
                 }
                 return _selectionTree;
+            }
+        }
+
+        private IEnumerable<PathToProperty> _selectPaths { get; set; }
+        public IEnumerable<PathToProperty> SelectPaths
+        {
+            get
+            {
+                _AssertParsed();
+                if (_selectPaths is null)
+                {
+                    _selectPaths = Select.Result.ToList(); ;
+                }
+                return _selectPaths;
             }
         }
 

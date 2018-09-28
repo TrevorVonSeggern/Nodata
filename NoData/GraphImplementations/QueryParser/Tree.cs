@@ -9,9 +9,8 @@ using System.Linq.Expressions;
 namespace NoData.GraphImplementations.QueryParser
 {
     [Immutable]
-    public class Tree : Tree<Vertex, Edge, TextInfo, EdgeInfo>, IRepresent
+    public class Tree : Tree<Tree, Vertex, Edge, TextInfo, EdgeInfo>, IRepresent
     {
-        public new IEnumerable<ITuple<Edge, Tree>> Children => base.Children?.Cast<ITuple<Edge, Tree>>();
         public string Representation => Root.Value.Representation;
 
         public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }

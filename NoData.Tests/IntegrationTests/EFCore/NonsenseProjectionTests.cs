@@ -7,7 +7,7 @@ using Xunit;
 using FluentAssertions;
 using System;
 
-namespace NoData.Tests.EFCoreSetupTest
+namespace NoData.Tests.IntegrationTests.EFCore
 {
     public class NonsenseProjectionTests
     {

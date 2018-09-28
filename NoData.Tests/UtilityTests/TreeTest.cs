@@ -7,11 +7,11 @@ using NoData.Tests.SharedExampleClasses;
 
 namespace NoData.Tests.UtilityTests
 {
-    public class TreeFlattenTest
+    public class TreeTest
     {
         GraphSchema graph;
 
-        public TreeFlattenTest()
+        public TreeTest()
         {
             graph = GraphSchema.Cache<Dto>.Graph;
         }
