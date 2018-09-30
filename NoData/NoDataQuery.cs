@@ -13,6 +13,7 @@ using Graph;
 using CodeTools;
 using NoData.GraphImplementations.Queryable;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace NoData
 {
@@ -135,9 +136,53 @@ namespace NoData
             }
         }
 
+        public async Task StreamResponse(HttpResponse response)
+        {
+            response.StatusCode = StatusCodes.Status200OK;
+            response.ContentType = "application/json";
+            using (response.Body)
+            {
+                await StreamResponse(response.Body);
+                response.Body.Close();
+            }
+        }
+
+        private const int flushAfter = 512;
+        public async Task StreamResponse(Stream requestBody)
+        {
+            await Task.Run(() =>
+            {
+                using (var sw = new StreamWriter(requestBody))
+                using (var source = this.Stream())
+                {
+                    var counter = 0;
+                    var buffer = new byte[flushAfter];
+                    while (source.CanRead)
+                    {
+                        var b = source.Read(buffer, 0, flushAfter);
+                        if (b != 0)
+                        {
+                            var str = System.Text.Encoding.Default.GetString(buffer, 0, b);
+                            sw.Write(str);
+                            Console.WriteLine(str);
+                        }
+
+                        Console.WriteLine(counter);
+                        if (++counter > flushAfter)
+                        {
+                            sw.Flush();
+                            counter = 0;
+                        }
+                    }
+                    sw.Flush();
+                    sw.Close();
+                }
+            });
+        }
+
         public Stream Stream()
         {
-            return EnumerableStream.Create(Apply().ToList(), this.SelectionTree.AsJson, ",", "[", "]");
+            return EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]");
         }
     }
 }

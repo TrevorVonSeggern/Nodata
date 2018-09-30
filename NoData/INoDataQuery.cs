@@ -1,7 +1,9 @@
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using CodeTools;
+using Microsoft.AspNetCore.Http;
 
 namespace NoData
 {
@@ -15,6 +17,8 @@ namespace NoData
         IQueryable<TDto> BuildQueryable();
 
         string AsJson();
+        Task StreamResponse(HttpResponse response);
+        Task StreamResponse(Stream responseBody);
         Stream Stream();
     }
 }

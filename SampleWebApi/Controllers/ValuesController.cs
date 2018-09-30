@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace nodata.Controllers
 {
+    using Microsoft.AspNetCore.Http;
     using Models;
     using NoData;
     using System;
+    using System.Threading.Tasks;
 
     [Route("api/[controller]")]
     public class ValuesController : Controller
@@ -66,18 +68,17 @@ namespace nodata.Controllers
 
         // GET api/values
         [HttpGet]
-        public string Get([FromServices] INoData<Dto> f)
+        public async Task Get([FromServices] INoData<Dto> f)
         {
-            string response = "";
             try
             {
-                response = f.Load(ParentCollection.AsQueryable()).AsJson();
+                var nodata = f.Load(ParentCollection.AsQueryable());
+                await nodata.StreamResponse(Response);
             }
             catch (Exception e)
             {
-                return "Error has occurred: " + e.Message;
+                // return "Error has occurred: " + e.Message;
             }
-            return response;
         }
 
         // GET api/values/5

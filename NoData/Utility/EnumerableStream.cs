@@ -52,24 +52,30 @@ namespace NoData.Utility
         {
             if (!_source.MoveNext())
             {
+                if (!end.Any())
+                    return false;
                 foreach (var b in end)
                     _buf.Enqueue(b);
                 end.Clear();
                 Between.Clear();
-                return false;
+                return true;
             }
-            else if (!firstItem)
+
+            // add content from current to queue.
+            if (_source.Current != null)
             {
-                foreach (var b in Between)
-                    _buf.Enqueue(b);
-            }
-            else
+                if (!firstItem && Between.Any())
+                {
+                    foreach (var b in Between)
+                        _buf.Enqueue(b);
+                }
                 firstItem = false;
 
-            foreach (var b in _serializer(_source.Current))
-                _buf.Enqueue(b);
-
-            return true;
+                foreach (var b in _serializer(_source.Current))
+                    _buf.Enqueue(b);
+                return true;
+            }
+            return false;
         }
 
         private byte? NextByte()
@@ -78,6 +84,9 @@ namespace NoData.Utility
             {
                 return _buf.Dequeue();
             }
+            if (_buf.Any())
+                return _buf.Dequeue();
+
             _canRead = false;
             return null;
         }

@@ -31,30 +31,6 @@ namespace SampleEFCoreApi.Controllers
         }
 
         [HttpGet]
-        [Route("other")]
-        public void other()
-        {
-            Response.StatusCode = 200;
-            Response.ContentType = "text/plain";
-            using (Response.Body)
-            {
-                using (var sw = new StreamWriter(Response.Body))
-                {
-                    foreach (var i in EnumerableStream.SlowEnumerable())
-                    {
-                        sw.Write(i);
-                        sw.Flush();
-                    }
-                }
-            }
-            // return EnumerableStream.SlowEnumerable();
-            // var response = new HttpResponseMessage();
-            // response.StatusCode = HttpStatusCode.OK;
-            // response.Content = new StreamContent(EnumerableStream.SlowStream());
-            // return response;
-        }
-
-        [HttpGet]
         public IQueryable<Model> Get([FromServices] INoData<Model> nodata)
         {
             return nodata.Projection(Query, _mapper.ConfigurationProvider).BuildQueryable();

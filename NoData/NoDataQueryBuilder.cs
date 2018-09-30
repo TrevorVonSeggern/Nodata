@@ -31,9 +31,6 @@ namespace NoData
             Graph = GraphSchema.Cache<TDto>.Graph;
         }
 
-        public NoDataBuilder(IHttpContextAccessor accessor) : this(ParametersHelper.FromHttpContext(accessor))
-        { }
-
         public NoDataBuilder(
             string expand,
             string filter = null,
