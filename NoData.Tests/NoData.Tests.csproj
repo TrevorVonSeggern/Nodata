@@ -12,6 +12,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0"/>
     <PackageReference Include="Moq" Version="4.10.0"/>
     <PackageReference Include="Bogus" Version="23.0.3"/>
+    <PackageReference Include="AutoFixture" Version="4.5.0"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Automapper" Version="7.0.1"/>

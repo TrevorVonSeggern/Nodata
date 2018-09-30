@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using CodeTools;
 
@@ -13,10 +14,14 @@ namespace Graph.Interfaces
     {
         TVertex Root { get; }
         IEnumerable<ITuple<TEdge, TTree>> Children { get; }
+        [Pure]
         void TraverseDepthFirstSearch(Action<TEdge> callback);
+        [Pure]
         void TraverseDepthFirstSearch(Action<TVertex> callback);
+        [Pure]
         void TraverseDepthFirstSearch(Action<TVertex, IEnumerable<TEdge>> callback);
 
+        [Pure]
         IEnumerable<IPath<TEdge, TVertex, TEdgeValue, TVertexValue>> EnumerateAllPaths();
     }
 

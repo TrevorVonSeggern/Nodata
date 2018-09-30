@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using CodeTools;
 
 namespace Graph.Interfaces
@@ -12,9 +13,13 @@ namespace Graph.Interfaces
         IEnumerable<TEdge> Edges { get; }
         TVertex VertexOfValue(TVertexValue value);
 
+        [Pure]
         IEnumerable<TVertex> VerticesConnectedTo(TVertex vertex);
+        [Pure]
         IEnumerable<TVertex> VerticesConnectedFrom(TVertex vertex);
+        [Pure]
         IEnumerable<TEdge> OutgoingEdges(TVertex vertex);
+        [Pure]
         IEnumerable<TEdge> IncomingEdges(TVertex vertex);
     }
 }

@@ -11,6 +11,9 @@ using AutoMapper.QueryableExtensions;
 using Model = SampleEFCoreApi.Models.DtoPerson;
 using DbModel = SampleEFCoreApi.Database.Person;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
+using System.IO;
+using System.Net;
 
 namespace SampleEFCoreApi.Controllers
 {
@@ -25,6 +28,30 @@ namespace SampleEFCoreApi.Controllers
         {
             Context = context;
             _mapper = mapper;
+        }
+
+        [HttpGet]
+        [Route("other")]
+        public void other()
+        {
+            Response.StatusCode = 200;
+            Response.ContentType = "text/plain";
+            using (Response.Body)
+            {
+                using (var sw = new StreamWriter(Response.Body))
+                {
+                    foreach (var i in EnumerableStream.SlowEnumerable())
+                    {
+                        sw.Write(i);
+                        sw.Flush();
+                    }
+                }
+            }
+            // return EnumerableStream.SlowEnumerable();
+            // var response = new HttpResponseMessage();
+            // response.StatusCode = HttpStatusCode.OK;
+            // response.Content = new StreamContent(EnumerableStream.SlowStream());
+            // return response;
         }
 
         [HttpGet]

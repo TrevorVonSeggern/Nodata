@@ -12,6 +12,7 @@ using NoData.Utility;
 using Graph;
 using CodeTools;
 using NoData.GraphImplementations.Queryable;
+using System.IO;
 
 namespace NoData
 {
@@ -128,22 +129,15 @@ namespace NoData
         /// </summary>
         public string AsJson()
         {
-            var q = Apply();
-            var list = q.ToList();
-            return "bad input";
-            // Query.QueryParser.SelectionTree.AddInstances(list);
-            // var sGraph = Query.QueryParser.SelectionTree.Flatten();
-            // return JsonConvert.SerializeObject(
-            //     list,
-            //     Formatting.Indented,
-            //     new JsonSerializerSettings
-            //     {
-            //         PreserveReferencesHandling = PreserveReferencesHandling.None,
-            //         ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-            //         MaxDepth = 5,
+            using (var reader = new StreamReader(this.Stream()))
+            {
+                return reader.ReadToEnd();
+            }
+        }
 
-            //         ContractResolver = new DynamicContractResolver(sGraph)
-            //     });
+        public Stream Stream()
+        {
+            return EnumerableStream.Create(Apply().ToList(), this.SelectionTree.AsJson, ",", "[", "]");
         }
     }
 }

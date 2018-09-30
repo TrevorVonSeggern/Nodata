@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using CodeTools;
 
@@ -11,6 +12,7 @@ namespace Graph.Interfaces
         where TEdge : IEdge<TEdgeValue, TVertex, TVertexValue>
     {
         IEnumerable<TEdge> Edges { get; }
+        [Pure]
         void Traverse(Action<TEdge> edge);
 
         // IPath<TEdge, TVertex, TEdgeValue, TVertexValue> AppendWith(Func<TEdge> startWithFunc);

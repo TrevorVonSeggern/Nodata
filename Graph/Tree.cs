@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using CodeTools;
@@ -26,6 +27,7 @@ namespace Graph
                 throw new ArgumentException("Children edges must all be from the root.");
         }
 
+        [Pure]
         public virtual void TraverseDepthFirstSearch(Action<TEdge> callback)
         {
             if (Children == null)
@@ -37,6 +39,7 @@ namespace Graph
             }
         }
 
+        [Pure]
         public virtual void TraverseDepthFirstSearch(Action<TVertex> callback)
         {
             callback(Root);
@@ -48,6 +51,7 @@ namespace Graph
             }
         }
 
+        [Pure]
         public virtual void TraverseDepthFirstSearch(Action<TVertex, IEnumerable<TEdge>> callback)
         {
             if (Children == null)
@@ -62,6 +66,7 @@ namespace Graph
             }
         }
 
+        [Pure]
         public IEnumerable<P> EnumerateAllPaths<P>(Func<IEnumerable<TEdge>, P> ctorFunc)
             where P : IPath<TEdge, TVertex, TEdgeValue, TVertexValue>
         {
@@ -78,6 +83,7 @@ namespace Graph
                 yield return ctorFunc(new[] { childPath.Item1 });
             }
         }
+        [Pure]
         public IEnumerable<IPath<TEdge, TVertex, TEdgeValue, TVertexValue>> EnumerateAllPaths() => EnumerateAllPaths(edges => new Path<TEdge, TVertex, TEdgeValue, TVertexValue>(edges));
 
         public Tree(IEnumerable<IEnumerable<TEdge>> expandPaths, Func<IEnumerable<IEnumerable<TEdge>>, TTree> childCtor, Func<TVertex, TTree> childCtor2)
@@ -112,6 +118,7 @@ namespace Graph
         }
 
 
+        [Pure]
         public virtual ISubGraph<TVertex, TEdge, TVertexValue, TEdgeValue> Flatten()
         {
             var edges = new List<TEdge>();

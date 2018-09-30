@@ -119,7 +119,7 @@ namespace NoData.Utility
             foreach (var path in expandPaths.GroupBy(x => x.First()))
             {
                 var childPaths = path.Select(p => p.Skip(1)).Where(p => p.Any());
-                var childSelects = selections.Select(p => new PathToProperty(p.Skip(1), p.Property));
+                var childSelects = selections.Where(x => x.Any()).Select(p => new PathToProperty(p.Skip(1), p.Property));
 
                 var childTree = CreateQueryTree(path.Key.To, childPaths, childSelects);
                 var edge = new QueryEdge(queryRoot, childTree.Root, path.Key.Value);

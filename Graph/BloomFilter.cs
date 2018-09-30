@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Graph
 {
+    using System.Diagnostics.Contracts;
     using Interfaces;
     public class BloomFilter : BloomFilter<object>, IProbabilisticDataScructure { }
     public class BloomFilter<T> : IProbabilisticDataScructure<T> where T : class
@@ -22,6 +23,7 @@ namespace Graph
 
         protected byte[] _bloomFilter;
 
+        [Pure]
         public void AddItem(T item)
         {
             var bit = GetBit(item, out var hash);

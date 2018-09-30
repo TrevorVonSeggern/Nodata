@@ -1,20 +1,32 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using NoData.Tests.IntegrationTests;
 
 namespace PerfTest
 {
+
     class Program
     {
+
         static void Main(string[] args)
         {
-            var program = new Program();
-            program.LogProcessId();
-            for (int i = 0; i < 100; ++i)
+            using (var stream = (EnumerableStream.SlowStream()))
             {
-                program.TestThings();
-                Console.WriteLine(i);
+                while (stream.CanRead)
+                {
+                    var b = stream.ReadByte();
+                    var buffer = new byte[] { (byte)b };
+                    Console.Write(System.Text.Encoding.Default.GetString(buffer));
+                }
             }
+            // var program = new Program();
+            // program.LogProcessId();
+            // for (int i = 0; i < 100; ++i)
+            // {
+            //     program.TestThings();
+            //     Console.WriteLine(i);
+            // }
         }
         void LogProcessId()
         {

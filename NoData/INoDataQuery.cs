@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using AutoMapper;
 using CodeTools;
@@ -14,5 +15,6 @@ namespace NoData
         IQueryable<TDto> BuildQueryable();
 
         string AsJson();
+        Stream Stream();
     }
 }

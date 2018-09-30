@@ -58,7 +58,7 @@ namespace NoData.Tests.SubProjects.CodeToolsTests
             catch (ImmutableAttribute.ImmutableFailureException ex)
             {
                 Console.Write(FormatExceptionForAssert(ex));
-                Assert.False(true, $"'{ex.Type.Name}' failed the immutability test.  See output for details.");
+                Assert.False(true, $"'{ex.Type.Name}' failed the immutability test. " + Environment.NewLine + ex.Message);
             }
         }
 
