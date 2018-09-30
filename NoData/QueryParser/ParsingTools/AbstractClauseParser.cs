@@ -1,40 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NoData.Graph;
-using NoData.Graph.Base;
+using System.Text.RegularExpressions;
+using Graph;
+using NoData.GraphImplementations;
 using NoData.QueryParser.ParsingTools.Groupers;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using TInfo = NoData.QueryParser.Graph.TextInfo;
+
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
     public abstract class AbstractClaseParser<TRootQueryType, TResult> : IQueryClauseParser<TResult>
     {
         protected string QueryString;
-        private IList<ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>>> GroupingTerms = new List<ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>>>();
+        private readonly IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> GroupingTerms;
 
         public Func<string, IList<QueueItem>> TokenFunc { get; }
         public IList<QueueItem> GetTokens(string parmeter) => TokenFunc(parmeter);
 
-        public AbstractClaseParser(Func<string, IList<QueueItem>> tokenFunc, string query)
+        public AbstractClaseParser(Func<string, IList<QueueItem>> tokenFunc, string query, IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms)
         {
             QueryString = query;
             TokenFunc = tokenFunc;
             IsFinished = false;
+            GroupingTerms = groupingTerms;
         }
 
         public virtual bool IsFinished { get; protected set; }
         public virtual Type RootQueryType => typeof(TRootQueryType);
         public virtual TResult Result { get; protected set; }
-
-        public void AddGroupingTerms(ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>> handleGrouping) => GroupingTerms.Add(handleGrouping);
-
-        public void AddGroupingTerms(IEnumerable<ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>>> handleGrouping)
-        {
-            foreach (var group in handleGrouping)
-                AddGroupingTerms(group);
-        }
 
         protected IEnumerable<QueueItem> Tokens { get; private set; }
         public IGrouper<QueueItem> Grouper { get; private set; }
@@ -48,9 +43,9 @@ namespace NoData.QueryParser.ParsingTools
             if (!Tokens.Any())
                 return false;
 
-            Grouper = new OrderdGrouper<QueueItem>(GroupingTerms.ToDictionary(x => x.Item1, x => x.Item2));
-            foreach (var grouping in GroupingTerms)
-                Grouper.AddGroupingTerms(grouping.Item1, grouping.Item2);
+            Grouper = new OrderdGrouper<QueueItem>(GroupingTerms);
+            // foreach (var grouping in GroupingTerms)
+            //     Grouper.AddGroupingTerms(grouping.Item1, grouping.Item2);
             return true;
         }
         public abstract void Parse();

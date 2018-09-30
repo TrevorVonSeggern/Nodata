@@ -4,9 +4,31 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "test",
-            "command": "dotnet test NoData.Tests",
-            "type": "shell"
+            "label": "Test",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "NoData.Tests"
+            ],
+            "type": "shell",
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "test with coverage",
+            "command": "dotnet",
+            "args": [
+                "test",
+                "/p:CollectCoverage=true",
+                "/p:CoverletOutput=./lcov.info",
+                "/p:CoverletOutputFormat=\"opencover,lcov\"",
+                "NoData.Tests"
+            ],
+            "problemMatcher": "$msCompile",
+            "type": "process"
         },
         {
             "label": "build",

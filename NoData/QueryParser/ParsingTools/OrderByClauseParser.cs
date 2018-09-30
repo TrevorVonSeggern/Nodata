@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using NoData.Graph;
-using NoData.Graph.Base;
-using QueueItem = NoData.QueryParser.Graph.Tree;
-using TInfo = NoData.QueryParser.Graph.TextInfo;
+using System.Text.RegularExpressions;
+using Graph;
+using NoData.GraphImplementations.Schema;
+using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
     class OrderByClauseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, IEnumerable<ITuple<PathToProperty, SortDirection>>>, IAcceptAdditions
     {
-        private readonly NoData.Graph.Graph Graph;
+        private readonly GraphSchema Graph;
         private List<ITuple<PathToProperty, SortDirection>> ResultList = new List<ITuple<PathToProperty, SortDirection>>();
         public override IEnumerable<ITuple<PathToProperty, SortDirection>> Result => ResultList;
 
-        public OrderByClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, NoData.Graph.Graph graph) : base(tokenFunc, query)
+        public OrderByClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph, IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms) : base(tokenFunc, query, groupingTerms)
         {
             Graph = graph;
         }
@@ -39,8 +40,6 @@ namespace NoData.QueryParser.ParsingTools
                 throw new ArgumentException(invalidQueryText);
             else if (clause.Representation == TInfo.ListOfExpands || clause.Representation == TInfo.ListOfSortings)
             {
-                if (clause.Children.SingleOrDefault() is null)
-                    throw new ArgumentException("Only one property is allowed for an order by clause.");
                 foreach (var child in clause.Children.Select(x => x.Item2))
                     AddToClause(child);
             }
@@ -85,9 +84,9 @@ namespace NoData.QueryParser.ParsingTools
         public static Expression GetOrderByExpression(Expression dto, PathToProperty sortPath)
         {
             Expression memberExpression = dto;
-            sortPath.Traverse(x => memberExpression = Expression.MakeMemberAccess(memberExpression, dto.Type.GetProperty(x.Value.PropertyName)));
+            sortPath.Traverse(x => memberExpression = Expression.PropertyOrField(memberExpression, x.Value.Name));
 
-            var property = dto.Type.GetProperty(sortPath.Property.Name);
+            var property = memberExpression.Type.GetProperty(sortPath.Property.Name);
             var propertyAccess = Expression.MakeMemberAccess(memberExpression, property);
 
             return propertyAccess;

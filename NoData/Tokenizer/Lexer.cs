@@ -6,8 +6,10 @@ namespace NoData.Internal.TreeParser.Tokenizer
 {
     public class Lexer : ILexer
     {
-        public Queue<Token> Tokens { get; set; }
-        public List<TokenDefinition> Definitions = new List<TokenDefinition>();
+        private static Regex endOfLineRegex = new Regex(@"(\r\n|\r|\n)", RegexOptions.Compiled | RegexOptions.Singleline);
+
+        public Queue<Token> Tokens { get; }
+        public readonly List<TokenDefinition> Definitions = new List<TokenDefinition>(); // 29 just for normal parsing.
 
         public Lexer()
         {
@@ -18,7 +20,11 @@ namespace NoData.Internal.TreeParser.Tokenizer
             Definitions.Add(definition);
         }
 
-        Regex endOfLineRegex = new Regex(@"\r\n|\r|\n", RegexOptions.Compiled);
+        public void AddDefinitions(IReadOnlyList<TokenDefinition> definition)
+        {
+            Definitions.AddRange(definition);
+        }
+
         public IEnumerable<Token> Tokenize(string source)
         {
             int currentIndex = 0;

@@ -1,16 +1,17 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using NoData.GraphImplementations.Schema;
 
 namespace NoData
 {
     public class DynamicContractResolver : DefaultContractResolver
     {
-        public readonly Graph.Graph Graph;
+        public readonly GraphSchema Graph;
 
-        public DynamicContractResolver(Graph.Graph graph)
+        public DynamicContractResolver(GraphSchema graph)
         {
             Graph = graph;
         }
@@ -29,9 +30,10 @@ namespace NoData
                     if (property.Ignored)
                         return false;
 
-                    var vertex = Graph.Vertices.FirstOrDefault(v => v.Value.Type == instance.GetType());
+                    var vertex = Graph.Vertices.FirstOrDefault(v => v.Value.TypeId == instance.GetType().GetHashCode());
                     if (vertex is null) return false;
-                    return vertex.Value.ShouldSerializeProperty(instance, property.PropertyName);
+                    // return vertex.Value.ShouldSerializeProperty(instance, property.PropertyName);
+                    return true;
                 };
                 result.Add(property);
             }

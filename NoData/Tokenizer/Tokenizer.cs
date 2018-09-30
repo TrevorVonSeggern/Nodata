@@ -1,61 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Cache;
 
 namespace NoData.Internal.TreeParser.Tokenizer
 {
     public class Tokenizer
     {
+        private static TokenDefinitionCache _DefinitionCache = new TokenDefinitionCache();
+        private static string filterString = Regex.Escape("$filter=");
+        private static string expandString = Regex.Escape("$expand=");
+        private static string selectString = Regex.Escape("$select=");
+
         private readonly ILexer Lexer;
 
         public Tokenizer(IEnumerable<string> classProperties) : this(new Lexer(), classProperties) { }
 
         public Tokenizer(ILexer lexer, IEnumerable<string> classProperties)
         {
-            lexer.AddDefinition(new TokenDefinition(@"([\""'])(?:\\\1|.)*?\1", TokenTypes.quotedString));
-
-            lexer.AddDefinition(new TokenDefinition(@"\(", TokenTypes.parenthesis));
-            lexer.AddDefinition(new TokenDefinition(@"\)", TokenTypes.parenthesis));
-
-            lexer.AddDefinition(new TokenDefinition("!", TokenTypes.not));
-            lexer.AddDefinition(new TokenDefinition(@"\+", TokenTypes.add));
-            lexer.AddDefinition(new TokenDefinition(@"\-", TokenTypes.subtract));
-
-            lexer.AddDefinition(new TokenDefinition(@"[-+]?[0-9]*\.?[0-9]+", TokenTypes.number));
-
-            lexer.AddDefinition(new TokenDefinition("eq", TokenTypes.equals));
-            lexer.AddDefinition(new TokenDefinition("ne", TokenTypes.notEquals));
-            lexer.AddDefinition(new TokenDefinition("not", TokenTypes.not));
-            lexer.AddDefinition(new TokenDefinition("and", TokenTypes.and));
-            lexer.AddDefinition(new TokenDefinition("or", TokenTypes.or));
-
-            lexer.AddDefinition(new TokenDefinition("gt", TokenTypes.greaterThan));
-            lexer.AddDefinition(new TokenDefinition("lt", TokenTypes.lessThan));
-            lexer.AddDefinition(new TokenDefinition("ge", TokenTypes.greaterThanOrEqual));
-            lexer.AddDefinition(new TokenDefinition("le", TokenTypes.lessThanOrEqual));
-
-            lexer.AddDefinition(new TokenDefinition("[Tt]rue", TokenTypes.truth));
-            lexer.AddDefinition(new TokenDefinition("[Ff]alse", TokenTypes.falsey));
-
-            lexer.AddDefinition(new TokenDefinition("/", TokenTypes.forwardSlash));
-            lexer.AddDefinition(new TokenDefinition(";", TokenTypes.semiColin));
-            lexer.AddDefinition(new TokenDefinition(",", TokenTypes.comma));
-
-            lexer.AddDefinition(new TokenDefinition("asc", TokenTypes.ascending));
-            lexer.AddDefinition(new TokenDefinition("desc", TokenTypes.descending));
-
-            lexer.AddDefinition(new TokenDefinition(Regex.Escape("$filter="), TokenTypes.filterClause));
-            lexer.AddDefinition(new TokenDefinition(Regex.Escape("$expand="), TokenTypes.expandClause));
-            lexer.AddDefinition(new TokenDefinition(Regex.Escape("$select="), TokenTypes.selectClause));
+            var definitions = new List<TokenDefinition>(30);
+            definitions.AddRange(
+                new[]{
+                    _DefinitionCache.Token(TokenTypes.quotedString, @"([\""'])(?:\\\1|.)*?\1"),
+                    _DefinitionCache.Token(TokenTypes.parenthesis, @"\("),
+                    _DefinitionCache.Token(TokenTypes.parenthesis, @"\)"),
+                    _DefinitionCache.Token(TokenTypes.not, "!"),
+                    _DefinitionCache.Token(TokenTypes.add, @"\+"),
+                    _DefinitionCache.Token(TokenTypes.subtract, @"\-"),
+                    _DefinitionCache.Token(TokenTypes.number, @"[-+]?[0-9]*\.?[0-9]+"),
+                    _DefinitionCache.Token(TokenTypes.equals, "eq"),
+                    _DefinitionCache.Token(TokenTypes.notEquals, "ne"),
+                    _DefinitionCache.Token(TokenTypes.not, "not"),
+                    _DefinitionCache.Token(TokenTypes.and, "and"),
+                    _DefinitionCache.Token(TokenTypes.or, "or"),
+                    _DefinitionCache.Token(TokenTypes.greaterThan, "gt"),
+                    _DefinitionCache.Token(TokenTypes.lessThan, "lt"),
+                    _DefinitionCache.Token(TokenTypes.greaterThanOrEqual, "ge"),
+                    _DefinitionCache.Token(TokenTypes.lessThanOrEqual, "le"),
+                    _DefinitionCache.Token(TokenTypes.truth, "[Tt]rue"),
+                    _DefinitionCache.Token(TokenTypes.falsey, "[Ff]alse"),
+                    _DefinitionCache.Token(TokenTypes.forwardSlash, "/"),
+                    _DefinitionCache.Token(TokenTypes.semiColin, ";"),
+                    _DefinitionCache.Token(TokenTypes.comma, ","),
+                    _DefinitionCache.Token(TokenTypes.ascending, "asc"),
+                    _DefinitionCache.Token(TokenTypes.descending, "desc"),
+                    _DefinitionCache.Token(TokenTypes.filterClause, filterString),
+                    _DefinitionCache.Token(TokenTypes.expandClause, expandString),
+                    _DefinitionCache.Token(TokenTypes.selectClause, selectString),
+                    _DefinitionCache.Token(TokenTypes.selectClause, selectString),
+                    _DefinitionCache.Token(TokenTypes.whitespace, @"\s+")
+                }
+            );
 
             foreach (var prop in classProperties)
             {
-                if (!Regex.IsMatch(prop, "^[a-zA-Z_]+$"))
-                    throw new ArgumentException($"class property {prop}, contains an invaild character.");
+                // if (!Regex.IsMatch(prop, "^[a-zA-Z_]+$"))
+                //     throw new ArgumentException($"class property {prop}, contains an invaild character.");
 
-                lexer.AddDefinition(new TokenDefinition($"(?<![^\\W]){prop}(?![^\\W])", TokenTypes.classProperties));
+                definitions.Add(_DefinitionCache.Token(TokenTypes.classProperties, $"(?<![^\\W]){prop}(?![^\\W])"));
             }
-            lexer.AddDefinition(new TokenDefinition(@"\s+", TokenTypes.whitespace));
+
+            lexer.AddDefinitions(definitions);
             Lexer = lexer;
         }
 
