@@ -15,14 +15,14 @@ namespace NoData.Internal.TreeParser.Tokenizer
         {
         }
 
-        public void AddDefinition(TokenDefinition definitions)
+        public void AddDefinition(TokenDefinition definition)
         {
-            Definitions.Add(definitions);
+            Definitions.Add(definition);
         }
 
-        public void AddDefinitions(IReadOnlyList<TokenDefinition> definitions)
+        public void AddDefinitions(IReadOnlyList<TokenDefinition> definition)
         {
-            Definitions.AddRange(definitions);
+            Definitions.AddRange(definition);
         }
 
         public IEnumerable<Token> Tokenize(string source)
