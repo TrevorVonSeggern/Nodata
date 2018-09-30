@@ -8,7 +8,7 @@ namespace NoData.Tests.SharedExampleClasses
         public string Name { get; set; }
         public string region_code { get; set; }
         public Dto partner { get; set; }
-        public ICollection<DtoChild> children { get; set; }
+        public ICollection<DtoChild> children { get; set; } = new List<DtoChild>();
         public DtoChild favorite { get; set; }
 
         public IEnumerable<int> GetAllIds()

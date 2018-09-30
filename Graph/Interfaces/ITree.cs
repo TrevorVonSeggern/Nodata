@@ -1,21 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using CodeTools;
 
 namespace Graph.Interfaces
 {
     [Immutable]
-    public interface ITree<TVertex, TEdge, TVertexValue, TEdgeValue>
+    public interface ITree<TTree, TVertex, TEdge, TVertexValue, TEdgeValue>
         where TVertex : IVertex<TVertexValue>
         where TEdge : IEdge<TEdgeValue, TVertex, TVertexValue>
+        where TTree : ITree<TTree, TVertex, TEdge, TVertexValue, TEdgeValue>
     {
         TVertex Root { get; }
-        IEnumerable<ITuple<TEdge, ITree<TVertex, TEdge, TVertexValue, TEdgeValue>>> Children { get; }
+        IEnumerable<ITuple<TEdge, TTree>> Children { get; }
+        [Pure]
         void TraverseDepthFirstSearch(Action<TEdge> callback);
+        [Pure]
         void TraverseDepthFirstSearch(Action<TVertex> callback);
+        [Pure]
         void TraverseDepthFirstSearch(Action<TVertex, IEnumerable<TEdge>> callback);
 
+        [Pure]
         IEnumerable<IPath<TEdge, TVertex, TEdgeValue, TVertexValue>> EnumerateAllPaths();
     }
 
@@ -27,7 +33,7 @@ namespace Graph.Interfaces
                 Func<IEnumerable<TVertex>, IEnumerable<TEdge>, TGraph> graphCtorFunc)
             where TVertex : IVertex<TVertexValue>, IMergable<TVertex>
             where TEdge : IEdge<TEdgeValue, TVertex, TVertexValue>
-            where TTree : ITree<TVertex, TEdge, TVertexValue, TEdgeValue>
+            where TTree : ITree<TTree, TVertex, TEdge, TVertexValue, TEdgeValue>
         {
             var edges = new List<TEdge>();
             selectionTree.TraverseDepthFirstSearch(edges.Add);

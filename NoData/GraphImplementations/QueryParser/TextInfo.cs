@@ -1,24 +1,35 @@
-﻿using Graph.Interfaces;
+﻿using CodeTools;
+using Graph.Interfaces;
 using NoData.Internal.TreeParser.Tokenizer;
 using System;
 using System.Text.RegularExpressions;
 
 namespace NoData.GraphImplementations.QueryParser
 {
-    public class TextInfo : IMergable<TextInfo>
+    [Immutable]
+    public class TextInfo
     {
-        public string Text { get; set; }
-        public string Value { get; set; }
-        public string Representation { get; set; }
-        public Type Type { get; set; }
-        public object Parsed { get; set; }
+        public string Text { get; }
+        public string Value { get; }
+        public readonly string Representation;
+        public Type Type { get; }
+        public object Parsed { get; }
 
         public override string ToString() => $"{Value}: {Representation}";
 
-        public void Merge(TextInfo other)
+        public TextInfo(string text, string value, string representation)
         {
-            throw new NotImplementedException();
+            Text = text;
+            Value = value;
+            Representation = representation;
         }
+        public TextInfo(string text, string value, string representation, Type type) : this(text, value, representation)
+        {
+            Type = type;
+        }
+
+        public static TextInfo FromRepresentation(string representation) => new TextInfo(null, null, representation);
+        public static TextInfo FromRepresentation(string representation, Type type) => new TextInfo(null, null, representation, type);
 
         static class ConstRep
         {
@@ -89,11 +100,8 @@ namespace NoData.GraphImplementations.QueryParser
                 'Z',
             };
             public static string NextRep() => possibleChars[index++].ToString();
-#if DEBUG
-            public static string NextRep(string regex) => Regex.Escape(regex);
-#else
+            // public static string NextRep(string regex) => Regex.Escape(regex);
             public static string NextRep(string regex) => NextRep();
-#endif
         }
 
         // value types
@@ -139,7 +147,6 @@ namespace NoData.GraphImplementations.QueryParser
         public static readonly string ListOfClause = ConstRep.NextRep("<list_of_clause>");
 
 
-        public TextInfo() { }
         public TextInfo(Token token)
         {
             Value = token.Value;

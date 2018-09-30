@@ -13,9 +13,7 @@ namespace NoData.QueryParser.ParsingTools
         public string OpenGroupingValue { get; set; } = TextInfo.OpenParenthesis;
         public string CloseGroupingValue { get; set; } = TextInfo.CloseParenthesis;
 
-        public OrderdGrouper() : base() { }
-        public OrderdGrouper(IDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms) : base(terms) { }
-        public OrderdGrouper(IDictionary<string, Func<IList<T>, ITuple<T, int>>> terms) : base(terms) { }
+        public OrderdGrouper(IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms) : base(terms) { }
 
         public override IList<T> Parse(IEnumerable<T> listToGroup)
         {

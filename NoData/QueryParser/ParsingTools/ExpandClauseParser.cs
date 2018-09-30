@@ -14,7 +14,7 @@ using SchemaPath = NoData.GraphImplementations.Schema.Path;
 using SchemaEdge = NoData.GraphImplementations.Schema.Edge;
 using SchemaVertex = NoData.GraphImplementations.Schema.Vertex;
 using GraphSchema = NoData.GraphImplementations.Schema.GraphSchema;
-
+using System.Text.RegularExpressions;
 
 namespace NoData.QueryParser.ParsingTools
 {
@@ -24,7 +24,14 @@ namespace NoData.QueryParser.ParsingTools
         private readonly IAcceptAdditions _SelectAdd;
         private readonly IAcceptAdditions _FilterAdd;
 
-        public ExpandClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph, IAcceptAdditions select, IAcceptAdditions filter) : base(tokenFunc, query)
+        public ExpandClauseParser(
+            Func<string, IList<QueueItem>> tokenFunc,
+            string query,
+            GraphSchema graph,
+            IAcceptAdditions select,
+            IAcceptAdditions filter,
+            IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms)
+                : base(tokenFunc, query, groupingTerms)
         {
             Graph = graph;
             _SelectAdd = select;
@@ -78,12 +85,8 @@ namespace NoData.QueryParser.ParsingTools
                     return source;
                 if (source.Representation == TInfo.ExpandProperty)
                 {
-                    var root = new ParserVertex(new TInfo()
-                    {
-                        Representation = TInfo.ExpandProperty,
-                        Text = prependEdges.First().Value.PropertyName,
-                        Value = prependEdges.First().Value.PropertyName
-                    });
+                    var text = prependEdges.First().Value.Name;
+                    var root = new ParserVertex(new TInfo(text, text, TInfo.ExpandProperty));
                     var child = AppendPathToQueueItem(prependEdges.Skip(1), source);
                     return new QueueItem(root, new[] { ITuple.Create(new ParserEdge(root, child.Root), child) });
                 }
@@ -135,7 +138,7 @@ namespace NoData.QueryParser.ParsingTools
             IEnumerable<SchemaPath> ExpandProperty(SchemaVertex from, QueueItem tree, IEnumerable<SchemaEdge> currentPath)
             {
                 // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
-                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == tree.Root.Value.Value);
+                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.TypeId == from.Value.TypeId && e.Value.Name == tree.Root.Value.Value);
                 if (edge == null)
                     yield break;
 

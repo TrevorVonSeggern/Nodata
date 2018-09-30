@@ -18,7 +18,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
         {
             yield return Create(TInfo.Inverse + $"({TInfo.BooleanValue}|{TInfo.ExpandProperty})", list =>
             {
-                var root = new Vertex(new TInfo { Value = "!", Representation = TInfo.BooleanValue });
+                var root = new Vertex(new TInfo("!", "!", TInfo.BooleanValue));
                 var child = list[1];
                 var edge = new Edge(root, child.Root);
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 1);
@@ -26,7 +26,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
             ITuple<QueueItem, int> valueItemValue(IList<QueueItem> list)
             {
-                var root = new Vertex(new TInfo { Value = list[1].Root.Value.Representation, Text = list[1].Root.Value.Text, Representation = TInfo.BooleanValue });
+                var root = new Vertex(new TInfo(list[1].Root.Value.Text, list[1].Root.Value.Representation, TInfo.BooleanValue));
                 var left = list[0];
                 var right = list[2];
                 var edgeLeft = new Edge(root, left.Root);

@@ -14,6 +14,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Console;
 
 namespace SampleEFCoreApi
 {
@@ -28,19 +29,26 @@ namespace SampleEFCoreApi
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            var databaseOptions = new DbContextOptionsBuilder<DataContext>().UseInMemoryDatabase(databaseName: "MyCustomDatabase").Options;
-            var context = new DataContext(databaseOptions);
-            builder.Register<DataContext>(x => context).AsSelf().SingleInstance();
+            // var databaseOptions = new DbContextOptionsBuilder<DataContext>().UseInMemoryDatabase(databaseName: "MyCustomDatabase").Options;
+            // var context = new DataContext(databaseOptions);
+            // builder.Register<DataContext>(x => context).AsSelf().SingleInstance();
 
             AutoMapperConfig.DependencyInjection(builder);
         }
+
+        public static readonly LoggerFactory MyLoggerFactory = new LoggerFactory(new[] { new ConsoleLoggerProvider((_, __) => true, true) });
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().AddControllersAsServices();
 
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped(typeof(NoData.NoDataQueryBuilder<>));
+            services.AddScoped(typeof(NoData.NoDataBuilder<>));
+
+            var connection = @"Server=localhost;Database=MyDb;User=sa;Password=YourStrong!Passw0rd;";
+            services.AddDbContext<DataContext>(options => options.UseSqlServer(connection).UseLoggerFactory(MyLoggerFactory));
+            // var db = new DataContext(new DbContextOptions()(connection));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -7,13 +7,18 @@ using NoData.Tests.SharedExampleClasses;
 
 namespace NoData.Tests.UtilityTests
 {
-    public class TreeFlattenTest
+    public class TreeTest
     {
+        GraphSchema graph;
+
+        public TreeTest()
+        {
+            graph = GraphSchema.Cache<Dto>.Graph;
+        }
+
         [Fact]
         public void Graph_Tree_Flatten_SelectOneEdge()
         {
-            var graph = NoData.GraphImplementations.Schema.GraphSchema.CreateFromGeneric<Dto>();
-
             var root = graph.VertexContainingType(typeof(Dto));
             var edge = graph.OutgoingEdges(root).First(x => x.From != x.To);
             var tree = new Tree(root, new[] {
@@ -28,15 +33,11 @@ namespace NoData.Tests.UtilityTests
         [Fact]
         public void Graph_Tree_Flatten_SelectTwoEdges()
         {
-            var graph = NoData.GraphImplementations.Schema.GraphSchema.CreateFromGeneric<Dto>();
-
             var root = graph.VertexContainingType(typeof(Dto));
             var edge = graph.OutgoingEdges(root).First(x => x.From != x.To);
-            var vertexCloned = edge.To.Clone() as Vertex;
-            var edge2 = (Edge)edge.CloneWithNewReferences(root, vertexCloned);
             var tree = new Tree(root, new[] {
                 Graph.ITuple.Create<Edge, Tree>(edge, new Tree(edge.To)),
-                Graph.ITuple.Create<Edge, Tree>(edge2, new Tree(edge2.To)),
+                Graph.ITuple.Create<Edge, Tree>(edge, new Tree(edge.To)),
             });
             var flat = tree.Flatten();
             Assert.NotNull(flat);
@@ -47,15 +48,11 @@ namespace NoData.Tests.UtilityTests
         [Fact]
         public void Graph_Tree_SelectAsPathEnumerable()
         {
-            var graph = NoData.GraphImplementations.Schema.GraphSchema.CreateFromGeneric<Dto>();
-
             var root = graph.VertexContainingType(typeof(Dto));
             var edge = graph.OutgoingEdges(root).First(x => x.From != x.To);
-            var vertexCloned = edge.To.Clone() as Vertex;
-            var edge2 = (Edge)edge.CloneWithNewReferences(root, vertexCloned);
             var tree = new Tree(root, new[] {
                 Graph.ITuple.Create<Edge, Tree>(edge, new Tree(edge.To)),
-                Graph.ITuple.Create<Edge, Tree>(edge2, new Tree(edge2.To)),
+                Graph.ITuple.Create<Edge, Tree>(edge, new Tree(edge.To)),
             });
             var pathList = tree.EnumerateAllPaths().ToList();
             Assert.NotNull(pathList);

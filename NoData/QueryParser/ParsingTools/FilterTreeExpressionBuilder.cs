@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using CodeTools;
 using NoData.GraphImplementations.QueryParser;
+using NoData.Utility;
 using GraphSchema = NoData.GraphImplementations.Schema.GraphSchema;
 
 namespace NoData.QueryParser.ParsingTools
@@ -45,14 +46,14 @@ namespace NoData.QueryParser.ParsingTools
         private int IndexFromType(Type type) => NumberDictionary[type];
         private Type TypeFromIndex(int i) => NumberDictionary.ToList().FirstOrDefault(x => x.Value == i).Key;
 
-        private Expression ComparisonExpression(Tree tree, Expression dto)
+        private Expression ComparisonExpression(Tree tree, Expression dto, IClassCache cache)
         {
             var children = new List<Graph.ITuple<Edge, Tree>>(tree.Children);
             if (children.Count != 2)
                 return null;
 
-            var left = FilterExpression(children[0].Item2, dto);
-            var right = FilterExpression(children[1].Item2, dto);
+            var left = FilterExpression(children[0].Item2, dto, cache);
+            var right = FilterExpression(children[1].Item2, dto, cache);
 
             if (left.Type != right.Type && IsNumberType(left.Type) && IsNumberType(right.Type))
             {
@@ -119,13 +120,13 @@ namespace NoData.QueryParser.ParsingTools
             return Expression.AndAlso(Expression.AndAlso(leftNullCheck, rightNullCheck), doComparison());
         }
 
-        private Expression LogicalExpression(Tree tree, Expression dto)
+        private Expression LogicalExpression(Tree tree, Expression dto, IClassCache cache)
         {
             var children = new List<Graph.ITuple<Edge, Tree>>(tree.Children);
             if (children.Count != 2) return null;
 
-            var left = FilterExpression(children[0].Item2, dto);
-            var right = FilterExpression(children[1].Item2, dto);
+            var left = FilterExpression(children[0].Item2, dto, cache);
+            var right = FilterExpression(children[1].Item2, dto, cache);
 
             bool compare(string expected) => tree.Root.Value.Text.ToLowerInvariant() == expected.ToLower();
 
@@ -146,20 +147,20 @@ namespace NoData.QueryParser.ParsingTools
             throw new NotImplementedException();
         }
 
-        public Expression FilterExpression(Tree tree, Expression dto)
+        public Expression FilterExpression(Tree tree, Expression dto, IClassCache cache)
         {
             if (tree.IsDirectPropertyAccess())
                 return Expression.PropertyOrField(dto, tree.Root.Value.Text);
             if (tree.IsPropertyAccess())
             {
-                if (NoData.Utility.ClassInfoCache.GetOrAdd(dto.Type).CollectionNames.Contains(tree.Root.Value.Value))
+                if (cache.GetOrAdd(dto.Type).CollectionNames.Contains(tree.Root.Value.Value))
                     return Expression.Empty();
-                return FilterExpression(tree.Children.FirstOrDefault().Item2, Expression.PropertyOrField(dto, tree.Root.Value.Value));
+                return FilterExpression(tree.Children.FirstOrDefault().Item2, Expression.PropertyOrField(dto, tree.Root.Value.Value), cache);
             }
             if (tree.Root.Value.Value == TextInfo.ValueComparison)
-                return ComparisonExpression(tree, dto);
+                return ComparisonExpression(tree, dto, cache);
             if (tree.Root.Value.Value == TextInfo.LogicalComparison)
-                return LogicalExpression(tree, dto);
+                return LogicalExpression(tree, dto, cache);
             if (tree.Representation == TextInfo.BooleanValue)
                 return BoolExpression(tree);
             if (tree.Representation == TextInfo.NumberValue)

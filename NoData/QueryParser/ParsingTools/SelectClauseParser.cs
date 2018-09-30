@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using Graph;
 using NoData.GraphImplementations.Schema;
 
@@ -22,7 +23,7 @@ namespace NoData.QueryParser.ParsingTools
         private List<PathToProperty> ResultList = new List<PathToProperty>();
 
 
-        public SelectClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph) : base(tokenFunc, query)
+        public SelectClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, GraphSchema graph, IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms) : base(tokenFunc, query, groupingTerms)
         {
             Graph = graph;
         }
@@ -53,7 +54,7 @@ namespace NoData.QueryParser.ParsingTools
                 }
 
                 // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
-                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.Type == from.Value.Type && e.Value.PropertyName == parsedSelection.Root.Value.Value);
+                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.TypeId == from.Value.TypeId && e.Value.Name == parsedSelection.Root.Value.Value);
                 if (edge is null)
                     return;
                 edges.Add(edge);

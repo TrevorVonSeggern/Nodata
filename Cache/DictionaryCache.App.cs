@@ -24,7 +24,7 @@ namespace Cache
             lock (cacheListLock)
             {
                 if (!cacheList.ContainsKey(t))
-                    cacheList.Add(t, new DictionaryCache<T>());
+                    cacheList.Add(t, new DictionaryCacheWithTimeouts<T>());
             }
         }
 

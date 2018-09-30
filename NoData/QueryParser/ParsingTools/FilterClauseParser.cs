@@ -8,12 +8,13 @@ using NoData.GraphImplementations.QueryParser;
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using ParserVertex = NoData.GraphImplementations.QueryParser.Vertex;
 using ParserEdge = NoData.GraphImplementations.QueryParser.Edge;
+using System.Text.RegularExpressions;
 
 namespace NoData.QueryParser.ParsingTools
 {
     public class FilterClauseParser<TRootQueryType> : AbstractClaseParser<TRootQueryType, QueueItem>, IAcceptAdditions
     {
-        public FilterClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query) : base(tokenFunc, query) { }
+        public FilterClauseParser(Func<string, IList<QueueItem>> tokenFunc, string query, IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> groupingTerms) : base(tokenFunc, query, groupingTerms) { }
 
         public void AddToClause(string clause)
         {
@@ -33,10 +34,7 @@ namespace NoData.QueryParser.ParsingTools
             }
             else
             {
-                var and = new TextInfo();
-                and.Text = "and";
-                and.Value = TextInfo.LogicalComparison;
-                and.Representation = TextInfo.LogicalComparison;
+                var and = new TextInfo("and", TextInfo.LogicalComparison, TextInfo.LogicalComparison);
                 var rootAnd = new ParserVertex(and);
                 var childrenWithEdges = new[]{
                     ITuple.Create(new ParserEdge(rootAnd, clause.Root), clause),

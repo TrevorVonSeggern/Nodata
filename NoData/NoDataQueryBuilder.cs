@@ -5,49 +5,71 @@ using System.Linq.Expressions;
 using System.Collections.Generic;
 using NoData.QueryParser.ParsingTools;
 using NoData.GraphImplementations.Schema;
-using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using NoData.Utility;
 
 namespace NoData
 {
-    public class NoDataQueryBuilder<TDto> : NoDataQuery<TDto> where TDto : class, new()
+    // internal static class SharedClassCache
+    // {
+    //     public static readonly IClassCache Cache = new ClassCache();
+    // }
+
+    public class NoDataBuilder<TDto> : INoData<TDto>
+        where TDto : class, new()
     {
+        protected Parameters Parameters { get; }
+        protected GraphSchema Graph { get; }
 
-        // TODO: These are settings specific to the type TDto, and should also be configurable via global settings.
-        public bool EagerLoadEFCoreQuery = true;
-        public bool AutomapperExplicitExansion = true;
-
-        public NoDataQueryBuilder(IHttpContextAccessor accessor) : base(accessor)
+        public NoDataBuilder(Parameters parameters)
         {
+            Parameters = parameters;
+            Graph = GraphSchema.Cache<TDto>.Graph;
         }
 
-        public NoDataQueryBuilder(
+        public NoDataBuilder(
             string expand,
             string filter = null,
             string select = null,
             string orderBy = null,
             int? top = null,
             int? skip = null,
-            bool count = false)
-            : base(expand, filter, select, orderBy, top, skip, count)
+            bool count = false) : this(new Parameters(expand, filter, select, orderBy, top, skip, count))
+        { }
+
+        private QueryParser<TDto> ParseQuery()
         {
+            var parser = new QueryParser<TDto>(Parameters, Graph, GraphSchema._Cache);
+
+            return parser;
         }
 
-        public IQueryable<TDto> Projection<TEntity>(IEnumerable<TEntity> enumerable, IConfigurationProvider config)
-            where TEntity : class
-            => Projection(enumerable.AsQueryable(), config);
-
-        public IQueryable<TDto> Projection<TEntity>(IQueryable<TEntity> query, IConfigurationProvider config)
-            where TEntity : class
+        public virtual INoDataQuery<TDto> Load(IQueryable<TDto> sourceQueryable)
         {
-            Parse(); // Called out explicitly to get the select tree before BuildExpression.
+            var parser = ParseQuery();
+            return buildQuery(sourceQueryable, parser);
+        }
 
-            var pathEnumerable = QueryParser.SelectionTree.EnumerateAllPaths();
-            var stringPathEnumerable = pathEnumerable.Select(p => p.Select(x => x.Value.PropertyName).ToList()).ToList();
+        private static readonly ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
+        private INoDataQuery<TDto> buildQuery(IQueryable<TDto> sourceQueryable, QueryParser<TDto> parser)
+        {
+            Expression filterExpr = parser.ApplyFilterExpression(ParameterDtoExpression);
+            var selectionTree = Utility.SchemaToQueryable.TranslateTree2(parser.SelectionTree, parser.SelectPaths);
+            var selectExpandExpression = Utility.ExpressionBuilder.GetExpandExpression(ParameterDtoExpression, selectionTree, GraphSchema._Cache);
+            return new NoDataQuery<TDto>(sourceQueryable, Parameters, GraphSchema._Cache, parser.OrderByPath, selectExpandExpression, filterExpr, ParameterDtoExpression, selectionTree);
+        }
+
+        public INoDataQuery<TDto> Projection<TEntity>(IQueryable<TEntity> sourceQueryable, IConfigurationProvider mapperConfiguration)
+        {
+            var parser = ParseQuery();
+            var selectionTree = parser.SelectionTree;
+
+            var pathEnumerable = selectionTree.EnumerateAllPaths();
+            var stringPathEnumerable = pathEnumerable.Select(p => p.Select(x => x.Value.Name).ToList()).ToList();
             void ApplyFunc(Action<string> func)
             {
                 // apply includes
@@ -55,7 +77,6 @@ namespace NoData
                 {
                     string currentInclude = path.First();
                     func(currentInclude);
-                    query = query.Include(currentInclude);
                     foreach (var inc in path.Skip(1))
                     {
                         currentInclude += "." + inc;
@@ -64,58 +85,14 @@ namespace NoData
                 }
             }
 
-            ApplyFunc(x => query = query.Include(x));
-            var projectList = new List<string>();
+            var projectList = new List<string>(); // TODO: reserve size of stringPathEnumerable for performance
             ApplyFunc(x => projectList.Add(x));
-            // var source = query.Include("Favorite").Include("Favorite.Favorite");
-            var projected = query.ProjectTo<TDto>(config, null, projectList.ToArray());
 
-            Load(projected);
+            // automapper projection
+            var projected = sourceQueryable.ProjectTo<TDto>(mapperConfiguration, null, projectList.ToArray());
 
-            BuildExpression();
-            return Apply();
+            return buildQuery(projected, parser);
         }
-
-        public IQueryable<TDto> ApplyQueryable(IEnumerable<TDto> enumerable) => ApplyQueryable(enumerable.AsQueryable());
-        public IQueryable<TDto> ApplyQueryable(IQueryable<TDto> query)
-        {
-            Load(query);
-            BuildExpression();
-            return Apply();
-        }
-
-
-        /// <summary>
-        /// Returns the json result of the queryable with all query commands parsed and applied.
-        /// </summary>
-        public string JsonResult(IQueryable<TDto> query)
-        {
-            Load(query);
-            BuildExpression();
-            return JsonResult();
-        }
-        /// <summary>
-        /// Returns the json result of the queryable with all query commands parsed and applied.
-        /// </summary>
-        public string JsonResult()
-        {
-            var q = Apply();
-            var list = q.ToList();
-            QueryParser.SelectionTree.AddInstances(list);
-            var sGraph = QueryParser.SelectionTree.Flatten();
-            return JsonConvert.SerializeObject(
-                list,
-                Formatting.Indented,
-                new JsonSerializerSettings
-                {
-                    PreserveReferencesHandling = PreserveReferencesHandling.None,
-                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                    MaxDepth = 5,
-
-                    ContractResolver = new DynamicContractResolver(sGraph)
-                });
-        }
-
     }
 
 }

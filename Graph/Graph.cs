@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using CodeTools;
 using Graph.Interfaces;
@@ -7,13 +8,14 @@ using Graph.Interfaces;
 namespace Graph
 {
 
+    [Immutable]
     public class Graph<TVertex, TEdge, TVertexValue, TEdgeValue>
             : IGraph<TVertex, TEdge, TVertexValue, TEdgeValue>
         where TVertex : class, IVertex<TVertexValue>
         where TEdge : IEdge<TEdgeValue, TVertex, TVertexValue>
     {
-        public virtual IEnumerable<TVertex> Vertices { get; set; }
-        public virtual IEnumerable<TEdge> Edges { get; protected set; }
+        public IEnumerable<TVertex> Vertices { get; }
+        public IEnumerable<TEdge> Edges { get; }
 
         public Graph()
         {
@@ -28,8 +30,8 @@ namespace Graph
             if (edgesUnique && edges.Count() != edges.Distinct().Count())
                 throw new ArgumentException("Edges are not unique.");
 
-            Vertices = new List<TVertex>(vertices);
-            Edges = new List<TEdge>(edges);
+            Vertices = new ReadOnlyCollection<TVertex>(vertices.ToArray());
+            Edges = new ReadOnlyCollection<TEdge>(edges.ToArray());
         }
 
         public virtual TVertex VertexOfValue(TVertexValue value) => Vertices.FirstOrDefault(v => v.Value.Equals(value));

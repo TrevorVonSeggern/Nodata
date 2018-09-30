@@ -1,4 +1,5 @@
-﻿using NoData.Internal.TreeParser.Tokenizer;
+﻿using CodeTools;
+using NoData.Internal.TreeParser.Tokenizer;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -7,6 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace NoData.GraphImplementations.QueryParser
 {
+    [Immutable]
     public class Vertex : Graph.Vertex<TextInfo>
     {
         public new TextInfo Value => base.Value as TextInfo;

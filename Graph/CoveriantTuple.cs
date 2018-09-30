@@ -21,7 +21,10 @@ namespace Graph
         public static ITuple<T1, T2, T3> Create<T1, T2, T3>(T1 item1, T2 item2, T3 item3) { return new _ITuple<T1, T2, T3>(item1, item2, item3); }
     }
 
+    [Immutable]
     public interface ITuple<out T1> { T1 Item1 { get; } }
+    [Immutable]
     public interface ITuple<out T1, out T2> { T1 Item1 { get; } T2 Item2 { get; } }
+    [Immutable]
     public interface ITuple<out T1, out T2, out T3> { T1 Item1 { get; } T2 Item2 { get; } T3 Item3 { get; } }
 }

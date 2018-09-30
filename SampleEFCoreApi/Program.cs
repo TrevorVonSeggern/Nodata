@@ -18,6 +18,7 @@ namespace SampleEFCoreApi
             BuildWebHost(args).Run();
         }
 
+
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .ConfigureServices(services => services.AddAutofac())

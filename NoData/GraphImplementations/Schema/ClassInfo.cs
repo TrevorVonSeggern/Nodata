@@ -4,102 +4,112 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using NoData.Utility;
+using CodeTools;
 
 namespace NoData.GraphImplementations.Schema
 {
-    public class ClassInfo : ICloneable, Graph.Interfaces.IMergable<ClassInfo>
+    [Immutable]
+    public class ClassInfo
     {
-        public Type Type { get; }
+        public int TypeId { get; }
 
-        public string Name { get; }
+        private string Name { get; }
 
         public IReadOnlyList<Property> Properties { get; }
 
-        protected List<SerializeInfo> SerializeList = new List<SerializeInfo>();
 
-        public ClassInfo(Type type) : this(type, new[] { new SerializeInfo(ClassInfoCache.GetOrAdd(type).NonExpandablePropertyNames, ClassInfoCache.GetOrAdd(type).ExpandablePropertyNames, false) }) { }
-        public ClassInfo(Type type, IEnumerable<SerializeInfo> enumerable)
+        public ClassInfo(ClassInfoUtility info)
         {
-            Type = type;
-            Properties = ClassInfoCache.GetOrAdd(type).Properties.Select(x => new Property(x)).ToList();
-            SerializeList.AddRange(enumerable);
+            TypeId = info.Type.GetHashCode();
+            Name = info.Type.Name;
+            Properties = info.Properties.Select(x => new Property(x)).ToList().AsReadOnly();
         }
 
-        public bool IsInitialized => SerializeList.Count != 1 || SerializeList[0].IsInitialized;
-        public override string ToString() => Type.Name;
+        public override string ToString() => $"{Name} : {TypeId}";
 
-        internal ClassInfo Initialize(Func<IEnumerable<string>> propertyNameFunc)
-        {
-            if (!IsInitialized)
-                SerializeList[0] = SerializeList[0].Initialize(propertyNameFunc());
-            return this;
-        }
+        // public ClassInfo(Type type, IClassCache cache) : this(type, new[] { new SerializeInfo(cache.GetOrAdd(type).NonExpandablePropertyNames, cache.GetOrAdd(type).ExpandablePropertyNames, false) }, cache) { }
+        // public ClassInfo(Type type, IEnumerable<SerializeInfo> enumerable, IClassCache cache)
+        // {
+        //     Type = type;
+        //     PropertyNames = cache.GetOrAdd(type);
+        //     SerializeList.AddRange(enumerable);
+        // }
+        // protected List<SerializeInfo> SerializeList = new List<SerializeInfo>();
 
-        private void AssertUnInitialized()
-        {
-            if (SerializeList.Count != 1)
-                throw new ArgumentException("Too many serialize settings to add an item to.");
-        }
+        // public bool IsInitialized => SerializeList.Count != 1 || SerializeList[0].IsInitialized;
 
-        public void AddItem(object t)
-        {
-            AssertUnInitialized();
-            var info = SerializeList.Single();
-            info.AddItem(t);
-        }
+        // internal ClassInfo Initialize(Func<IEnumerable<string>> propertyNameFunc)
+        // {
+        //     if (!IsInitialized)
+        //         SerializeList[0] = SerializeList[0].Initialize(propertyNameFunc());
+        //     return this;
+        // }
 
-        public bool ShouldSerializeProperty(object instance, string propertyName)
-        {
-            foreach (var info in SerializeList)
-            {
-                if (info.PossiblyExists(instance))
-                {
-                    if (info.DoesPropertyExist(propertyName))
-                        return true;
-                    return false;
-                }
-            }
-            return false;
-        }
+        // private void AssertUnInitialized()
+        // {
+        //     if (SerializeList.Count != 1)
+        //         throw new ArgumentException("Too many serialize settings to add an item to.");
+        // }
 
-        public object Clone() => new ClassInfo(Type, SerializeList.Select(s => (SerializeInfo)s.Clone()));
+        // public void AddItem(object t)
+        // {
+        //     AssertUnInitialized();
+        //     var info = SerializeList.Single();
+        //     info.AddItem(t);
+        // }
 
-        internal void AddSelection(string propertyName)
-        {
-            AssertUnInitialized();
-            var info = SerializeList.Single();
-            info.AddPropertyToSerialize(propertyName);
-        }
+        // public bool ShouldSerializeProperty(object instance, string propertyName)
+        // {
+        //     foreach (var info in SerializeList)
+        //     {
+        //         if (info.PossiblyExists(instance))
+        //         {
+        //             if (info.DoesPropertyExist(propertyName))
+        //                 return true;
+        //             return false;
+        //         }
+        //     }
+        //     return false;
+        // }
 
-        public void Merge(ClassInfo other)
-        {
-            if (!IsInitialized && !other.IsInitialized)
-                return;
-            if (this == other)
-                return;
-            SerializeList.AddRange(other.SerializeList);
-        }
+        // // public object Clone() => new ClassInfo(Type, SerializeList.Select(s => (SerializeInfo)s.Clone()));
+
+        // internal void AddSelection(string propertyName)
+        // {
+        //     AssertUnInitialized();
+        //     var info = SerializeList.Single();
+        //     info.AddPropertyToSerialize(propertyName);
+        // }
+
+        // public void Merge(ClassInfo other)
+        // {
+        //     if (!IsInitialized && !other.IsInitialized)
+        //         return;
+        //     if (this == other)
+        //         return;
+        //     SerializeList.AddRange(other.SerializeList);
+        // }
 
         public override bool Equals(object obj)
         {
             if (obj is ClassInfo)
             {
                 var other = obj as ClassInfo;
-                return Type == other.Type;
+                return TypeId == other.TypeId;
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return this.Type.GetHashCode();
+            return this.TypeId.GetHashCode();
         }
 
-        internal IEnumerable<string> GetSelectProperties()
-        {
-            AssertUnInitialized();
-            return SerializeList[0].PropertySelectList();
-        }
+        // internal IEnumerable<string> GetSelectProperties()
+        // {
+        //     AssertUnInitialized();
+        //     return SerializeList[0].PropertySelectList();
+        // }
     }
 
 }

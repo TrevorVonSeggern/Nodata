@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
+using CodeTools;
 
 namespace NoData.GraphImplementations.Schema
 {
-    public class Path : Graph.Path<Edge, Vertex, EdgeMetaData, ClassInfo>
+    [Immutable]
+    public class Path : Graph.Path<Edge, Vertex, Property, ClassInfo>
     {
         public Path(IEnumerable<Edge> edges) : base(edges) { }
 
-
-        public virtual Path PrependEdge(Edge start)
+        public Path PrependEdge(Edge start)
         {
             var result = new List<Edge>();
             result.Add(start);

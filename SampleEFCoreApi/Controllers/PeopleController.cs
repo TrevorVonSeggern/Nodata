@@ -10,6 +10,10 @@ using AutoMapper.QueryableExtensions;
 
 using Model = SampleEFCoreApi.Models.DtoPerson;
 using DbModel = SampleEFCoreApi.Database.Person;
+using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
+using System.IO;
+using System.Net;
 
 namespace SampleEFCoreApi.Controllers
 {
@@ -18,7 +22,7 @@ namespace SampleEFCoreApi.Controllers
     {
         private readonly DataContext Context;
         private readonly IMapper _mapper;
-        private IQueryable<DbModel> Query => Context.People;
+        private IQueryable<DbModel> Query => Context.People.AsNoTracking();
 
         public PeopleController(DataContext context, IMapper mapper)
         {
@@ -27,9 +31,9 @@ namespace SampleEFCoreApi.Controllers
         }
 
         [HttpGet]
-        public IQueryable<Model> Get([FromServices] NoDataQueryBuilder<Model> nodata)
+        public IQueryable<Model> Get([FromServices] INoData<Model> nodata)
         {
-            return nodata.Projection(Query, _mapper.ConfigurationProvider);
+            return nodata.Projection(Query, _mapper.ConfigurationProvider).BuildQueryable();
         }
 
         [HttpGet("{id}")]

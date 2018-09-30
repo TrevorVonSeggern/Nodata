@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using CodeTools;
 
 namespace Graph.Interfaces
@@ -11,6 +12,7 @@ namespace Graph.Interfaces
     public interface IVertex<out TValue>
     {
         TValue Value { get; }
+        [Pure]
         string ToString();
     }
 }
