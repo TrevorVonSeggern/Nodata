@@ -148,11 +148,11 @@ namespace NoData
         }
 
         private const int flushAfter = 512;
-        public async Task StreamResponse(Stream requestBody)
+        public async Task StreamResponse(Stream responseBody)
         {
             await Task.Run(() =>
             {
-                using (var sw = new StreamWriter(requestBody))
+                using (var sw = new StreamWriter(responseBody))
                 using (var source = this.Stream())
                 {
                     var counter = 0;

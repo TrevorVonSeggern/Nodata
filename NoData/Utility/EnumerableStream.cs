@@ -62,7 +62,7 @@ namespace NoData.Utility
             }
 
             // add content from current to queue.
-            if (_source.Current != null)
+            if (!EqualityComparer<T>.Default.Equals(_source.Current, default(T)))
             {
                 if (!firstItem && Between.Any())
                 {

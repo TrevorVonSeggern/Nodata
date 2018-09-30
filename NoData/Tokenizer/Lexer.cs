@@ -15,9 +15,9 @@ namespace NoData.Internal.TreeParser.Tokenizer
         {
         }
 
-        public void AddDefinition(TokenDefinition definition)
+        public void AddDefinition(TokenDefinition definitions)
         {
-            Definitions.Add(definition);
+            Definitions.Add(definitions);
         }
 
         public void AddDefinitions(IReadOnlyList<TokenDefinition> definitions)
