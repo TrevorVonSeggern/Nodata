@@ -70,15 +70,9 @@ namespace nodata.Controllers
         [HttpGet]
         public async Task Get([FromServices] INoData<Dto> f)
         {
-            try
-            {
-                var nodata = f.Load(ParentCollection.AsQueryable());
-                await nodata.StreamResponse(Response);
-            }
-            catch (Exception e)
-            {
-                // return "Error has occurred: " + e.Message;
-            }
+            var nodata = f.Load(ParentCollection.AsQueryable());
+            await nodata.StreamResponse(Response);
+            // return "Error has occurred: " + e.Message;
         }
 
         // GET api/values/5
