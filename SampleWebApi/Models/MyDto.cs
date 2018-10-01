@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace nodata.Models
+namespace SampleWebApi.Models
 {
     public class Dto
     {
