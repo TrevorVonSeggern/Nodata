@@ -47,8 +47,15 @@ namespace NoData.Tests.IntegrationTests
         [InlineData("id le 1 or id ge 1", 1, 1, 2, 3, 4, 5, 6, 10)] // multiple of the same property.
         [InlineData("id le 1 and id ge 1", 1, 1, 10)]
         [InlineData("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1", 1, 1, 10)] // duplication doesn't matter.
-        [InlineData("partner/id eq 10", 1, 1, 10)] // duplication doesn't matter.
-        [InlineData("partner/partner/id eq 1", 1, 1, 10)] // duplication doesn't matter.
+        [InlineData("partner/id eq 10", 1, 1, 10)] // filter on expansion
+        [InlineData("partner/partner/id eq 1", 1, 1, 10)] // filter on expansion on expansion
+        [InlineData("endswith(Name,'eorge')", 3, 4, 5)] // string operators
+        [InlineData("endswith(Name,'george')", 3, 4, 5)]
+        [InlineData("startswith(Name,'geo')", 3, 4, 5)]
+        [InlineData("startswith(Name,'george')", 3, 4, 5)]
+        [InlineData("length(Name) gt 5", 3, 4, 5)]
+        [InlineData("replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'", 1, 1, 2, 3, 4, 5, 6, 10)]
+        [InlineData("indexof(Name, 'eorge') eq 1", 3, 4, 5)]
         public void Filter_Expression(string expression, params int[] expectedIds)
         {
             var queryable = SampleCollection.ToList().AsQueryable();
@@ -63,12 +70,7 @@ namespace NoData.Tests.IntegrationTests
         }
 
         // More tests
-        // endswith(Name,'eorge')
-        // startswith(Name,'george')
         // substringof(Name,'eorg') // right is contained within the left paramter
-        // length(Name) gt 1
-        // indexof(Name, 'ame') eq 1
-        // replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'
         // substring(Name, 'Name', 'ReplacedName') eq 'ReplacedName'
     }
 }
