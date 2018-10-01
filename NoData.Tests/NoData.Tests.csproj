@@ -13,6 +13,7 @@
     <PackageReference Include="Moq" Version="4.10.0"/>
     <PackageReference Include="Bogus" Version="23.0.3"/>
     <PackageReference Include="AutoFixture" Version="4.5.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Automapper" Version="7.0.1"/>
@@ -22,5 +23,8 @@
     <ProjectReference Include="..\NoData\NoData.csproj"/>
     <ProjectReference Include="..\Cache\Cache.csproj"/>
     <ProjectReference Include="..\CodeTools\CodeTools.csproj"/>
+
+    <ProjectReference Include="..\SampleWebApi\SampleWebApi.csproj"/>
+    <ProjectReference Include="..\SampleEFCoreApi\SampleEFCoreApi.csproj"/>
   </ItemGroup>
 </Project>

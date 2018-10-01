@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
-namespace nodata.Controllers
+namespace SampleWebApi.Controllers
 {
     using Microsoft.AspNetCore.Http;
     using Models;
@@ -70,8 +70,8 @@ namespace nodata.Controllers
         [HttpGet]
         public async Task Get([FromServices] INoData<Dto> f)
         {
-            var nodata = f.Load(ParentCollection.AsQueryable());
-            await nodata.StreamResponse(Response);
+            var SampleWebApi = f.Load(ParentCollection.AsQueryable());
+            await SampleWebApi.StreamResponse(Response);
             // return "Error has occurred: " + e.Message;
         }
 
