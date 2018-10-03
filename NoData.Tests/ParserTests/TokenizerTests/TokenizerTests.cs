@@ -2,11 +2,18 @@ using System.Collections.Generic;
 using Xunit;
 using NoData.Internal.TreeParser.Tokenizer;
 using System;
+using NoData.Tests.SharedExampleClasses;
+using System.Linq;
+using FluentAssertions;
 
 namespace NoData.Tests.ParserTests.TokenizerTests
 {
     public class TokenizerTests
     {
+        static readonly string[] classProperties = GraphImplementations.Schema.GraphSchema.Cache<Dto>.Graph
+                                                    .VertexContainingType(typeof(Dto)).Value.Properties
+                                                    .Select(x => x.Name).ToArray();
+
         static readonly string[] abcProperties = new string[] { "a", "b", "c" };
 
         [Theory]
@@ -150,6 +157,55 @@ namespace NoData.Tests.ParserTests.TokenizerTests
             {
                 Assert.Equal(result[i].Value, expected[i]);
             }
+        }
+
+        [Theory]
+        [InlineData("Name")]
+        [InlineData("id")]
+        [InlineData("region_code")]
+        [InlineData("favorite")]
+        [InlineData("partner")]
+        [InlineData("children")]
+        public void Tokenize_WithClass_Properties(string propertyName)
+        {
+            var izer = new Tokenizer(classProperties);
+
+            var result = new List<Token>();
+            result.AddRange(izer.Tokenize(propertyName + " gt 1"));
+
+            var expected = new string[]
+            {
+                propertyName, "gt", "1"
+            };
+
+
+            Assert.Equal(result.Count, expected.Length);
+            for (int i = 0; i < expected.Length; ++i)
+            {
+                Assert.Equal(result[i].Value, expected[i]);
+            }
+        }
+
+        [Theory]
+        [InlineData("length(Name) eq 1")]
+        [InlineData("concat('Georg', 'e') eq 'George'")]
+        [InlineData("substring('George', 1) eq 'G'")]
+        [InlineData("substring('George', 0, 1) eq 'G'")]
+        [InlineData("trim(' George ') eq Name")]
+        [InlineData("tolower('GeOrGe ' eq 'george'")]
+        [InlineData("toupper('GeOrGe ' eq 'GEORGE'")]
+        [InlineData("contains(Name,'eorge')")]
+        [InlineData("endswith(Name,'eorge')")]
+        [InlineData("startswith(Name,'ge')")]
+        [InlineData("replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'")]
+        [InlineData("indexof(Name, 'eorge') eq 1")]
+        public void Tokenize_WithNameProperties_And_StringFilters(string toParse)
+        {
+            var izer = new Tokenizer(classProperties);
+
+            var result = new List<Token>();
+            result.AddRange(izer.Tokenize(toParse));
+            result.Should().NotBeNullOrEmpty();
         }
     }
 }
