@@ -28,27 +28,27 @@ namespace NoData.Tests.IntegrationTests
         }
 
         [Theory]
-        // [InlineData("true", 1, 1, 2, 3, 4, 5, 6, 10)] // id comared to numbers.
-        // [InlineData("id eq 2", 2)] // id comared to numbers.
-        // [InlineData("id gt 2", 3, 4, 5, 6)]
-        // [InlineData("id ge 2", 2, 3, 4, 5, 6)]
-        // [InlineData("id lt 2", 1, 1, 10)]
-        // [InlineData("id le 2", 1, 1, 2, 10)]
-        // [InlineData("id ne 2", 1, 1, 3, 4, 5, 6, 10)]
-        // [InlineData("Name eq 'George'", 3, 4, 5)] // Name compared to strings.
-        // [InlineData("Name ne 'George'", 1, 1, 2, 6, 10)]
-        // [InlineData("id gt 3 and Name eq 'George'", 4, 5)] // conjunctions with logic.
-        // [InlineData("region_code ne 'en' and Name eq 'George'", 3, 5)]
-        // [InlineData("region_code eq 'de' and Name eq 'George'", 3)]
-        // [InlineData("(region_code eq 'de' or region_code eq 'es')and Name eq 'George'", 3, 5)] // space doesn't matter(tight).
-        // [InlineData("   ( region_code eq 'de' or region_code eq 'es'    ) and Name eq 'George'", 3, 5)] // space doesn't matter  (  loose  )   .
-        // [InlineData("Name eq 'George' or (region_code eq 'en' and id eq 4 ) ", 3, 4, 5)] // grouping order matters.
-        // [InlineData("(Name eq 'George' or region_code eq 'en') and id eq 4", 4)]
-        // [InlineData("id le 1 or id ge 1", 1, 1, 2, 3, 4, 5, 6, 10)] // multiple of the same property.
-        // [InlineData("id le 1 and id ge 1", 1, 1, 10)]
-        // [InlineData("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1", 1, 1, 10)] // duplication doesn't matter.
-        // [InlineData("partner/id eq 10", 1, 1, 10)] // filter on expansion
-        // [InlineData("partner/partner/id eq 1", 1, 1, 10)] // filter on expansion on expansion
+        [InlineData("true", 1, 1, 2, 3, 4, 5, 6, 10)] // id comared to numbers.
+        [InlineData("id eq 2", 2)] // id comared to numbers.
+        [InlineData("id gt 2", 3, 4, 5, 6)]
+        [InlineData("id ge 2", 2, 3, 4, 5, 6)]
+        [InlineData("id lt 2", 1, 1, 10)]
+        [InlineData("id le 2", 1, 1, 2, 10)]
+        [InlineData("id ne 2", 1, 1, 3, 4, 5, 6, 10)]
+        [InlineData("Name eq 'George'", 3, 4, 5)] // Name compared to strings.
+        [InlineData("Name ne 'George'", 1, 1, 2, 6, 10)]
+        [InlineData("id gt 3 and Name eq 'George'", 4, 5)] // conjunctions with logic.
+        [InlineData("region_code ne 'en' and Name eq 'George'", 3, 5)]
+        [InlineData("region_code eq 'de' and Name eq 'George'", 3)]
+        [InlineData("(region_code eq 'de' or region_code eq 'es')and Name eq 'George'", 3, 5)] // space doesn't matter(tight).
+        [InlineData("   ( region_code eq 'de' or region_code eq 'es'    ) and Name eq 'George'", 3, 5)] // space doesn't matter  (  loose  )   .
+        [InlineData("Name eq 'George' or (region_code eq 'en' and id eq 4 ) ", 3, 4, 5)] // grouping order matters.
+        [InlineData("(Name eq 'George' or region_code eq 'en') and id eq 4", 4)]
+        [InlineData("id le 1 or id ge 1", 1, 1, 2, 3, 4, 5, 6, 10)] // multiple of the same property.
+        [InlineData("id le 1 and id ge 1", 1, 1, 10)]
+        [InlineData("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1", 1, 1, 10)] // duplication doesn't matter.
+        [InlineData("partner/id eq 10", 1, 1, 10)] // filter on expansion
+        [InlineData("partner/partner/id eq 1", 1, 1, 10)] // filter on expansion on expansion
         // [InlineData("endswith(Name,'eorge')", 3, 4, 5)] // string operators
         // [InlineData("endswith(Name,'george')", 3, 4, 5)]
         // [InlineData("startswith(Name,'geo')", 3, 4, 5)]

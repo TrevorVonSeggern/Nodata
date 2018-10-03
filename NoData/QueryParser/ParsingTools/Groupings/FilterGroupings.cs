@@ -38,32 +38,46 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             }
 
             string valueComparisonPattern(string a, string b) => a + TInfo.ValueComparison + b;
+            // value to value
             yield return Create(valueComparisonPattern(TInfo.BooleanValue, TInfo.BooleanValue), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.TextValue, TInfo.TextValue), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.NumberValue, TInfo.NumberValue), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.DateValue, TInfo.DateValue), valueItemValue);
 
+            // property to value
             yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.BooleanValue), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.TextValue), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.NumberValue), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.DateValue), valueItemValue);
 
+            // value to property
             yield return Create(valueComparisonPattern(TInfo.BooleanValue, TInfo.ExpandProperty), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.TextValue, TInfo.ExpandProperty), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.NumberValue, TInfo.ExpandProperty), valueItemValue);
             yield return Create(valueComparisonPattern(TInfo.DateValue, TInfo.ExpandProperty), valueItemValue);
 
+            // property to property
             yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.ExpandProperty), valueItemValue);
 
+            // string functions
+            
+
+
+
+            // ( )
             ITuple<QueueItem, int> undoGrouping(IList<QueueItem> list) => ITuple.Create(list[1], 2);
             string anyValueTypeRegex = $"({TInfo.BooleanValue}|{TInfo.NumberValue}|{TInfo.TextValue}|{TInfo.DateValue}|{TInfo.ExpandProperty})";
             yield return Create(TInfo.OpenParenthesis + anyValueTypeRegex + TInfo.CloseParenthesis, undoGrouping);
 
+            // Logical comparisons. Ie and or not, etc.
             string logicComparisonPattern(string a, string b) => $"{a}{TInfo.LogicalComparison}{b}";
             yield return Create(logicComparisonPattern(TInfo.BooleanValue, TInfo.BooleanValue), valueItemValue);
             yield return Create(logicComparisonPattern(TInfo.ExpandProperty, TInfo.BooleanValue), valueItemValue);
             yield return Create(logicComparisonPattern(TInfo.BooleanValue, TInfo.ExpandProperty), valueItemValue);
             yield return Create(logicComparisonPattern(TInfo.ExpandProperty, TInfo.ExpandProperty), valueItemValue);
+
+
+
         }
     }
 }

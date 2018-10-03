@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using FluentAssertions;
 using NoData.Tests.SharedExampleClasses;
 using NoData.Utility;
 using Xunit;
@@ -23,6 +24,31 @@ namespace NoData.Tests.ParserTests
             _GraphSchema = GraphImplementations.Schema.GraphSchema.Cache<Dto>.Graph;
         }
 
+        [Theory]
+        [InlineData("length(Name) eq 1")]
+        [InlineData("concat('Georg', 'e') eq 'George'")]
+        [InlineData("substring('George', 1) eq 'G'")]
+        [InlineData("substring('George', 0, 1) eq 'G'")]
+        [InlineData("trim(' George ') eq Name")]
+        [InlineData("tolower('GeOrGe ' eq 'george'")]
+        [InlineData("toupper('GeOrGe ' eq 'GEORGE'")]
+        [InlineData("contains(Name,'eorge')")]
+        [InlineData("endswith(Name,'eorge')")]
+        [InlineData("startswith(Name,'ge')")]
+        [InlineData("replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'")]
+        [InlineData("indexof(Name, 'eorge') eq 1")]
+        public void FilterParserTests_StrFunctions_CanParse_StringFunctions(string toParse)
+        {
+            //Given
+            SetParser(toParse);
+
+            //When
+            Assert.True(Parser.IsParsed);
+
+            //Then
+            Parser.ApplyFilterExpression(DtoExpression).Should().NotBeNull();
+        }
+
         [Fact]
         public void FilterParserTests_StrFunctions_CanParse_Length()
         {
@@ -33,7 +59,7 @@ namespace NoData.Tests.ParserTests
             Assert.True(Parser.IsParsed);
 
             //Then
-            Parser.ApplyFilterExpression(DtoExpression);
+            Parser.ApplyFilterExpression(DtoExpression).Should().NotBeNull();
         }
     }
 }
