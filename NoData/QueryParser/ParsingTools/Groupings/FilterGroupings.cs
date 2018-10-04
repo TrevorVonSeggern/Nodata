@@ -16,17 +16,62 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
         public static IEnumerable<TGrouping> AddTermsForFilter()
         {
-            yield return Create(TInfo.Inverse + $"({TInfo.BooleanValue}|{TInfo.ExpandProperty})", list =>
+            yield return Create(TextRepresentation.Inverse + $"({TextRepresentation.BooleanValue}|{TextRepresentation.ExpandProperty})", list =>
             {
-                var root = new Vertex(new TInfo("!", "!", TInfo.BooleanValue));
+                var root = new Vertex(new TInfo("!", TextRepresentation.BooleanValue));
                 var child = list[1];
                 var edge = new Edge(root, child.Root);
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 1);
             });
 
-            ITuple<QueueItem, int> valueItemValue(IList<QueueItem> list)
+            ITuple<QueueItem, int> valueSomethingValue(IList<QueueItem> list, string rootText = null)
             {
-                var root = new Vertex(new TInfo(list[1].Root.Value.Text, list[1].Root.Value.Representation, TInfo.BooleanValue));
+                if (rootText is null)
+                    rootText = TextRepresentation.ValueComparison;
+                var root = new Vertex(new TInfo(TextRepresentation.ValueComparison, TextRepresentation.BooleanValue));
+                var left = list[0];
+                var comparitor = list[1];
+                var right = list[2];
+                var edgeLeft = new Edge(root, left.Root);
+                var edgeMiddle = new Edge(root, comparitor.Root);
+                var edgeRight = new Edge(root, right.Root);
+                return ITuple.Create(new QueueItem(root, new[] {
+                    ITuple.Create(edgeLeft, left),
+                    ITuple.Create(edgeMiddle, comparitor),
+                    ITuple.Create(edgeRight, right),
+                }), 2);
+            }
+            ITuple<QueueItem, int> valueItemValue(IList<QueueItem> list) => valueSomethingValue(list);
+
+            string valueComparisonPattern(string a, string b) => a + TextRepresentation.ValueComparison + b;
+            // value to value
+            yield return Create(valueComparisonPattern(TextRepresentation.BooleanValue, TextRepresentation.BooleanValue), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.TextValue, TextRepresentation.TextValue), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.NumberValue, TextRepresentation.NumberValue), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.DateValue, TextRepresentation.DateValue), valueItemValue);
+
+            // property to value
+            yield return Create(valueComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.BooleanValue), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.TextValue), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.NumberValue), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.DateValue), valueItemValue);
+
+            // value to property
+            yield return Create(valueComparisonPattern(TextRepresentation.BooleanValue, TextRepresentation.ExpandProperty), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.TextValue, TextRepresentation.ExpandProperty), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.NumberValue, TextRepresentation.ExpandProperty), valueItemValue);
+            yield return Create(valueComparisonPattern(TextRepresentation.DateValue, TextRepresentation.ExpandProperty), valueItemValue);
+
+            // property to property
+            yield return Create(valueComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.ExpandProperty), valueItemValue);
+
+            string anyValueTypeRegex = $"({TextRepresentation.BooleanValue}|{TextRepresentation.NumberValue}|{TextRepresentation.TextValue}|{TextRepresentation.DateValue}|{TextRepresentation.ExpandProperty})";
+
+            // string functions
+            // length(x)
+            yield return Create($"{TextRepresentation.StrLength}{TextRepresentation.OpenParenthesis}{anyValueTypeRegex}{TextRepresentation.CloseParenthesis}", list =>
+            {
+                var root = new Vertex(new TInfo(null, TextRepresentation.NumberValue));
                 var left = list[0];
                 var right = list[2];
                 var edgeLeft = new Edge(root, left.Root);
@@ -35,49 +80,19 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                     ITuple.Create(edgeLeft, left),
                     ITuple.Create(edgeRight, right),
                 }), 2);
-            }
-
-            string valueComparisonPattern(string a, string b) => a + TInfo.ValueComparison + b;
-            // value to value
-            yield return Create(valueComparisonPattern(TInfo.BooleanValue, TInfo.BooleanValue), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.TextValue, TInfo.TextValue), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.NumberValue, TInfo.NumberValue), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.DateValue, TInfo.DateValue), valueItemValue);
-
-            // property to value
-            yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.BooleanValue), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.TextValue), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.NumberValue), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.DateValue), valueItemValue);
-
-            // value to property
-            yield return Create(valueComparisonPattern(TInfo.BooleanValue, TInfo.ExpandProperty), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.TextValue, TInfo.ExpandProperty), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.NumberValue, TInfo.ExpandProperty), valueItemValue);
-            yield return Create(valueComparisonPattern(TInfo.DateValue, TInfo.ExpandProperty), valueItemValue);
-
-            // property to property
-            yield return Create(valueComparisonPattern(TInfo.ExpandProperty, TInfo.ExpandProperty), valueItemValue);
-
-            // string functions
-            
-
-
+            });
 
             // ( )
             ITuple<QueueItem, int> undoGrouping(IList<QueueItem> list) => ITuple.Create(list[1], 2);
-            string anyValueTypeRegex = $"({TInfo.BooleanValue}|{TInfo.NumberValue}|{TInfo.TextValue}|{TInfo.DateValue}|{TInfo.ExpandProperty})";
-            yield return Create(TInfo.OpenParenthesis + anyValueTypeRegex + TInfo.CloseParenthesis, undoGrouping);
+            yield return Create(TextRepresentation.OpenParenthesis + anyValueTypeRegex + TextRepresentation.CloseParenthesis, undoGrouping);
 
             // Logical comparisons. Ie and or not, etc.
-            string logicComparisonPattern(string a, string b) => $"{a}{TInfo.LogicalComparison}{b}";
-            yield return Create(logicComparisonPattern(TInfo.BooleanValue, TInfo.BooleanValue), valueItemValue);
-            yield return Create(logicComparisonPattern(TInfo.ExpandProperty, TInfo.BooleanValue), valueItemValue);
-            yield return Create(logicComparisonPattern(TInfo.BooleanValue, TInfo.ExpandProperty), valueItemValue);
-            yield return Create(logicComparisonPattern(TInfo.ExpandProperty, TInfo.ExpandProperty), valueItemValue);
-
-
-
+            string logicComparisonPattern(string a, string b) => $"{a}{TextRepresentation.LogicalComparison}{b}";
+            ITuple<QueueItem, int> valueLogicValue(IList<QueueItem> list) => valueSomethingValue(list, TextRepresentation.LogicalComparison);
+            yield return Create(logicComparisonPattern(TextRepresentation.BooleanValue, TextRepresentation.BooleanValue), valueLogicValue);
+            yield return Create(logicComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.BooleanValue), valueLogicValue);
+            yield return Create(logicComparisonPattern(TextRepresentation.BooleanValue, TextRepresentation.ExpandProperty), valueLogicValue);
+            yield return Create(logicComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.ExpandProperty), valueLogicValue);
         }
     }
 }

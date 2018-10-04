@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using FluentAssertions;
 using NoData.Tests.SharedExampleClasses;
@@ -6,7 +7,7 @@ using Xunit;
 
 namespace NoData.Tests.ParserTests
 {
-    public class FilterParserTests
+    public class FilterQueryParserTests
     {
         ParameterExpression DtoExpression = Expression.Parameter(typeof(Dto), "Dto");
         QueryParser.QueryParser<Dto> Parser;
@@ -19,7 +20,7 @@ namespace NoData.Tests.ParserTests
             Parser = new QueryParser.QueryParser<Dto>(parameters, _GraphSchema, Cache);
         }
 
-        public FilterParserTests()
+        public FilterQueryParserTests()
         {
             _GraphSchema = GraphImplementations.Schema.GraphSchema.Cache<Dto>.Graph;
         }

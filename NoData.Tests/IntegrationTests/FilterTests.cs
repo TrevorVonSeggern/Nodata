@@ -49,13 +49,13 @@ namespace NoData.Tests.IntegrationTests
         [InlineData("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1", 1, 1, 10)] // duplication doesn't matter.
         [InlineData("partner/id eq 10", 1, 1, 10)] // filter on expansion
         [InlineData("partner/partner/id eq 1", 1, 1, 10)] // filter on expansion on expansion
-        // [InlineData("endswith(Name,'eorge')", 3, 4, 5)] // string operators
-        // [InlineData("endswith(Name,'george')", 3, 4, 5)]
-        // [InlineData("startswith(Name,'geo')", 3, 4, 5)]
-        // [InlineData("startswith(Name,'george')", 3, 4, 5)]
-        [InlineData("length(Name) gt 5", 3, 4, 5)]
-        // [InlineData("replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'", 1, 1, 2, 3, 4, 5, 6, 10)]
-        // [InlineData("indexof(Name, 'eorge') eq 1", 3, 4, 5)]
+        // // [InlineData("endswith(Name,'eorge')", 3, 4, 5)] // string operators
+        // // [InlineData("endswith(Name,'george')", 3, 4, 5)]
+        // // [InlineData("startswith(Name,'geo')", 3, 4, 5)]
+        // // [InlineData("startswith(Name,'george')", 3, 4, 5)]
+        // [InlineData("length(Name) gt 5", 3, 4, 5)]
+        // // [InlineData("replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'", 1, 1, 2, 3, 4, 5, 6, 10)]
+        // // [InlineData("indexof(Name, 'eorge') eq 1", 3, 4, 5)]
         public void Filter_Expression(string expression, params int[] expectedIds)
         {
             var queryable = SampleCollection.ToList().AsQueryable();
