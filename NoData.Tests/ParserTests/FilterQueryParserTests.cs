@@ -35,10 +35,24 @@ namespace NoData.Tests.ParserTests
         [InlineData("toupper('GeOrGe ' eq 'GEORGE'")]
         [InlineData("contains(Name,'eorge')")]
         [InlineData("endswith(Name,'eorge')")]
-        [InlineData("startswith(Name,'ge')")]
+        [InlineData("startswith(Name,'Ge')")]
         [InlineData("replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'")]
         [InlineData("indexof(Name, 'eorge') eq 1")]
         public void FilterParserTests_StrFunctions_CanParse_StringFunctions(string toParse)
+        {
+            //Given
+            SetParser(toParse);
+
+            //When
+            Assert.True(Parser.IsParsed);
+
+            //Then
+            Parser.ApplyFilterExpression(DtoExpression).Should().NotBeNull();
+        }
+
+        [Theory]
+        [InlineData("id le 1 and id ge 1")]
+        public void FilterParserTests_Simple_CanParse(string toParse)
         {
             //Given
             SetParser(toParse);
@@ -54,7 +68,46 @@ namespace NoData.Tests.ParserTests
         public void FilterParserTests_StrFunctions_CanParse_Length()
         {
             //Given
-            SetParser("length(Name) eq 1");
+            SetParser("length(Name)");
+
+            //When
+            Assert.True(Parser.IsParsed);
+
+            //Then
+            Parser.ApplyFilterExpression(DtoExpression).Should().NotBeNull();
+        }
+
+        [Fact]
+        public void FilterParserTests_StrFunctions_CanParse_EndsWith()
+        {
+            //Given
+            SetParser("endswith(Name, Name)");
+
+            //When
+            Assert.True(Parser.IsParsed);
+
+            //Then
+            Parser.ApplyFilterExpression(DtoExpression).Should().NotBeNull();
+        }
+
+        [Fact]
+        public void FilterParserTests_StrFunctions_CanParse_StartsWith()
+        {
+            //Given
+            SetParser("startswith(Name, Name)");
+
+            //When
+            Assert.True(Parser.IsParsed);
+
+            //Then
+            Parser.ApplyFilterExpression(DtoExpression).Should().NotBeNull();
+        }
+
+        [Fact]
+        public void FilterParserTests_StrFunctions_CanParse_IndexOf()
+        {
+            //Given
+            SetParser("indexof(Name, Name)");
 
             //When
             Assert.True(Parser.IsParsed);

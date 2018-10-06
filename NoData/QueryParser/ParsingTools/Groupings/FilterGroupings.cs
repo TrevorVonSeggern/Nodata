@@ -28,7 +28,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             {
                 if (rootText is null)
                     rootText = TextRepresentation.ValueComparison;
-                var root = new Vertex(new TInfo(TextRepresentation.ValueComparison, TextRepresentation.BooleanValue));
+                var root = new Vertex(new TInfo(rootText, TextRepresentation.BooleanValue));
                 var left = list[0];
                 var comparitor = list[1];
                 var right = list[2];
@@ -66,20 +66,67 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             yield return Create(valueComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.ExpandProperty), valueItemValue);
 
             string anyValueTypeRegex = $"({TextRepresentation.BooleanValue}|{TextRepresentation.NumberValue}|{TextRepresentation.TextValue}|{TextRepresentation.DateValue}|{TextRepresentation.ExpandProperty})";
+            string strTypeRegex = $"({TextRepresentation.TextValue}|{TextRepresentation.ExpandProperty})";
 
             // string functions
             // length(x)
-            yield return Create($"{TextRepresentation.StrLength}{TextRepresentation.OpenParenthesis}{anyValueTypeRegex}{TextRepresentation.CloseParenthesis}", list =>
+            var lenRegex = $"{TextRepresentation.StrLength}{TextRepresentation.OpenParenthesis}{strTypeRegex}{TextRepresentation.CloseParenthesis}";
+            yield return Create(lenRegex, list =>
             {
-                var root = new Vertex(new TInfo(null, TextRepresentation.NumberValue));
-                var left = list[0];
-                var right = list[2];
-                var edgeLeft = new Edge(root, left.Root);
-                var edgeRight = new Edge(root, right.Root);
+                var root = new Vertex(new TInfo(TextRepresentation.StrLength, TextRepresentation.NumberValue));
+                var lengthTree = list[2];
+                var edgeRight = new Edge(root, lengthTree.Root);
                 return ITuple.Create(new QueueItem(root, new[] {
-                    ITuple.Create(edgeLeft, left),
-                    ITuple.Create(edgeRight, right),
-                }), 2);
+                    ITuple.Create(edgeRight, lengthTree),
+                }), 3);
+            });
+            // endswith(x, y)
+            var endsWithRegex = $"{TextRepresentation.StrEndsWith}{TextRepresentation.OpenParenthesis}" +
+                                $"{strTypeRegex}{TextRepresentation.Comma}{strTypeRegex}" +
+                                $"{TextRepresentation.CloseParenthesis}";
+            yield return Create(endsWithRegex, list =>
+            {
+                var root = new Vertex(new TInfo(TextRepresentation.StrEndsWith, TextRepresentation.BooleanValue));
+                var strArg1 = list[2];
+                var strArg2 = list[4];
+                var edgeArg1 = new Edge(root, strArg1.Root);
+                var edgeArg2 = new Edge(root, strArg2.Root);
+                return ITuple.Create(new QueueItem(root, new[] {
+                    ITuple.Create(edgeArg1, strArg1),
+                    ITuple.Create(edgeArg2, strArg2),
+                }), 5);
+            });
+            // startswith(x, y)
+            var startsWithRegex = $"{TextRepresentation.StrStartsWith}{TextRepresentation.OpenParenthesis}" +
+                                $"{strTypeRegex}{TextRepresentation.Comma}{strTypeRegex}" +
+                                $"{TextRepresentation.CloseParenthesis}";
+            yield return Create(startsWithRegex, list =>
+            {
+                var root = new Vertex(new TInfo(TextRepresentation.StrStartsWith, TextRepresentation.BooleanValue));
+                var strArg1 = list[2];
+                var strArg2 = list[4];
+                var edgeArg1 = new Edge(root, strArg1.Root);
+                var edgeArg2 = new Edge(root, strArg2.Root);
+                return ITuple.Create(new QueueItem(root, new[] {
+                    ITuple.Create(edgeArg1, strArg1),
+                    ITuple.Create(edgeArg2, strArg2),
+                }), 5);
+            });
+            // indexOf(x, y)
+            var indexOfRegex = $"{TextRepresentation.StrIndexOf}{TextRepresentation.OpenParenthesis}" +
+                                $"{strTypeRegex}{TextRepresentation.Comma}{strTypeRegex}" +
+                                $"{TextRepresentation.CloseParenthesis}";
+            yield return Create(indexOfRegex, list =>
+            {
+                var root = new Vertex(new TInfo(TextRepresentation.StrIndexOf, TextRepresentation.NumberValue));
+                var strArg1 = list[2];
+                var strArg2 = list[4];
+                var edgeArg1 = new Edge(root, strArg1.Root);
+                var edgeArg2 = new Edge(root, strArg2.Root);
+                return ITuple.Create(new QueueItem(root, new[] {
+                    ITuple.Create(edgeArg1, strArg1),
+                    ITuple.Create(edgeArg2, strArg2),
+                }), 5);
             });
 
             // ( )

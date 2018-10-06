@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using CodeTools;
 using NoData.GraphImplementations.QueryParser;
 using NoData.Utility;
@@ -18,6 +19,30 @@ namespace NoData.QueryParser.ParsingTools
         public static bool IsDirectPropertyAccess(this Tree tree) => tree.IsPropertyAccess() && !tree.Children.Any();
         public static bool IsCollectionPropertyAccess(this Tree tree, GraphSchema graph) => tree.IsPropertyAccess();
         public static bool IsFakeExpandProperty(this Tree tree) => tree.IsPropertyAccess() && tree.Root.Value.Type == typeof(TextInfo);
+
+        private static string[] _StrFunctions = new string[]{
+            TextRepresentation.StrConcat,
+            TextRepresentation.StrContains,
+            TextRepresentation.StrEndsWith,
+            TextRepresentation.StrIndexOf,
+            TextRepresentation.StrLength,
+            TextRepresentation.StrReplace,
+            TextRepresentation.StrStartsWith,
+            TextRepresentation.StrSubString,
+            TextRepresentation.StrToLower,
+            TextRepresentation.StrToUpper,
+            TextRepresentation.StrTrim,
+        };
+
+        public static string GetStringFunction(this Tree tree)
+        {
+            var text = tree.Root.Value.Text;
+            if (_StrFunctions.Contains(text))
+                return text;
+            return null;
+        }
+
+        public static bool IsStringFunction(this Tree tree) => tree.GetStringFunction() != null;
     }
 
     [Immutable]
@@ -126,7 +151,7 @@ namespace NoData.QueryParser.ParsingTools
         private Expression LogicalExpression(Tree tree, Expression dto, IClassCache cache)
         {
             var children = new List<Graph.ITuple<Edge, Tree>>(tree.Children);
-            if (children.Count != 2) return null;
+            if (children.Count != 3) return null;
 
             var left = FilterExpression(children[0].Item2, dto, cache);
             var right = FilterExpression(children[2].Item2, dto, cache);
@@ -151,6 +176,46 @@ namespace NoData.QueryParser.ParsingTools
             throw new NotImplementedException();
         }
 
+        private Expression StringFunction(Tree tree, Expression dto, IClassCache cache)
+        {
+            var strFunction = tree.GetStringFunction();
+            if (strFunction == TextRepresentation.StrLength)
+            {
+                // eval child expr
+                var childExpression = FilterExpression(tree.Children.First().Item2, dto, cache);
+                // fail if type isn't a string
+                if (childExpression.Type != typeof(string))
+                    throw new ArgumentException("Tried to get length of non string property.");
+                return Expression.Property(childExpression, nameof(string.Length));
+            }
+            if (strFunction == TextRepresentation.StrEndsWith ||
+                strFunction == TextRepresentation.StrStartsWith ||
+                strFunction == TextRepresentation.StrIndexOf)
+            {
+                // eval child expr
+                var child1Expression = FilterExpression(tree.Children.First().Item2, dto, cache);
+                var child2Expression = FilterExpression(tree.Children.Last().Item2, dto, cache);
+                // fail if types aren't a string
+                if (child1Expression.Type != typeof(string) || child2Expression.Type != typeof(string))
+                    throw new ArgumentException("Can't check function endswith with argument of a non-string type.");
+
+                string methodName = "";
+
+                if (strFunction == TextRepresentation.StrEndsWith)
+                    methodName = nameof(string.EndsWith);
+                else if (strFunction == TextRepresentation.StrStartsWith)
+                    methodName = nameof(string.StartsWith);
+                else if (strFunction == TextRepresentation.StrIndexOf)
+                    methodName = nameof(string.IndexOf);
+
+                MethodInfo method = typeof(string).GetMethod(methodName, new[] { typeof(string) });
+
+                return Expression.Call(child1Expression, method, child2Expression);
+            }
+
+            throw new NotImplementedException("String function is not implemented: " + strFunction);
+        }
+
         public Expression FilterExpression(Tree tree, Expression dto, IClassCache cache)
         {
             if (tree.IsDirectPropertyAccess())
@@ -165,6 +230,8 @@ namespace NoData.QueryParser.ParsingTools
                 return ComparisonExpression(tree, dto, cache);
             if (tree.Root.Value.Text == TextRepresentation.LogicalComparison)
                 return LogicalExpression(tree, dto, cache);
+            if (tree.IsStringFunction())
+                return StringFunction(tree, dto, cache);
             if (tree.Representation == TextRepresentation.BooleanValue)
                 return BoolExpression(tree);
             if (tree.Representation == TextRepresentation.NumberValue)

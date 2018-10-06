@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using FluentAssertions;
 using NoData.GraphImplementations.QueryParser;
 using NoData.Internal.TreeParser.Tokenizer;
@@ -14,6 +15,7 @@ namespace NoData.Tests.ParserTests.Parsers
 {
     public class FilterParserTests
     {
+        private ParameterExpression DtoExpression = Expression.Parameter(typeof(Dto));
         private FilterClauseParser<Dto> Filter;
         IClassCache Cache = new ClassCache();
         GraphImplementations.Schema.GraphSchema _GraphSchema;
@@ -82,10 +84,10 @@ namespace NoData.Tests.ParserTests.Parsers
         }
 
         [Fact]
-        public void FilterParser_Length()
+        public void FilterParser_TwoValueComparison_WithLogicComparison()
         {
             //Given
-            SetFilter("length(Name) eq 1");
+            SetFilter("id le 1 and id ge 1");
 
             //When
             Filter.Parse();
@@ -93,7 +95,106 @@ namespace NoData.Tests.ParserTests.Parsers
 
             //Then
             Assert.True(Filter.IsFinished);
-            Filter.Result.Should().NotBeNull();
+            tree.Should().NotBeNull();
+            tree.Root.Value.Text.Should().Be(TextRepresentation.LogicalComparison); // root is logical compare
+            tree.Root.Value.Representation.Should().Be(TextRepresentation.BooleanValue);
+            tree.Children.First().Item2.Root.Value.Text.Should().Be(TextRepresentation.ValueComparison); // first child is value compare
+            tree.Children.ToList()[1].Item2.Root.Value.Text.Should().Be("and"); // root compare text is "and"
+            tree.Children.Last().Item2.Root.Value.Text.Should().Be(TextRepresentation.ValueComparison); // right side is value compare
+
+            // left side of tree
+            var lTree = tree.Children.First().Item2;
+            lTree.Root.Value.Text.Should().Be(TextRepresentation.ValueComparison); // root is value compare
+            lTree.Root.Value.Representation.Should().Be(TextRepresentation.BooleanValue);
+            lTree.Children.First().Item2.Root.Value.Text.Should().Be("id"); // left side should be id text
+            lTree.Children.ToList()[1].Item2.Root.Value.Text.Should().Be("le"); // root compare text is "le"
+            lTree.Children.Last().Item2.Root.Value.Text.Should().Be("1"); // right side is value of 1
+        }
+
+        [Fact]
+        public void FilterParser_Length()
+        {
+            //Given
+            SetFilter("length(Name)");
+
+            //When
+            Filter.Parse();
+            var tree = Filter.Result;
+
+            //Then
+            Assert.True(Filter.IsFinished);
+            tree.Should().NotBeNull();
+            tree.Root.Value.Representation.Should().Be(TextRepresentation.NumberValue);
+            tree.Root.Value.Text.Should().Be(TextRepresentation.StrLength);
+            tree.Children.Should().HaveCount(1);
+            tree.Children.First().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.First().Item2.Root.Value.Text.Should().Be("Name");
+        }
+
+        [Fact]
+        public void FilterParser_EndsWith()
+        {
+            //Given
+            SetFilter("endswith(Name, Name)");
+
+            //When
+            Filter.Parse();
+            var tree = Filter.Result;
+
+            //Then
+            Assert.True(Filter.IsFinished);
+            tree.Should().NotBeNull();
+            tree.Root.Value.Representation.Should().Be(TextRepresentation.BooleanValue);
+            tree.Root.Value.Text.Should().Be(TextRepresentation.StrEndsWith);
+            tree.Children.Should().HaveCount(2);
+            tree.Children.First().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.First().Item2.Root.Value.Text.Should().Be("Name");
+            tree.Children.Last().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.Last().Item2.Root.Value.Text.Should().Be("Name");
+        }
+
+        [Fact]
+        public void FilterParser_StartsWith()
+        {
+            //Given
+            SetFilter("startswith(Name, Name)");
+
+            //When
+            Filter.Parse();
+            var tree = Filter.Result;
+
+            //Then
+            Assert.True(Filter.IsFinished);
+            tree.Should().NotBeNull();
+            tree.Root.Value.Representation.Should().Be(TextRepresentation.BooleanValue);
+            tree.Root.Value.Text.Should().Be(TextRepresentation.StrStartsWith);
+            tree.Children.Should().HaveCount(2);
+            tree.Children.First().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.First().Item2.Root.Value.Text.Should().Be("Name");
+            tree.Children.Last().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.Last().Item2.Root.Value.Text.Should().Be("Name");
+        }
+
+        [Fact]
+        public void FilterParser_IndexOf()
+        {
+            //Given
+            SetFilter("indexof(Name, Name)");
+
+            //When
+            Filter.Parse();
+            var tree = Filter.Result;
+
+            //Then
+            Assert.True(Filter.IsFinished);
+            tree.Should().NotBeNull();
+            tree.Root.Value.Representation.Should().Be(TextRepresentation.NumberValue);
+            tree.Root.Value.Text.Should().Be(TextRepresentation.StrIndexOf);
+            tree.Children.Should().HaveCount(2);
+            tree.Children.First().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.First().Item2.Root.Value.Text.Should().Be("Name");
+            tree.Children.Last().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.Last().Item2.Root.Value.Text.Should().Be("Name");
         }
     }
 }
