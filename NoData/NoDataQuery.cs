@@ -164,10 +164,8 @@ namespace NoData
                         {
                             var str = System.Text.Encoding.Default.GetString(buffer, 0, b);
                             sw.Write(str);
-                            Console.WriteLine(str);
                         }
 
-                        Console.WriteLine(counter);
                         if (++counter > flushAfter)
                         {
                             sw.Flush();

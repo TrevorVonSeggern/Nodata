@@ -46,15 +46,12 @@ namespace SampleEFCoreApi
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            // In-Memory database
-            builder.Register(x => new DbContextOptionsBuilder<DataContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).UseLoggerFactory(MyLoggerFactory))
+            builder.Register(x => new DbContextOptionsBuilder<DataContext>()
+                // .UseSqlServer(@"Server=localhost;Database=MyDb;User=sa;Password=YourStrong!Passw0rd;")
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                // .UseLoggerFactory(MyLoggerFactory)
+                )
                 .As<DbContextOptionsBuilder<DataContext>>().As<DbContextOptionsBuilder>();
-
-            // // Sql database
-            // builder.Register(x => new DbContextOptionsBuilder<DataContext>()
-            //         .UseSqlServer(@"Server=localhost;Database=MyDb;User=sa;Password=YourStrong!Passw0rd;")
-            //         .UseLoggerFactory(MyLoggerFactory))
-            //     .As<DbContextOptionsBuilder<DataContext>>().As<DbContextOptionsBuilder>();
 
             builder.Register<DataContext>(x => new DataContext(x.Resolve<DbContextOptionsBuilder<DataContext>>().Options)).SingleInstance();
 

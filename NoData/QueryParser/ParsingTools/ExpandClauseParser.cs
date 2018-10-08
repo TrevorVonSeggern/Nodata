@@ -6,6 +6,7 @@ using NoData.GraphImplementations;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
+using TextRepresentation = NoData.GraphImplementations.QueryParser.TextRepresentation;
 using ParserVertex = NoData.GraphImplementations.QueryParser.Vertex;
 using ParserEdge = NoData.GraphImplementations.QueryParser.Edge;
 
@@ -53,8 +54,8 @@ namespace NoData.QueryParser.ParsingTools
 
             var parsed = queueGrouper.ParseToSingle(TokenFunc(QueryString));
 
-            if (parsed is null || (parsed != null && parsed.Root.Value.Representation != TInfo.ListOfExpands &&
-                parsed.Root.Value.Representation != TInfo.ExpandProperty))
+            if (parsed is null || (parsed != null && parsed.Root.Value.Representation != TextRepresentation.ListOfExpands &&
+                parsed.Root.Value.Representation != TextRepresentation.ExpandProperty))
                 throw new ArgumentException("invalid query");
 
             var groupOfExpansions = parsed?.Children;
@@ -83,10 +84,10 @@ namespace NoData.QueryParser.ParsingTools
             {
                 if (!prependEdges.Any())
                     return source;
-                if (source.Representation == TInfo.ExpandProperty)
+                if (source.Representation == TextRepresentation.ExpandProperty)
                 {
                     var text = prependEdges.First().Value.Name;
-                    var root = new ParserVertex(new TInfo(text, text, TInfo.ExpandProperty));
+                    var root = new ParserVertex(new TInfo(text, TextRepresentation.ExpandProperty));
                     var child = AppendPathToQueueItem(prependEdges.Skip(1), source);
                     return new QueueItem(root, new[] { ITuple.Create(new ParserEdge(root, child.Root), child) });
                 }
@@ -111,23 +112,23 @@ namespace NoData.QueryParser.ParsingTools
             {
                 if (currentPath == null)
                     currentPath = new List<SchemaEdge>();
-                if (tree.Representation == TInfo.ExpandProperty)
+                if (tree.Representation == TextRepresentation.ExpandProperty)
                     return ExpandProperty(from, tree, currentPath);
 
                 bool IsPassThrough(string rep)
                 {
-                    return rep == TInfo.ListOfExpands || rep == TInfo.ListOfClause || rep == TInfo.ExpandExpression;
+                    return rep == TextRepresentation.ListOfExpands || rep == TextRepresentation.ListOfClause || rep == TextRepresentation.ExpandExpression;
                 }
 
                 if (IsPassThrough(tree.Representation))
                     return TraverseChildren(from, tree, currentPath).Distinct();
 
-                if (tree.Representation == TInfo.SelectExpression)
+                if (tree.Representation == TextRepresentation.SelectExpression)
                 {
                     SelectAddFunc(AppendPathToQueueItem(currentPath, tree.Children.First().Item2));
                     return new List<SchemaPath>();
                 }
-                if (tree.Representation == TInfo.FilterExpression)
+                if (tree.Representation == TextRepresentation.FilterExpression)
                 {
                     FilterAddFunc(AppendPathToQueueItem(currentPath, tree.Children.First().Item2));
                     return new List<SchemaPath>();
@@ -138,7 +139,7 @@ namespace NoData.QueryParser.ParsingTools
             IEnumerable<SchemaPath> ExpandProperty(SchemaVertex from, QueueItem tree, IEnumerable<SchemaEdge> currentPath)
             {
                 // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
-                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.TypeId == from.Value.TypeId && e.Value.Name == tree.Root.Value.Value);
+                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.TypeId == from.Value.TypeId && e.Value.Name == tree.Root.Value.Text);
                 if (edge == null)
                     yield break;
 

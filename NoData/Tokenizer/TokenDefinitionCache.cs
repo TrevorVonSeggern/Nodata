@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Cache;
+using NoData.Utility;
 
 namespace NoData.Internal.TreeParser.Tokenizer
 {
@@ -9,12 +10,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
     {
         public TokenDefinition Token(TokenTypes tokenType, string pattern)
         {
-            int hash = 17;
-            unchecked
-            {
-                hash = hash * 31 + TokenTypes.quotedString.GetHashCode();
-                hash = hash * 31 + pattern.GetHashCode();
-            }
+            var hash = TokenTypes.quotedString.GetHashCode().AndHash(pattern);
             return GetOrAdd(hash, () => new TokenDefinition(pattern, tokenType));
         }
     }

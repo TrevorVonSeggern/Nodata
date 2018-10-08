@@ -8,6 +8,7 @@ using NoData.GraphImplementations.Schema;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
+using TextRepresentation = NoData.GraphImplementations.QueryParser.TextRepresentation;
 
 namespace NoData.QueryParser.ParsingTools
 {
@@ -46,7 +47,7 @@ namespace NoData.QueryParser.ParsingTools
             Property propertyName = null;
             void traverseExpandTree(Vertex from, QueueItem parsedSelection)
             {
-                if (parsedSelection?.Root?.Value.Representation != TInfo.ExpandProperty) return;
+                if (parsedSelection?.Root?.Value.Representation != TextRepresentation.ExpandProperty) return;
                 if (!parsedSelection.Children.Any())
                 {
                     propertyName = from.Value.Properties.Single(x => x.Name == parsedSelection.Root.Value.Text);
@@ -54,7 +55,7 @@ namespace NoData.QueryParser.ParsingTools
                 }
 
                 // get the edge in the graph where it is connected from the same type as the from vertex, and the property name matches.
-                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.TypeId == from.Value.TypeId && e.Value.Name == parsedSelection.Root.Value.Value);
+                var edge = graph.Edges.FirstOrDefault(e => e.From.Value.TypeId == from.Value.TypeId && e.Value.Name == parsedSelection.Root.Value.Text);
                 if (edge is null)
                     return;
                 edges.Add(edge);
@@ -68,9 +69,9 @@ namespace NoData.QueryParser.ParsingTools
 
         public void AddToClause(QueueItem clause)
         {
-            if (clause is null || (clause.Representation != TInfo.ListOfExpands && clause.Representation != TInfo.ExpandProperty))
+            if (clause is null || (clause.Representation != TextRepresentation.ListOfExpands && clause.Representation != TextRepresentation.ExpandProperty))
                 throw new ArgumentException("invalid query");
-            if (clause.Representation == TInfo.ListOfExpands)
+            if (clause.Representation == TextRepresentation.ListOfExpands)
             {
                 foreach (var expand in clause.Children.Select(x => x.Item2))
                     AddToClause(expand);

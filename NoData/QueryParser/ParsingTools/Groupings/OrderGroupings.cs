@@ -15,9 +15,9 @@ namespace NoData.QueryParser.ParsingTools.Groupings
         private static TGrouping Create(string pattern, Func<IList<QueueItem>, ITuple<QueueItem, int>> addFunc) => ITuple.Create(pattern, addFunc);
 
         public static TGrouping SortOrderProperty =
-            Create($"{TInfo.ExpandProperty}({TInfo.SortOrder})?", list =>
+            Create($"{TextRepresentation.ExpandProperty}({TextRepresentation.SortOrder})?", list =>
             {
-                var root = new Vertex(TInfo.FromRepresentation(TInfo.SortProperty));
+                var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.SortProperty));
 
                 var expandProperty = list[0];
                 var edgeExpand = new Edge(root, expandProperty.Root);
@@ -25,7 +25,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 var sortDirection = list.Count == 2 ?
                                         list[1] :
                                         new QueueItem(new Vertex(
-                                            new TextInfo("asc", "asc", TextInfo.SortOrder)));
+                                            new TextInfo("asc", TextRepresentation.SortOrder)));
                 var edgeSort = new Edge(root, sortDirection.Root);
 
                 return ITuple.Create(new QueueItem(root, new[] {
@@ -35,12 +35,12 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             });
 
         public static IEnumerable<TGrouping> ListOfSorting = new TGrouping[] {
-            Create($"{TInfo.SortProperty}({TInfo.Comma}{TInfo.SortProperty})*", list =>
+            Create($"{TextRepresentation.SortProperty}({TextRepresentation.Comma}{TextRepresentation.SortProperty})*", list =>
             {
-                var filtered = list.Where(x => x.Representation == TInfo.SortProperty).ToList();
+                var filtered = list.Where(x => x.Representation == TextRepresentation.SortProperty).ToList();
                 var children = new Queue<QueueItem>(filtered);
 
-                var root = new Vertex(TInfo.FromRepresentation(TInfo.ListOfSortings));
+                var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.ListOfSortings));
                 var edges = children.Select(t => new Edge(root, t.Root));
                 var childrenItems = new List<ITuple<Edge, QueueItem>>();
                 foreach (var child in children)
