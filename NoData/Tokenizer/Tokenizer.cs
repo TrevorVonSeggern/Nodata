@@ -24,19 +24,12 @@ namespace NoData.Internal.TreeParser.Tokenizer
                     _DefinitionCache.Token(TokenTypes.quotedString, @"([\""'])(?:\\\1|.)*?\1"),
                     _DefinitionCache.Token(TokenTypes.parenthesis, @"\("),
                     _DefinitionCache.Token(TokenTypes.parenthesis, @"\)"),
+                    _DefinitionCache.Token(TokenTypes.whitespace, @"\s+"),
                     _DefinitionCache.Token(TokenTypes.not, "!"),
                     _DefinitionCache.Token(TokenTypes.add, @"\+"),
                     _DefinitionCache.Token(TokenTypes.subtract, @"\-"),
                     _DefinitionCache.Token(TokenTypes.number, @"[-+]?[0-9]*\.?[0-9]+"),
-                    _DefinitionCache.Token(TokenTypes.equals, "eq"),
-                    _DefinitionCache.Token(TokenTypes.notEquals, "ne"),
-                    _DefinitionCache.Token(TokenTypes.not, "not"),
-                    _DefinitionCache.Token(TokenTypes.and, "and"),
-                    _DefinitionCache.Token(TokenTypes.or, "or"),
-                    _DefinitionCache.Token(TokenTypes.greaterThan, "gt"),
-                    _DefinitionCache.Token(TokenTypes.lessThan, "lt"),
-                    _DefinitionCache.Token(TokenTypes.greaterThanOrEqual, "ge"),
-                    _DefinitionCache.Token(TokenTypes.lessThanOrEqual, "le"),
+                    
                     _DefinitionCache.Token(TokenTypes.truth, "[Tt]rue"),
                     _DefinitionCache.Token(TokenTypes.falsey, "[Ff]alse"),
                     _DefinitionCache.Token(TokenTypes.forwardSlash, "/"),
@@ -47,8 +40,30 @@ namespace NoData.Internal.TreeParser.Tokenizer
                     _DefinitionCache.Token(TokenTypes.filterClause, filterString),
                     _DefinitionCache.Token(TokenTypes.expandClause, expandString),
                     _DefinitionCache.Token(TokenTypes.selectClause, selectString),
-                    _DefinitionCache.Token(TokenTypes.selectClause, selectString),
-                    _DefinitionCache.Token(TokenTypes.whitespace, @"\s+")
+
+                    // string functions.
+                    _DefinitionCache.Token(TokenTypes.str_length, "length"),
+                    _DefinitionCache.Token(TokenTypes.str_substring, "substring"),
+                    _DefinitionCache.Token(TokenTypes.str_starts_with, "startswith"),
+                    _DefinitionCache.Token(TokenTypes.str_ends_with, "endswith"),
+                    _DefinitionCache.Token(TokenTypes.str_concat, "concat"),
+                    _DefinitionCache.Token(TokenTypes.str_contains, "contains"),
+                    _DefinitionCache.Token(TokenTypes.str_index_of, "indexof"),
+                    _DefinitionCache.Token(TokenTypes.str_to_lower, "tolower"),
+                    _DefinitionCache.Token(TokenTypes.str_to_upper, "toupper"),
+                    _DefinitionCache.Token(TokenTypes.str_trim, "trim"),
+                    _DefinitionCache.Token(TokenTypes.str_replace, "replace"),
+
+                    // Logical functions
+                    _DefinitionCache.Token(TokenTypes.equals, "eq"),
+                    _DefinitionCache.Token(TokenTypes.notEquals, "ne"),
+                    _DefinitionCache.Token(TokenTypes.not, "not"),
+                    _DefinitionCache.Token(TokenTypes.and, "and"),
+                    _DefinitionCache.Token(TokenTypes.or, "or"),
+                    _DefinitionCache.Token(TokenTypes.greaterThan, "gt"),
+                    _DefinitionCache.Token(TokenTypes.lessThan, "lt"),
+                    _DefinitionCache.Token(TokenTypes.greaterThanOrEqual, "ge"),
+                    _DefinitionCache.Token(TokenTypes.lessThanOrEqual, "le"),
                 }
             );
 

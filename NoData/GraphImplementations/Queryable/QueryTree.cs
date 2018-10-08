@@ -22,7 +22,6 @@ namespace NoData.GraphImplementations.Queryable
         {
         }
 
-
         // Serialization code
         public string AsJson<T>(T item) => this.ObjectAsJson(item);
 

@@ -15,7 +15,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
     {
         private static TGrouping Create(string pattern, Func<IList<QueueItem>, ITuple<QueueItem, int>> addFunc) => ITuple.Create(pattern, addFunc);
 
-        public static TGrouping ExpandProperty = Create($"{TInfo.ClassProperty}({TInfo.ForwardSlash}{TInfo.ClassProperty})*", list =>
+        public static TGrouping ExpandProperty = Create($"{TextRepresentation.ClassProperty}({TextRepresentation.ForwardSlash}{TextRepresentation.ClassProperty})*", list =>
            {
                var itemList = new Stack<Vertex>();
                itemList.Push(list[0].Root);
@@ -24,8 +24,8 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                while (toRemove + 2 < list.Count)
                {
                    var representation = list[toRemove + 1].Root.Value.Representation;
-                   if (list[toRemove + 1].Root.Value.Representation == TInfo.ForwardSlash &&
-                       list[toRemove + 2].Root.Value.Representation == TInfo.ClassProperty)
+                   if (list[toRemove + 1].Root.Value.Representation == TextRepresentation.ForwardSlash &&
+                       list[toRemove + 2].Root.Value.Representation == TextRepresentation.ClassProperty)
                    {
                        itemList.Push(list[toRemove + 2].Root);
                        toRemove += 2;
@@ -34,12 +34,12 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                }
 
                var vertex = itemList.Pop();
-               QueueItem propertyTree = new QueueItem(new Vertex(new TextInfo(vertex.Value.Text, vertex.Value.Value, TInfo.ExpandProperty)));
+               QueueItem propertyTree = new QueueItem(new Vertex(new TextInfo(vertex.Value.Text, TextRepresentation.ExpandProperty)));
 
                // build from linear list, the tree
                for (vertex = itemList.Any() ? itemList.Peek() : null; itemList.Count != 0; vertex = itemList.Pop())
                {
-                   vertex = new Vertex(new TextInfo(vertex.Value.Text, vertex.Value.Value, TInfo.ExpandProperty));
+                   vertex = new Vertex(new TextInfo(vertex.Value.Text, TextRepresentation.ExpandProperty));
                    var edge = new Edge(vertex, propertyTree.Root);
                    propertyTree = new QueueItem(vertex, new[] { ITuple.Create(edge, propertyTree) });
                }
@@ -47,9 +47,9 @@ namespace NoData.QueryParser.ParsingTools.Groupings
            });
 
         public static IEnumerable<TGrouping> ListOfExpand = new TGrouping[] {
-            Create(TInfo.ListOfExpands + TInfo.Comma + TInfo.ExpandProperty, list =>
+            Create(TextRepresentation.ListOfExpands + TextRepresentation.Comma + TextRepresentation.ExpandProperty, list =>
             {
-                var filtered = list.Where(x => x.Root.Value.Representation != TInfo.Comma).ToList();
+                var filtered = list.Where(x => x.Root.Value.Representation != TextRepresentation.Comma).ToList();
                 var grouped = filtered[0];
                 var expand = filtered[1];
                 var children = new List<ITuple<Edge, QueueItem>>(grouped.Children)
@@ -59,9 +59,9 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
                 return ITuple.Create(new QueueItem(grouped.Root, children), 2);
             }),
-            Create(TInfo.ExpandProperty + TInfo.Comma + TInfo.ListOfExpands, list =>
+            Create(TextRepresentation.ExpandProperty + TextRepresentation.Comma + TextRepresentation.ListOfExpands, list =>
             {
-                var filtered = list.Where(x => x.Root.Value.Representation != TInfo.Comma).ToList();
+                var filtered = list.Where(x => x.Root.Value.Representation != TextRepresentation.Comma).ToList();
                 var grouped = filtered[1];
                 var expand = filtered[0];
                 var children = new List<ITuple<Edge, QueueItem>>(grouped.Children)
@@ -71,9 +71,9 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
                 return ITuple.Create(new QueueItem(grouped.Root, children), 2);
             }),
-            Create(TInfo.ListOfExpands + TInfo.Comma + TInfo.ListOfExpands, list =>
+            Create(TextRepresentation.ListOfExpands + TextRepresentation.Comma + TextRepresentation.ListOfExpands, list =>
             {
-                var filtered = list.Where(x => x.Root.Value.Representation != TInfo.Comma).ToList();
+                var filtered = list.Where(x => x.Root.Value.Representation != TextRepresentation.Comma).ToList();
                 var grouped = filtered[0];
                 var otherGrouped = filtered[1];
                 var children = new List<ITuple<Edge, QueueItem>>(grouped.Children);
@@ -83,12 +83,12 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
                 return ITuple.Create(new QueueItem(grouped.Root, children), 2);
             }),
-            Create($"{TInfo.ExpandProperty}({TInfo.Comma}{TInfo.ExpandProperty})*", list =>
+            Create($"{TextRepresentation.ExpandProperty}({TextRepresentation.Comma}{TextRepresentation.ExpandProperty})*", list =>
             {
-                var filtered = list.Where(x => x.Representation == TInfo.ExpandProperty).ToList();
+                var filtered = list.Where(x => x.Representation == TextRepresentation.ExpandProperty).ToList();
                 var children = new Queue<QueueItem>(filtered);
 
-                var root = new Vertex(TextInfo.FromRepresentation(TInfo.ListOfExpands));
+                var root = new Vertex(TextInfo.FromRepresentation(TextRepresentation.ListOfExpands));
                 var edges = children.Select(t => new Edge(root, t.Root));
                 var childrenItems = new List<ITuple<Edge, QueueItem>>();
                 foreach (var child in children)
@@ -100,14 +100,14 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
         public static TGrouping ListOfClauseExpressions()
         {
-            var expand = TInfo.ExpandExpression;
-            var filter = TInfo.FilterExpression;
-            var select = TInfo.SelectExpression;
+            var expand = TextRepresentation.ExpandExpression;
+            var filter = TextRepresentation.FilterExpression;
+            var select = TextRepresentation.SelectExpression;
 
             var clause = $"({expand}|{filter}|{select})";
-            return Create($"{clause}({TInfo.SemiColin}{clause})*", list =>
+            return Create($"{clause}({TextRepresentation.SemiColin}{clause})*", list =>
             {
-                var root = new Vertex(TInfo.FromRepresentation(TInfo.ListOfClause, typeof(TInfo)));
+                var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.ListOfClause, typeof(TInfo)));
 
                 bool IsClause(QueueItem item)
                 {
@@ -122,25 +122,25 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             });
         }
 
-        public static TGrouping FilterExpression = Create(TInfo.FilterClause + TInfo.BooleanValue, list =>
+        public static TGrouping FilterExpression = Create(TextRepresentation.FilterClause + TextRepresentation.BooleanValue, list =>
             {
-                var root = new Vertex(TInfo.FromRepresentation(TInfo.FilterExpression));
+                var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.FilterExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), list.Count - 1);
             });
 
-        public static TGrouping SelectExpression = Create(TInfo.SelectClause + TInfo.ListOfExpands, list =>
+        public static TGrouping SelectExpression = Create(TextRepresentation.SelectClause + TextRepresentation.ListOfExpands, list =>
             {
-                var root = new Vertex(TInfo.FromRepresentation(TInfo.SelectExpression));
+                var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.SelectExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), 1);
             });
 
-        public static TGrouping ExpandExpression = Create(TInfo.ExpandClause + TInfo.ListOfExpands, list =>
+        public static TGrouping ExpandExpression = Create(TextRepresentation.ExpandClause + TextRepresentation.ListOfExpands, list =>
             {
-                var root = new Vertex(TInfo.FromRepresentation(TInfo.ExpandExpression));
+                var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.ExpandExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), 1);
             });
 
-        public static TGrouping ExpandPropertyWithListOfClauses = Create($"{TInfo.ExpandProperty}{TInfo.OpenParenthesis}{TInfo.ListOfClause}?{TInfo.CloseParenthesis}", list =>
+        public static TGrouping ExpandPropertyWithListOfClauses = Create($"{TextRepresentation.ExpandProperty}{TextRepresentation.OpenParenthesis}{TextRepresentation.ListOfClause}?{TextRepresentation.CloseParenthesis}", list =>
             {
                 // add one to the children
                 var root = list[0].Root;
@@ -148,6 +148,5 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 children.Add(ITuple.Create(new Edge(root, list[2].Root), list[2]));
                 return ITuple.Create(new QueueItem(root, children), 3);
             });
-
     }
 }

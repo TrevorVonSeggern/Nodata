@@ -88,15 +88,18 @@ namespace Cache
                 cacheLock.ExitUpgradeableReadLock();
                 return item;
             }
-
-            item = addItemFactory(); // Go get the item. External code call.
-
+            try
+            {
+                item = addItemFactory(); // Go get the item. External code call.
+            }
+            catch { throw; }
+            finally
+            {
+                // Release locks before returning.
+                cacheLock.ExitWriteLock();
+                cacheLock.ExitUpgradeableReadLock();
+            }
             AddItemFunc(item);
-
-            // Release locks before returning.
-            cacheLock.ExitWriteLock();
-            cacheLock.ExitUpgradeableReadLock();
-
             return item;
         }
 

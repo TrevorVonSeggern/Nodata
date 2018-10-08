@@ -28,7 +28,6 @@ namespace NoData.Tests.IntegrationTests
         }
 
         [Theory]
-        [InlineData("true", 1, 1, 2, 3, 4, 5, 6, 10)] // id comared to numbers.
         [InlineData("id eq 2", 2)] // id comared to numbers.
         [InlineData("id gt 2", 3, 4, 5, 6)]
         [InlineData("id ge 2", 2, 3, 4, 5, 6)]
@@ -47,8 +46,22 @@ namespace NoData.Tests.IntegrationTests
         [InlineData("id le 1 or id ge 1", 1, 1, 2, 3, 4, 5, 6, 10)] // multiple of the same property.
         [InlineData("id le 1 and id ge 1", 1, 1, 10)]
         [InlineData("id eq 1 or id eq 1 and id eq 1 or id eq 1 and id eq 1 or id eq 1", 1, 1, 10)] // duplication doesn't matter.
-        [InlineData("partner/id eq 10", 1, 1, 10)] // duplication doesn't matter.
-        [InlineData("partner/partner/id eq 1", 1, 1, 10)] // duplication doesn't matter.
+        [InlineData("partner/id eq 10", 1, 1, 10)] // filter on expansion
+        [InlineData("partner/partner/id eq 1", 1, 1, 10)] // filter on expansion on expansion
+        [InlineData("endswith(Name,'eorge')", 3, 4, 5)] // string operators
+        [InlineData("endswith(Name,'George')", 3, 4, 5)]
+        [InlineData("startswith(Name,'Geo')", 3, 4, 5)]
+        [InlineData("startswith(Name,'George')", 3, 4, 5)]
+        [InlineData("length(Name) gt 5", 3, 4, 5)]
+        [InlineData("indexof(Name, 'eorge') eq 1", 3, 4, 5)]
+        [InlineData("contains(Name, 'eorge')", 3, 4, 5)]
+        [InlineData("replace(Name, 'George', 'ReplacedName') eq 'ReplacedName'", 3, 4, 5)]
+        [InlineData("tolower(Name) eq 'george'", 3, 4, 5)]
+        [InlineData("toupper(Name) eq 'GEORGE'", 3, 4, 5)]
+        [InlineData("concat('Georg', 'e') eq Name", 3, 4, 5)]
+        [InlineData("trim(' George ') eq Name", 3, 4, 5)]
+        [InlineData("substring(Name, 1) eq 'eorge'", 3, 4, 5)]
+        [InlineData("substring(Name, 0, 1) eq 'G'", 3, 4, 5)]
         public void Filter_Expression(string expression, params int[] expectedIds)
         {
             var queryable = SampleCollection.ToList().AsQueryable();
@@ -63,12 +76,7 @@ namespace NoData.Tests.IntegrationTests
         }
 
         // More tests
-        // endswith(Name,'eorge')
-        // startswith(Name,'george')
         // substringof(Name,'eorg') // right is contained within the left paramter
-        // length(Name) gt 1
-        // indexof(Name, 'ame') eq 1
-        // replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'
         // substring(Name, 'Name', 'ReplacedName') eq 'ReplacedName'
     }
 }
