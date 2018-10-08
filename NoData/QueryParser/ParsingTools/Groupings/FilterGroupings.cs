@@ -80,54 +80,91 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                     ITuple.Create(edgeRight, lengthTree),
                 }), 3);
             });
-            // endswith(x, y)
-            var endsWithRegex = $"{TextRepresentation.StrEndsWith}{TextRepresentation.OpenParenthesis}" +
-                                $"{strTypeRegex}{TextRepresentation.Comma}{strTypeRegex}" +
-                                $"{TextRepresentation.CloseParenthesis}";
-            yield return Create(endsWithRegex, list =>
+
+            string StringFunctionRegexHelper(string fctn, int argCount)
             {
-                var root = new Vertex(new TInfo(TextRepresentation.StrEndsWith, TextRepresentation.BooleanValue));
-                var strArg1 = list[2];
-                var strArg2 = list[4];
-                var edgeArg1 = new Edge(root, strArg1.Root);
-                var edgeArg2 = new Edge(root, strArg2.Root);
-                return ITuple.Create(new QueueItem(root, new[] {
-                    ITuple.Create(edgeArg1, strArg1),
-                    ITuple.Create(edgeArg2, strArg2),
-                }), 5);
-            });
-            // startswith(x, y)
-            var startsWithRegex = $"{TextRepresentation.StrStartsWith}{TextRepresentation.OpenParenthesis}" +
-                                $"{strTypeRegex}{TextRepresentation.Comma}{strTypeRegex}" +
-                                $"{TextRepresentation.CloseParenthesis}";
-            yield return Create(startsWithRegex, list =>
+                var result = $"{fctn}{TextRepresentation.OpenParenthesis}";
+                for (int i = 0; i < argCount; ++i)
+                {
+                    if (i == argCount - 1)
+                        result += strTypeRegex;
+                    else
+                        result += $"{strTypeRegex}{TextRepresentation.Comma}";
+                }
+                return result + $"{TextRepresentation.CloseParenthesis}";
+            }
+
+            ITuple<QueueItem, int> strFunctionHelper(IList<QueueItem> list, string rootText, string rootRepresentation)
             {
-                var root = new Vertex(new TInfo(TextRepresentation.StrStartsWith, TextRepresentation.BooleanValue));
-                var strArg1 = list[2];
-                var strArg2 = list[4];
-                var edgeArg1 = new Edge(root, strArg1.Root);
-                var edgeArg2 = new Edge(root, strArg2.Root);
-                return ITuple.Create(new QueueItem(root, new[] {
-                    ITuple.Create(edgeArg1, strArg1),
-                    ITuple.Create(edgeArg2, strArg2),
-                }), 5);
-            });
-            // indexOf(x, y)
-            var indexOfRegex = $"{TextRepresentation.StrIndexOf}{TextRepresentation.OpenParenthesis}" +
-                                $"{strTypeRegex}{TextRepresentation.Comma}{strTypeRegex}" +
-                                $"{TextRepresentation.CloseParenthesis}";
-            yield return Create(indexOfRegex, list =>
+                var totalCount = list.Count;
+                var totalAfterWastedItems = totalCount - 2;
+                var total = totalAfterWastedItems / 2;
+
+                var root = new Vertex(new TInfo(rootText, rootRepresentation));
+
+                var strArgs = new List<QueueItem>(total);
+                for (var i = 0; i < total; ++i)
+                    strArgs.Add(list[(i * 2) + 2]);
+
+                var edgeArgs = new List<Edge>(total);
+                foreach (var vertex in strArgs)
+                    edgeArgs.Add(new Edge(root, vertex.Root));
+
+                var children = new List<ITuple<Edge, QueueItem>>(total);
+                for (var i = 0; i < strArgs.Count && i < edgeArgs.Count; ++i)
+                    children.Add(ITuple.Create(edgeArgs[i], strArgs[i]));
+
+                return ITuple.Create(new QueueItem(root, children), list.Count - 1);
+            }
+
+            var endsWithRegex = StringFunctionRegexHelper(TextRepresentation.StrEndsWith, 2);
+            yield return Create(endsWithRegex, list => strFunctionHelper(list, TextRepresentation.StrEndsWith, TextRepresentation.BooleanValue));
+
+            var startsWithRegex = StringFunctionRegexHelper(TextRepresentation.StrStartsWith, 2);
+            yield return Create(startsWithRegex, list => strFunctionHelper(list, TextRepresentation.StrStartsWith, TextRepresentation.BooleanValue));
+
+            var indexOfRegex = StringFunctionRegexHelper(TextRepresentation.StrIndexOf, 2);
+            yield return Create(indexOfRegex, list => strFunctionHelper(list, TextRepresentation.StrIndexOf, TextRepresentation.NumberValue));
+
+            var containsRegex = StringFunctionRegexHelper(TextRepresentation.StrContains, 2);
+            yield return Create(containsRegex, list => strFunctionHelper(list, TextRepresentation.StrContains, TextRepresentation.BooleanValue));
+
+            var replaceRegex = StringFunctionRegexHelper(TextRepresentation.StrReplace, 3);
+            yield return Create(replaceRegex, list => strFunctionHelper(list, TextRepresentation.StrReplace, TextRepresentation.TextValue));
+
+            var toLowerRegex = StringFunctionRegexHelper(TextRepresentation.StrToLower, 1);
+            yield return Create(toLowerRegex, list => strFunctionHelper(list, TextRepresentation.StrToLower, TextRepresentation.TextValue));
+
+            var toUpperRegex = StringFunctionRegexHelper(TextRepresentation.StrToUpper, 1);
+            yield return Create(toUpperRegex, list => strFunctionHelper(list, TextRepresentation.StrToUpper, TextRepresentation.TextValue));
+
+            var concatRegex = StringFunctionRegexHelper(TextRepresentation.StrConcat, 2);
+            yield return Create(concatRegex, list => strFunctionHelper(list, TextRepresentation.StrConcat, TextRepresentation.TextValue));
+
+            var trimRegex = StringFunctionRegexHelper(TextRepresentation.StrTrim, 1);
+            yield return Create(trimRegex, list => strFunctionHelper(list, TextRepresentation.StrTrim, TextRepresentation.TextValue));
+
+            string StringFunctionRegexHelperWithIntArgs(string fctn, int argCount)
             {
-                var root = new Vertex(new TInfo(TextRepresentation.StrIndexOf, TextRepresentation.NumberValue));
-                var strArg1 = list[2];
-                var strArg2 = list[4];
-                var edgeArg1 = new Edge(root, strArg1.Root);
-                var edgeArg2 = new Edge(root, strArg2.Root);
-                return ITuple.Create(new QueueItem(root, new[] {
-                    ITuple.Create(edgeArg1, strArg1),
-                    ITuple.Create(edgeArg2, strArg2),
-                }), 5);
-            });
+                var result = $"{fctn}{TextRepresentation.OpenParenthesis}";
+                for (int i = 0; i < argCount; ++i)
+                {
+                    if (i == 0)
+                        result += strTypeRegex;
+                    else
+                        result += TextRepresentation.NumberValue;
+
+                    if (i != argCount - 1)
+                        result += TextRepresentation.Comma;
+                }
+                return result + $"{TextRepresentation.CloseParenthesis}";
+            }
+
+            var substring1Regex = StringFunctionRegexHelperWithIntArgs(TextRepresentation.StrSubString, 2);
+            yield return Create(substring1Regex, list => strFunctionHelper(list, TextRepresentation.StrSubString, TextRepresentation.TextValue));
+
+            var substring2Regex = StringFunctionRegexHelperWithIntArgs(TextRepresentation.StrSubString, 3);
+            yield return Create(substring2Regex, list => strFunctionHelper(list, TextRepresentation.StrSubString, TextRepresentation.TextValue));
 
             // ( )
             ITuple<QueueItem, int> undoGrouping(IList<QueueItem> list) => ITuple.Create(list[1], 2);

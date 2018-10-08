@@ -38,17 +38,17 @@ namespace NoData.Tests.ParserTests.Parsers
 
         [Theory]
         [InlineData("length(Name) eq 1")]
-        [InlineData("concat('Georg', 'e') eq 'George'")]
-        [InlineData("substring('George', 1) eq 'G'")]
-        [InlineData("substring('George', 0, 1) eq 'G'")]
-        [InlineData("trim(' George ') eq Name")]
-        [InlineData("tolower('GeOrGe ' eq 'george'")]
-        [InlineData("toupper('GeOrGe ' eq 'GEORGE'")]
+        [InlineData("indexof(Name, 'eorge') eq 1")]
         [InlineData("contains(Name,'eorge')")]
         [InlineData("endswith(Name,'eorge')")]
         [InlineData("startswith(Name,'ge')")]
         [InlineData("replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'")]
-        [InlineData("indexof(Name, 'eorge') eq 1")]
+        [InlineData("tolower('GeOrGe') eq 'george'")]
+        [InlineData("toupper('GeOrGe') eq 'GEORGE'")]
+        [InlineData("concat('Georg', 'e') eq 'George'")]
+        [InlineData("trim(' George ') eq Name")]
+        [InlineData("substring('George', 1) eq 'G'")]
+        [InlineData("substring('George', 0, 1) eq 'G'")]
         public void FilterParser_ParseResult_NotNull(string input)
         {
             //Given
@@ -195,6 +195,52 @@ namespace NoData.Tests.ParserTests.Parsers
             tree.Children.First().Item2.Root.Value.Text.Should().Be("Name");
             tree.Children.Last().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
             tree.Children.Last().Item2.Root.Value.Text.Should().Be("Name");
+        }
+
+        [Fact]
+        public void FilterParser_Contains()
+        {
+            //Given
+            SetFilter("contains(Name, Name)");
+
+            //When
+            Filter.Parse();
+            var tree = Filter.Result;
+
+            //Then
+            Assert.True(Filter.IsFinished);
+            tree.Should().NotBeNull();
+            tree.Root.Value.Representation.Should().Be(TextRepresentation.BooleanValue);
+            tree.Root.Value.Text.Should().Be(TextRepresentation.StrContains);
+            tree.Children.Should().HaveCount(2);
+            tree.Children.First().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.First().Item2.Root.Value.Text.Should().Be("Name");
+            tree.Children.Last().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.Last().Item2.Root.Value.Text.Should().Be("Name");
+        }
+
+        [Fact]
+        public void FilterParser_Replace()
+        {
+            //Given
+            SetFilter("replace(Name, Name, 'other')");
+
+            //When
+            Filter.Parse();
+            var tree = Filter.Result;
+
+            //Then
+            Assert.True(Filter.IsFinished);
+            tree.Should().NotBeNull();
+            tree.Root.Value.Representation.Should().Be(TextRepresentation.TextValue);
+            tree.Root.Value.Text.Should().Be(TextRepresentation.StrReplace);
+            tree.Children.Should().HaveCount(3);
+            tree.Children.First().Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.First().Item2.Root.Value.Text.Should().Be("Name");
+            tree.Children.ToList()[1].Item2.Root.Value.Representation.Should().Be(TextRepresentation.ExpandProperty);
+            tree.Children.ToList()[1].Item2.Root.Value.Text.Should().Be("Name");
+            tree.Children.Last().Item2.Root.Value.Representation.Should().Be(TextRepresentation.TextValue);
+            tree.Children.Last().Item2.Root.Value.Text.Should().Be("'other'");
         }
     }
 }

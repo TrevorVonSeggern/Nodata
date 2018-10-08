@@ -27,17 +27,17 @@ namespace NoData.Tests.ParserTests
 
         [Theory]
         [InlineData("length(Name) eq 1")]
-        [InlineData("concat('Georg', 'e') eq 'George'")]
-        [InlineData("substring('George', 1) eq 'G'")]
-        [InlineData("substring('George', 0, 1) eq 'G'")]
-        [InlineData("trim(' George ') eq Name")]
-        [InlineData("tolower('GeOrGe ' eq 'george'")]
-        [InlineData("toupper('GeOrGe ' eq 'GEORGE'")]
+        [InlineData("indexof(Name, 'eorge') eq 1")]
         [InlineData("contains(Name,'eorge')")]
         [InlineData("endswith(Name,'eorge')")]
-        [InlineData("startswith(Name,'Ge')")]
+        [InlineData("startswith(Name,'ge')")]
         [InlineData("replace(Name, 'Name', 'ReplacedName') eq 'ReplacedName'")]
-        [InlineData("indexof(Name, 'eorge') eq 1")]
+        [InlineData("tolower('GeOrGe') eq 'george'")]
+        [InlineData("toupper('GeOrGe') eq 'GEORGE'")]
+        [InlineData("concat('Georg', 'e') eq 'George'")]
+        [InlineData("trim(' George ') eq Name")]
+        [InlineData("substring('George', 1) eq 'G'")]
+        [InlineData("substring('George', 0, 1) eq 'G'")]
         public void FilterParserTests_StrFunctions_CanParse_StringFunctions(string toParse)
         {
             //Given
@@ -108,6 +108,32 @@ namespace NoData.Tests.ParserTests
         {
             //Given
             SetParser("indexof(Name, Name)");
+
+            //When
+            Assert.True(Parser.IsParsed);
+
+            //Then
+            Parser.ApplyFilterExpression(DtoExpression).Should().NotBeNull();
+        }
+
+        [Fact]
+        public void FilterParserTests_StrFunctions_CanParse_Contains()
+        {
+            //Given
+            SetParser("contains(Name, Name)");
+
+            //When
+            Assert.True(Parser.IsParsed);
+
+            //Then
+            Parser.ApplyFilterExpression(DtoExpression).Should().NotBeNull();
+        }
+
+        [Fact]
+        public void FilterParserTests_StrFunctions_CanParse_Replace()
+        {
+            //Given
+            SetParser("replace(Name, Name, 'george') eq 'george'");
 
             //When
             Assert.True(Parser.IsParsed);

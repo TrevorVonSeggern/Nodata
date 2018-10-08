@@ -92,6 +92,20 @@ namespace NoData.GraphImplementations.QueryParser
                 return TextRepresentation.StrStartsWith;
             if (type == TokenTypes.str_index_of)
                 return TextRepresentation.StrIndexOf;
+            if (type == TokenTypes.str_contains)
+                return TextRepresentation.StrContains;
+            if (type == TokenTypes.str_replace)
+                return TextRepresentation.StrReplace;
+            if (type == TokenTypes.str_to_upper)
+                return TextRepresentation.StrToUpper;
+            if (type == TokenTypes.str_to_lower)
+                return TextRepresentation.StrToLower;
+            if (type == TokenTypes.str_trim)
+                return TextRepresentation.StrTrim;
+            if (type == TokenTypes.str_concat)
+                return TextRepresentation.StrConcat;
+            if (type == TokenTypes.str_substring)
+                return TextRepresentation.StrSubString;
 
             throw new ArgumentException("Can't map the token type to a textual representation.");
         }

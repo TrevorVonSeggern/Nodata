@@ -188,9 +188,33 @@ namespace NoData.QueryParser.ParsingTools
                     throw new ArgumentException("Tried to get length of non string property.");
                 return Expression.Property(childExpression, nameof(string.Length));
             }
+            if (strFunction == TextRepresentation.StrToLower ||
+                strFunction == TextRepresentation.StrToUpper ||
+                strFunction == TextRepresentation.StrTrim)
+            {
+                // eval child expr
+                var child1Expression = FilterExpression(tree.Children.First().Item2, dto, cache);
+                // fail if type isn't a string
+                if (child1Expression.Type != typeof(string))
+                    throw new ArgumentException("Can't check function endswith with argument of a non-string type.");
+
+                string methodName = "";
+
+                if (strFunction == TextRepresentation.StrToUpper)
+                    methodName = nameof(string.ToUpper);
+                else if (strFunction == TextRepresentation.StrToLower)
+                    methodName = nameof(string.ToLower);
+                else if (strFunction == TextRepresentation.StrTrim)
+                    methodName = nameof(string.Trim);
+
+                MethodInfo method = typeof(string).GetMethod(methodName, new Type[] { });
+
+                return Expression.Call(child1Expression, method);
+            }
             if (strFunction == TextRepresentation.StrEndsWith ||
                 strFunction == TextRepresentation.StrStartsWith ||
-                strFunction == TextRepresentation.StrIndexOf)
+                strFunction == TextRepresentation.StrIndexOf ||
+                strFunction == TextRepresentation.StrContains)
             {
                 // eval child expr
                 var child1Expression = FilterExpression(tree.Children.First().Item2, dto, cache);
@@ -207,10 +231,71 @@ namespace NoData.QueryParser.ParsingTools
                     methodName = nameof(string.StartsWith);
                 else if (strFunction == TextRepresentation.StrIndexOf)
                     methodName = nameof(string.IndexOf);
+                else if (strFunction == TextRepresentation.StrContains)
+                    methodName = nameof(string.Contains);
 
                 MethodInfo method = typeof(string).GetMethod(methodName, new[] { typeof(string) });
 
                 return Expression.Call(child1Expression, method, child2Expression);
+            }
+            if (strFunction == TextRepresentation.StrReplace)
+            {
+                var childList = tree.Children.ToList();
+                // eval child expr
+                var child1Expression = FilterExpression(childList[0].Item2, dto, cache);
+                var child2Expression = FilterExpression(childList[1].Item2, dto, cache);
+                var child3Expression = FilterExpression(childList[2].Item2, dto, cache);
+                // fail if types aren't a string
+                if (child1Expression.Type != typeof(string) || child2Expression.Type != typeof(string) || child3Expression.Type != typeof(string))
+                    throw new ArgumentException("Can't check function endswith with argument of a non-string type.");
+
+                string methodName = nameof(string.Replace);
+
+                MethodInfo method = typeof(string).GetMethod(methodName, new[] { typeof(string), typeof(string) });
+
+                return Expression.Call(child1Expression, method, child2Expression, child3Expression);
+            }
+            if (strFunction == TextRepresentation.StrConcat)
+            {
+                var childList = tree.Children.ToList();
+                // eval child expr
+                var child1Expression = FilterExpression(childList[0].Item2, dto, cache);
+                var child2Expression = FilterExpression(childList[1].Item2, dto, cache);
+                // fail if types aren't a string
+                if (child1Expression.Type != typeof(string) || child2Expression.Type != typeof(string))
+                    throw new ArgumentException("Can't check function endswith with argument of a non-string type.");
+
+                string methodName = null;
+
+                if (strFunction == TextRepresentation.StrConcat)
+                    methodName = nameof(string.Concat);
+
+                MethodInfo method = typeof(string).GetMethod(methodName, new[] { typeof(string), typeof(string) });
+
+                return Expression.Call(method, child1Expression, child2Expression);
+            }
+            if (strFunction == TextRepresentation.StrSubString)
+            {
+                var childList = tree.Children.ToList();
+                // eval child expr
+                var child1Expression = FilterExpression(childList[0].Item2, dto, cache);
+
+                var integerArgs = new List<Expression>(childList.Count - 1);
+                // if (childList.Count == 2)
+                //     integerArgs.Add(Expression.Constant(0, typeof(int)));
+                for (var i = 1; i < childList.Count; ++i)
+                    integerArgs.Add(Expression.Convert(FilterExpression(childList[i].Item2, dto, cache), typeof(int)));
+
+                // fail if types aren't a string
+                if (child1Expression.Type != typeof(string))
+                    throw new ArgumentException("Can't check function endswith with argument of a non-string type.");
+
+                if (!integerArgs.All(x => x.Type == typeof(int) || x.Type == typeof(long)))
+                    throw new ArgumentException("Argument not an integer for substring function.");
+
+                MethodInfo method = typeof(string).GetMethod(nameof(string.Substring), integerArgs.Select(x => x.Type).ToArray());
+
+                return Expression.Call(child1Expression, method, integerArgs);
             }
 
             throw new NotImplementedException("String function is not implemented: " + strFunction);
