@@ -11,6 +11,8 @@ namespace NoData
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped(typeof(NoData.NoDataBuilder<>));
             services.AddScoped(typeof(NoData.INoData<>), typeof(NoData.NoDataBuilder<>));
+
+            services.AddScoped(typeof(NoData.SettingsForType<>));
             services.AddScoped(typeof(NoData.Parameters),
                 provider => ParametersHelper.FromHttpContext(provider.GetRequiredService<IHttpContextAccessor>()));
         }
