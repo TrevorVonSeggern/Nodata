@@ -180,7 +180,7 @@ namespace NoData
 
         public Stream Stream()
         {
-            if (Parameters.Count)
+            if (!Parameters.Count)
                 return EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]");
             throw new NotImplementedException("Count is not implemented.");
         }

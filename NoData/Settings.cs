@@ -19,26 +19,41 @@ namespace NoData
         }
         public Settings(Settings other)
         {
-            if (other is null)
-                other = new Settings();
-
-            MaxExpandDepth = other.MaxExpandDepth;
+            CopyFromTo(this, other);
         }
+
+        public static Settings CreateFromOther(Settings other) => new Settings(other);
+        public static void CopyFromTo(Settings left, Settings right = null)
+        {
+            if (right is null)
+                right = new Settings();
+
+            left.MaxExpandDepth = right.MaxExpandDepth;
+            left.AllowCount = right.AllowCount;
+        }
+
+
         public int MaxExpandDepth = -1; // negative to have no max expand. 0 for root properties only (no navigation), and positive numbers for expand depth limits.
+        public bool AllowCount = true;
     }
 
     public class SettingsForType<T> : Settings
     {
-        public SettingsForType() : this(DefaultSettingsForType<T>.SettingsForType)
+        public SettingsForType() : base(DefaultSettingsForType<T>.SettingsForType)
         {
         }
-        public SettingsForType(Settings other) : base(other) { }
-        public SettingsForType(SettingsForType<T> other) : base(other) { }
+
+        public static SettingsForType<T> Create(Settings other)
+        {
+            var settings = new SettingsForType<T>();
+            Settings.CopyFromTo(settings, other);
+            return settings;
+        }
     }
 
-    public class DefaultSettingsForType<T> : Settings
+    public static class DefaultSettingsForType<T>
     {
-        public static SettingsForType<T> SettingsForType { get; set; } = new SettingsForType<T>(DefaultSettings.Settings);
+        public static SettingsForType<T> SettingsForType { get; set; } = SettingsForType<T>.Create(DefaultSettings.Settings);
     }
 
     public static class DefaultSettings
