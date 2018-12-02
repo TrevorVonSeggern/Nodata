@@ -30,7 +30,7 @@ namespace NoData.Tests.IntegrationTests.SerializationTests
         {
             // Given
             var query = FlatDtoEnumerable().ToList();
-            var nodata = new NoDataBuilder<Dto>(new Parameters());
+            var nodata = new NoDataBuilder<Dto>(new Parameters(), DefaultSettingsForType<Dto>.SettingsForType);
 
             // When
             var rawText = new StreamReader(nodata.Load(query.AsQueryable()).Stream()).ReadToEnd();
@@ -44,7 +44,7 @@ namespace NoData.Tests.IntegrationTests.SerializationTests
         {
             // Given
             var query = FlatDtoEnumerable().ToList();
-            var nodata = new NoDataBuilder<Dto>(new Parameters());
+            var nodata = new NoDataBuilder<Dto>(new Parameters(), DefaultSettingsForType<Dto>.SettingsForType);
             var rawText = new StreamReader(nodata.Load(query.AsQueryable()).Stream()).ReadToEnd();
 
             // When
@@ -75,7 +75,7 @@ namespace NoData.Tests.IntegrationTests.SerializationTests
                 .RuleFor(x => x.children, f => new List<DtoChild>());
 
             var query = fixture.Generate(10).ToList();
-            var nodata = new NoDataBuilder<Dto>(new Parameters("favorite"));
+            var nodata = new NoDataBuilder<Dto>(new Parameters("favorite"), DefaultSettingsForType<Dto>.SettingsForType);
             var rawText = new StreamReader(nodata.Load(query.AsQueryable()).Stream()).ReadToEnd();
 
             // When
@@ -107,7 +107,7 @@ namespace NoData.Tests.IntegrationTests.SerializationTests
 
             var query = fixture.Generate(10).ToList();
             query.AddRange(query.Select(x => x.partner).ToList());
-            var nodata = new NoDataBuilder<Dto>(new Parameters("partner"));
+            var nodata = new NoDataBuilder<Dto>(new Parameters("partner"), DefaultSettingsForType<Dto>.SettingsForType);
             var rawText = new StreamReader(nodata.Load(query.AsQueryable()).Stream()).ReadToEnd();
 
             // When
@@ -138,7 +138,7 @@ namespace NoData.Tests.IntegrationTests.SerializationTests
                 .RuleFor(x => x.children, f => childFaker.Generate(3));
 
             var query = fixture.Generate(10).ToList();
-            var nodata = new NoDataBuilder<Dto>(new Parameters("children"));
+            var nodata = new NoDataBuilder<Dto>(new Parameters("children"), DefaultSettingsForType<Dto>.SettingsForType);
             var rawText = new StreamReader(nodata.Load(query.AsQueryable()).Stream()).ReadToEnd();
 
             // When

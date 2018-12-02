@@ -9,7 +9,6 @@ namespace PerfTest
 
     class Program
     {
-
         static void Main(string[] args)
         {
             // using (var stream = (EnumerableStream.SlowStream()))

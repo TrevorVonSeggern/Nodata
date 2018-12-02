@@ -30,7 +30,7 @@ namespace NoData.Tests.ProperUseTests
         public QueryBuilderTests()
         {
             _NoDataQueryMock = new Mock<INoDataQuery<Dto>>();
-            _NoDataBuilderMock = new Mock<NoDataBuilder<Dto>>(new Parameters());
+            _NoDataBuilderMock = new Mock<NoDataBuilder<Dto>>(new Parameters(), DefaultSettingsForType<Dto>.SettingsForType);
             _NoDataBuilderMock.Setup(x => x.Load(It.IsAny<IQueryable<Dto>>())).Returns(_NoDataQuery);
         }
 
