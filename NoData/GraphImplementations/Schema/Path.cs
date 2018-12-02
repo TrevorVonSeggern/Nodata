@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using CodeTools;
+using Immutability;
 
 namespace NoData.GraphImplementations.Schema
 {

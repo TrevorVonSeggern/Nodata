@@ -22,7 +22,6 @@
   <ItemGroup>
     <ProjectReference Include="..\NoData\NoData.csproj"/>
     <ProjectReference Include="..\Cache\Cache.csproj"/>
-    <ProjectReference Include="..\CodeTools\CodeTools.csproj"/>
 
     <ProjectReference Include="..\SampleWebApi\SampleWebApi.csproj"/>
     <ProjectReference Include="..\SampleEFCoreApi\SampleEFCoreApi.csproj"/>

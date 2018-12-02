@@ -290,7 +290,6 @@ __pycache__/
 
 #code coverage reports
 lcov.info
-CodeTools/asdf/
 
 *.dll
 
