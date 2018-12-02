@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
@@ -36,7 +37,7 @@ namespace NoData.Tests.IntegrationTests
         public void Expand_Expression(string expression, params int[] expectedIds)
         {
             var queryable = new List<Dto>(ParentCollection).AsQueryable();
-            var ft = new NoData.NoDataBuilder<Dto>(new Parameters(expression));
+            var ft = new NoData.NoDataBuilder<Dto>(new Parameters(expression), DefaultSettingsForType<Dto>.SettingsForType);
             var result = ft.Load(queryable).BuildQueryable().ToList();
 
             var resultIds = result.SelectMany(x => x.GetAllIds()).OrderBy(x => x).ToList();
@@ -47,9 +48,44 @@ namespace NoData.Tests.IntegrationTests
             resultIds.Should().BeEquivalentTo(expected, "Error with expression: " + expression);
         }
 
+        [Fact]
+        public void Expand_WithExpandLimit_0_Fails()
+        {
+            var queryable = new List<Dto>(ParentCollection).AsQueryable();
+            var ft = new NoData.NoDataBuilder<Dto>(new Parameters(nameof(Dto.partner)), new SettingsForType<Dto>() { MaxExpandDepth = 0 });
 
+            Assert.Throws<ArgumentException>(() =>
+            {
+                ft.Load(queryable);
+            });
+        }
 
+        [Fact]
+        public void Expand_WithExpandLimit_1_Success()
+        {
+            var queryable = new List<Dto>(ParentCollection).AsQueryable();
+            var ft = new NoData.NoDataBuilder<Dto>(new Parameters(nameof(Dto.partner)), new SettingsForType<Dto>() { MaxExpandDepth = 1 });
 
+            ft.Load(queryable);
+        }
+
+        [Fact]
+        public void Expand_WithExpandLimit_2_Success()
+        {
+            var queryable = new List<Dto>(ParentCollection).AsQueryable();
+            var ft = new NoData.NoDataBuilder<Dto>(new Parameters(nameof(Dto.partner)), new SettingsForType<Dto>() { MaxExpandDepth = 2 });
+
+            ft.Load(queryable);
+        }
+
+        [Fact]
+        public void Expand_WithExpandLimit_Unset_Success()
+        {
+            var queryable = new List<Dto>(ParentCollection).AsQueryable();
+            var ft = new NoData.NoDataBuilder<Dto>(new Parameters(nameof(Dto.partner)), new SettingsForType<Dto>());
+
+            ft.Load(queryable);
+        }
 
         public static IEnumerable<DtoGrandChild> GrandChildCollection => new List<DtoGrandChild>
         {

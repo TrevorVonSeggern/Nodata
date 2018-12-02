@@ -23,11 +23,13 @@ namespace NoData
         where TDto : class, new()
     {
         protected Parameters Parameters { get; }
+        public SettingsForType<TDto> Settings { get; }
         protected GraphSchema Graph { get; }
 
-        public NoDataBuilder(Parameters parameters)
+        public NoDataBuilder(Parameters parameters, SettingsForType<TDto> settings)
         {
             Parameters = parameters;
+            Settings = settings;
             Graph = GraphSchema.Cache<TDto>.Graph;
         }
 
@@ -38,7 +40,7 @@ namespace NoData
             string orderBy = null,
             int? top = null,
             int? skip = null,
-            bool count = false) : this(new Parameters(expand, filter, select, orderBy, top, skip, count))
+            bool count = false) : this(new Parameters(expand, filter, select, orderBy, top, skip, count), new SettingsForType<TDto>())
         { }
 
         private QueryParser<TDto> ParseQuery()
@@ -59,6 +61,15 @@ namespace NoData
         {
             Expression filterExpr = parser.ApplyFilterExpression(ParameterDtoExpression);
             var selectionTree = Utility.SchemaToQueryable.TranslateTree2(parser.SelectionTree, parser.SelectPaths);
+
+            // security: check max expand
+            if (Settings.MaxExpandDepth >= 0)
+            {
+                var paths = selectionTree.EnumerateAllPaths();
+                if (paths.Any(x => x.Count() > Settings.MaxExpandDepth))
+                    throw new ArgumentException("Cannot expand past the max expand depth of: " + Settings.MaxExpandDepth);
+            }
+
             var selectExpandExpression = Utility.ExpressionBuilder.GetExpandExpression(ParameterDtoExpression, selectionTree, GraphSchema._Cache);
             return new NoDataQuery<TDto>(sourceQueryable, Parameters, GraphSchema._Cache, parser.OrderByPath, selectExpandExpression, filterExpr, ParameterDtoExpression, selectionTree);
         }

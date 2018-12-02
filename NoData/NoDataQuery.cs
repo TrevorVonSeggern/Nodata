@@ -21,7 +21,7 @@ namespace NoData
     public class NoDataQuery<TDto> : INoDataQuery<TDto>
         where TDto : class, new()
     {
-        public FilterSecurityTypes FilterSecurity { get; } = FilterSecurityTypes.AllowOnlyVisibleValues;
+        // public FilterSecurityTypes FilterSecurity { get; } = FilterSecurityTypes.AllowOnlyVisibleValues;
 
         // Properties that represent the object model. Ie setup operations
         public Parameters Parameters { get; }
@@ -180,7 +180,9 @@ namespace NoData
 
         public Stream Stream()
         {
-            return EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]");
+            if (!Parameters.Count)
+                return EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]");
+            throw new NotImplementedException("Count is not implemented.");
         }
     }
 }
