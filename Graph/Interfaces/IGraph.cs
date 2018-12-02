@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using CodeTools;
+using Immutability;
 
 namespace Graph.Interfaces
 {

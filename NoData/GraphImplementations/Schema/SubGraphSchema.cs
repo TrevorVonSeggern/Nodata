@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CodeTools;
+using Immutability;
 using NoData.Utility;
 
 namespace NoData.GraphImplementations.Schema
