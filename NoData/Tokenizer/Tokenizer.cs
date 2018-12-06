@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Cache;
+using QuickCache;
 
 namespace NoData.Internal.TreeParser.Tokenizer
 {
@@ -29,7 +29,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
                     _DefinitionCache.Token(TokenTypes.add, @"\+"),
                     _DefinitionCache.Token(TokenTypes.subtract, @"\-"),
                     _DefinitionCache.Token(TokenTypes.number, @"[-+]?[0-9]*\.?[0-9]+"),
-                    
+
                     _DefinitionCache.Token(TokenTypes.truth, "[Tt]rue"),
                     _DefinitionCache.Token(TokenTypes.falsey, "[Ff]alse"),
                     _DefinitionCache.Token(TokenTypes.forwardSlash, "/"),

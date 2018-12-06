@@ -11,9 +11,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="AutoMapper" Version="7.0.1" />
     <PackageReference Include="FastMember.Signed" Version="1.4.1" />
+    <PackageReference Include="QuickCache" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graph\Graph.csproj" />
-    <ProjectReference Include="..\Cache\Cache.csproj" />
   </ItemGroup>
 </Project>

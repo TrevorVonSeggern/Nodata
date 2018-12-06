@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Cache;
+using QuickCache;
 using NoData.Utility;
 
 namespace NoData.Internal.TreeParser.Tokenizer
