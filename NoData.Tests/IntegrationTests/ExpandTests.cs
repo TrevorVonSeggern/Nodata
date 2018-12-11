@@ -37,6 +37,7 @@ namespace NoData.Tests.IntegrationTests
         public void Expand_Expression(string expression, params int[] expectedIds)
         {
             var queryable = new List<Dto>(ParentCollection).AsQueryable();
+            DefaultSettingsForType<Dto>.SettingsForType.MaxExpandDepth = 100;
             var ft = new NoData.NoDataBuilder<Dto>(new Parameters(expression), DefaultSettingsForType<Dto>.SettingsForType);
             var result = ft.Load(queryable).BuildQueryable().ToList();
 

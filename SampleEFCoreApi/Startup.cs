@@ -15,6 +15,7 @@ using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Console;
+using NoData;
 
 namespace SampleEFCoreApi
 {
@@ -34,7 +35,8 @@ namespace SampleEFCoreApi
         {
             services.AddMvc().AddControllersAsServices();
 
-            NoData.DependencyInjection.ConfigureService_MicrosoftDI(services);
+            services.AddNoData();
+
             var builder = new ContainerBuilder();
 
             builder.Populate(services);

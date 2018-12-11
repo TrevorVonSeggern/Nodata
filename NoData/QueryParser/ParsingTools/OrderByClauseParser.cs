@@ -67,7 +67,7 @@ namespace NoData.QueryParser.ParsingTools
             if (!orderByDefinitions.Any())
                 return query;
 
-            bool first = true;
+            var first = true;
             foreach (var sort in orderByDefinitions)
             {
                 if (first)
@@ -84,7 +84,7 @@ namespace NoData.QueryParser.ParsingTools
     {
         public static Expression GetOrderByExpression(Expression dto, PathToProperty sortPath)
         {
-            Expression memberExpression = dto;
+            var memberExpression = dto;
             sortPath.Traverse(x => memberExpression = Expression.PropertyOrField(memberExpression, x.Value.Name));
 
             var property = memberExpression.Type.GetProperty(sortPath.Property.Name);
@@ -97,7 +97,7 @@ namespace NoData.QueryParser.ParsingTools
         {
             var orderByExp = Expression.Lambda(propertyAccess, parameter);
             var typeArguments = new Type[] { typeof(TDto), propertyAccess.Type };
-            var methodName = sortOrder == SortDirection.Ascending ? "OrderBy" : "OrderByDescending";
+            var methodName = sortOrder == SortDirection.Ascending ? nameof(Enumerable.OrderBy) : nameof(Enumerable.OrderByDescending);
             var resultExp = Expression.Call(typeof(Queryable), methodName, typeArguments, source.Expression, Expression.Quote(orderByExp));
 
             return source.Provider.CreateQuery<TDto>(resultExp);

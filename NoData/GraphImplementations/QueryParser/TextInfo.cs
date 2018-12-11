@@ -2,6 +2,7 @@
 using Graph.Interfaces;
 using NoData.Internal.TreeParser.Tokenizer;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -12,7 +13,6 @@ namespace NoData.GraphImplementations.QueryParser
     {
         public string Text { get; }
         public string Representation { get; }
-
 
         // Type and Parsed should be deleted
         public Type Type { get; }
@@ -31,80 +31,80 @@ namespace NoData.GraphImplementations.QueryParser
         public static TextInfo FromRepresentation(string representation) => new TextInfo(null, representation);
         public static TextInfo FromRepresentation(string representation, Type type) => new TextInfo(null, representation, type);
 
-        private static string GetRepresentationFromTokenType(TokenTypes type)
+        private static string GetRepresentationFromTokenType(TokenType type)
         {
-            if (type == TokenTypes.classProperties)
+            if (type == TokenType.classProperties)
                 return TextRepresentation.ClassProperty;
 
             // value compare.
             if (new[] {
-                        TokenTypes.greaterThan,
-                        TokenTypes.greaterThanOrEqual,
-                        TokenTypes.lessThan,
-                        TokenTypes.lessThanOrEqual,
-                        TokenTypes.equals,
-                        TokenTypes.notEquals
+                        TokenType.greaterThan,
+                        TokenType.greaterThanOrEqual,
+                        TokenType.lessThan,
+                        TokenType.lessThanOrEqual,
+                        TokenType.equals,
+                        TokenType.notEquals
                     }.Contains(type)
                 )
                 return TextRepresentation.ValueComparison;
 
-            if (type == TokenTypes.not)
+            if (type == TokenType.not)
                 return TextRepresentation.Inverse;
 
             // formatting
-            if (type == TokenTypes.forwardSlash)
+            if (type == TokenType.forwardSlash)
                 return TextRepresentation.ForwardSlash;
-            if (type == TokenTypes.semiColin)
+            if (type == TokenType.semiColin)
                 return TextRepresentation.SemiColin;
-            if (type == TokenTypes.comma)
+            if (type == TokenType.comma)
                 return TextRepresentation.Comma;
 
             // logical compare
-            if (type == TokenTypes.and || type == TokenTypes.or)
+            if (type == TokenType.and || type == TokenType.or)
                 return TextRepresentation.LogicalComparison;
 
             // const values
-            if (type == TokenTypes.truth || type == TokenTypes.falsey)
+            if (type == TokenType.truth || type == TokenType.falsey)
                 return TextRepresentation.LogicalComparison;
-            if (type == TokenTypes.quotedString)
+            if (type == TokenType.quotedString)
                 return TextRepresentation.TextValue;
 
             // odata clauses.
-            if (type == TokenTypes.filterClause)
+            if (type == TokenType.filterClause)
                 return TextRepresentation.FilterClause;
-            if (type == TokenTypes.selectClause)
+            if (type == TokenType.selectClause)
                 return TextRepresentation.SelectClause;
-            if (type == TokenTypes.expandClause)
+            if (type == TokenType.expandClause)
                 return TextRepresentation.ExpandClause;
 
             // sort direction
-            if (type == TokenTypes.ascending || type == TokenTypes.descending)
+            if (type == TokenType.ascending || type == TokenType.descending)
                 return TextRepresentation.SortOrder;
-            if (type == TokenTypes.ascending || type == TokenTypes.descending)
+            if (type == TokenType.ascending || type == TokenType.descending)
                 return TextRepresentation.SortOrder;
 
             // str functions
-            if (type == TokenTypes.str_length)
+            if (type == TokenType.strLength)
                 return TextRepresentation.StrLength;
-            if (type == TokenTypes.str_ends_with)
+            if (type == TokenType.strEndsWith)
                 return TextRepresentation.StrEndsWith;
-            if (type == TokenTypes.str_starts_with)
+            if (type == TokenType.strStartsWith)
                 return TextRepresentation.StrStartsWith;
-            if (type == TokenTypes.str_index_of)
+            if (type == TokenType.strIndexOf)
                 return TextRepresentation.StrIndexOf;
-            if (type == TokenTypes.str_contains)
+            if (type == TokenType.strContains)
                 return TextRepresentation.StrContains;
-            if (type == TokenTypes.str_replace)
+            if (type == TokenType.strReplace)
                 return TextRepresentation.StrReplace;
-            if (type == TokenTypes.str_to_upper)
+            if (type == TokenType.strToUpper)
                 return TextRepresentation.StrToUpper;
-            if (type == TokenTypes.str_to_lower)
+            if (type == TokenType.strToLower)
                 return TextRepresentation.StrToLower;
-            if (type == TokenTypes.str_trim)
+            if (type == TokenType.strTrim)
                 return TextRepresentation.StrTrim;
-            if (type == TokenTypes.str_concat)
+            if (type == TokenType.strConcat)
                 return TextRepresentation.StrConcat;
-            if (type == TokenTypes.str_substring)
+            if (type == TokenType.strSubstring)
                 return TextRepresentation.StrSubString;
 
             throw new ArgumentException("Can't map the token type to a textual representation.");
@@ -113,25 +113,25 @@ namespace NoData.GraphImplementations.QueryParser
         public TextInfo(Token token)
         {
             Text = token.Value;
-            if (!Enum.TryParse(token.Type, out TokenTypes type))
+            if (!Enum.TryParse(token.Type, out TokenType type))
                 Representation = TextRepresentation.RawTextRepresentation;
             else
             {
-                if (type == TokenTypes.number)
+                if (type == TokenType.number)
                 {
-                    if (Text.Contains("."))
+                    if (long.TryParse(Text, NumberStyles.Integer, CultureInfo.CurrentCulture.NumberFormat, out var longParsed))
                     {
-                        Type = typeof(double);
-                        Parsed = double.Parse(Text);
+                        Type = typeof(long);
+                        Parsed = longParsed;
                     }
                     else
                     {
-                        Type = typeof(long);
-                        Parsed = long.Parse(Text);
+                        Type = typeof(double);
+                        Parsed = double.Parse(Text, CultureInfo.CurrentCulture.NumberFormat);
                     }
                     Representation = TextRepresentation.NumberValue;
                 }
-                else if (type == TokenTypes.parenthesis)
+                else if (type == TokenType.parenthesis)
                 {
                     if (Text == "(")
                         Representation = TextRepresentation.OpenParenthesis;

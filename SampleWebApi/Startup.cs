@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using NoData;
 
 namespace SampleWebApi
 {
@@ -26,7 +27,7 @@ namespace SampleWebApi
                 options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
                 options.SerializerSettings.TypeNameHandling = Newtonsoft.Json.TypeNameHandling.None;
             });
-            NoData.DependencyInjection.ConfigureService_MicrosoftDI(services);
+            services.AddNoData();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

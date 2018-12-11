@@ -8,9 +8,9 @@ namespace NoData.Internal.TreeParser.Tokenizer
 {
     public class TokenDefinitionCache : DictionaryCache<int, TokenDefinition>
     {
-        public TokenDefinition Token(TokenTypes tokenType, string pattern)
+        public TokenDefinition Token(TokenType tokenType, string pattern)
         {
-            var hash = TokenTypes.quotedString.GetHashCode().AndHash(pattern);
+            var hash = TokenType.quotedString.GetHashCode().AndHash(pattern);
             return GetOrAdd(hash, () => new TokenDefinition(pattern, tokenType));
         }
     }

@@ -47,7 +47,7 @@ namespace NoData.GraphImplementations.Queryable
 
                 foreach (var property in Root.Value.Properties.Where(p => p.IsNavigationProperty))
                 {
-                    var childTree = Children.Where(c => c.Item1.Value == property).First().Item2;
+                    var childTree = Children.First(c => c.Item1.Value == property).Item2;
                     writer.WritePropertyName(property.Name);
                     var value = accessor[item, property.Name];
                     writer.WriteRawValue(childTree.ObjectAsJson(value)); // { child object }
@@ -55,7 +55,7 @@ namespace NoData.GraphImplementations.Queryable
 
                 foreach (var property in Root.Value.Properties.Where(p => p.IsCollection))
                 {
-                    var childTree = Children.Where(c => c.Item1.Value == property).First().Item2;
+                    var childTree = Children.First(c => c.Item1.Value == property).Item2;
                     var childList = (IEnumerable<object>)accessor[item, property.Name];
                     writer.WritePropertyName(property.Name);
                     writer.WriteStartArray();

@@ -11,20 +11,16 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using NoData.Utility;
+using System.Text;
 
 namespace NoData
 {
-    // internal static class SharedClassCache
-    // {
-    //     public static readonly IClassCache Cache = new ClassCache();
-    // }
-
     public class NoDataBuilder<TDto> : INoData<TDto>
         where TDto : class, new()
     {
-        protected Parameters Parameters { get; }
+        internal Parameters Parameters { get; }
         public SettingsForType<TDto> Settings { get; }
-        protected GraphSchema Graph { get; }
+        internal GraphSchema Graph { get; }
 
         public NoDataBuilder(Parameters parameters, SettingsForType<TDto> settings)
         {
@@ -45,7 +41,7 @@ namespace NoData
 
         private QueryParser<TDto> ParseQuery()
         {
-            var parser = new QueryParser<TDto>(Parameters, Graph, GraphSchema._Cache);
+            var parser = new QueryParser<TDto>(Parameters, Graph, GraphSchema.CacheInstance);
 
             return parser;
         }
@@ -59,7 +55,7 @@ namespace NoData
         private static readonly ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
         private INoDataQuery<TDto> buildQuery(IQueryable<TDto> sourceQueryable, QueryParser<TDto> parser)
         {
-            Expression filterExpr = parser.ApplyFilterExpression(ParameterDtoExpression);
+            var filterExpr = parser.ApplyFilterExpression(ParameterDtoExpression);
             var selectionTree = Utility.SchemaToQueryable.TranslateTree2(parser.SelectionTree, parser.SelectPaths);
 
             // security: check max expand
@@ -70,8 +66,8 @@ namespace NoData
                     throw new ArgumentException("Cannot expand past the max expand depth of: " + Settings.MaxExpandDepth);
             }
 
-            var selectExpandExpression = Utility.ExpressionBuilder.GetExpandExpression(ParameterDtoExpression, selectionTree, GraphSchema._Cache);
-            return new NoDataQuery<TDto>(sourceQueryable, Parameters, GraphSchema._Cache, parser.OrderByPath, selectExpandExpression, filterExpr, ParameterDtoExpression, selectionTree);
+            var selectExpandExpression = Utility.ExpressionBuilder.GetExpandExpression(ParameterDtoExpression, selectionTree, GraphSchema.CacheInstance);
+            return new NoDataQuery<TDto>(sourceQueryable, Parameters, GraphSchema.CacheInstance, parser.OrderByPath, selectExpandExpression, filterExpr, ParameterDtoExpression, selectionTree);
         }
 
         public INoDataQuery<TDto> Projection<TEntity>(IQueryable<TEntity> sourceQueryable, IConfigurationProvider mapperConfiguration)
@@ -86,12 +82,14 @@ namespace NoData
                 // apply includes
                 foreach (var path in stringPathEnumerable.Where(x => x.Any()))
                 {
-                    string currentInclude = path.First();
-                    func(currentInclude);
+                    var strBuilder = new StringBuilder(path.First());
+                    if (func != null)
+                        func(strBuilder.ToString());
                     foreach (var inc in path.Skip(1))
                     {
-                        currentInclude += "." + inc;
-                        func(currentInclude);
+                        strBuilder.Append("." + inc);
+                        if (func != null)
+                            func(strBuilder.ToString());
                     }
                 }
             }

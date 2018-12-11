@@ -15,7 +15,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
     {
         private static TGrouping Create(string pattern, Func<IList<QueueItem>, ITuple<QueueItem, int>> addFunc) => ITuple.Create(pattern, addFunc);
 
-        public static TGrouping ExpandProperty = Create($"{TextRepresentation.ClassProperty}({TextRepresentation.ForwardSlash}{TextRepresentation.ClassProperty})*", list =>
+        public static readonly TGrouping ExpandProperty = Create($"{TextRepresentation.ClassProperty}({TextRepresentation.ForwardSlash}{TextRepresentation.ClassProperty})*", list =>
            {
                var itemList = new Stack<Vertex>();
                itemList.Push(list[0].Root);
@@ -34,7 +34,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                }
 
                var vertex = itemList.Pop();
-               QueueItem propertyTree = new QueueItem(new Vertex(new TextInfo(vertex.Value.Text, TextRepresentation.ExpandProperty)));
+               var propertyTree = new QueueItem(new Vertex(new TextInfo(vertex.Value.Text, TextRepresentation.ExpandProperty)));
 
                // build from linear list, the tree
                for (vertex = itemList.Any() ? itemList.Peek() : null; itemList.Count != 0; vertex = itemList.Pop())
@@ -46,7 +46,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                return ITuple.Create(propertyTree, toRemove);
            });
 
-        public static IEnumerable<TGrouping> ListOfExpand = new TGrouping[] {
+        public static readonly IEnumerable<TGrouping> ListOfExpand = new TGrouping[] {
             Create(TextRepresentation.ListOfExpands + TextRepresentation.Comma + TextRepresentation.ExpandProperty, list =>
             {
                 var filtered = list.Where(x => x.Root.Value.Representation != TextRepresentation.Comma).ToList();
@@ -122,25 +122,25 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             });
         }
 
-        public static TGrouping FilterExpression = Create(TextRepresentation.FilterClause + TextRepresentation.BooleanValue, list =>
+        public static readonly TGrouping FilterExpression = Create(TextRepresentation.FilterClause + TextRepresentation.BooleanValue, list =>
             {
                 var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.FilterExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), list.Count - 1);
             });
 
-        public static TGrouping SelectExpression = Create(TextRepresentation.SelectClause + TextRepresentation.ListOfExpands, list =>
+        public static readonly TGrouping SelectExpression = Create(TextRepresentation.SelectClause + TextRepresentation.ListOfExpands, list =>
             {
                 var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.SelectExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), 1);
             });
 
-        public static TGrouping ExpandExpression = Create(TextRepresentation.ExpandClause + TextRepresentation.ListOfExpands, list =>
+        public static readonly TGrouping ExpandExpression = Create(TextRepresentation.ExpandClause + TextRepresentation.ListOfExpands, list =>
             {
                 var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.ExpandExpression));
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(new Edge(root, list[1].Root), list[1]) }), 1);
             });
 
-        public static TGrouping ExpandPropertyWithListOfClauses = Create($"{TextRepresentation.ExpandProperty}{TextRepresentation.OpenParenthesis}{TextRepresentation.ListOfClause}?{TextRepresentation.CloseParenthesis}", list =>
+        public static readonly TGrouping ExpandPropertyWithListOfClauses = Create($"{TextRepresentation.ExpandProperty}{TextRepresentation.OpenParenthesis}{TextRepresentation.ListOfClause}?{TextRepresentation.CloseParenthesis}", list =>
             {
                 // add one to the children
                 var root = list[0].Root;

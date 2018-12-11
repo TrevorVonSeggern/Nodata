@@ -9,7 +9,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
         private static Regex endOfLineRegex = new Regex(@"(\r\n|\r|\n)", RegexOptions.Compiled | RegexOptions.Singleline);
 
         public Queue<Token> Tokens { get; }
-        public readonly List<TokenDefinition> Definitions = new List<TokenDefinition>(); // 29 just for normal parsing.
+        public List<TokenDefinition> Definitions { get; } = new List<TokenDefinition>(); // 29 just for normal parsing.
 
         public Lexer()
         {
@@ -27,14 +27,14 @@ namespace NoData.Internal.TreeParser.Tokenizer
 
         public IEnumerable<Token> Tokenize(string source)
         {
-            int currentIndex = 0;
-            int currentLine = 1;
-            int currentColumn = 0;
+            var currentIndex = 0;
+            var currentLine = 1;
+            var currentColumn = 0;
 
             while (currentIndex < source.Length)
             {
                 TokenDefinition matchedDefinition = null;
-                int matchLength = 0;
+                var matchLength = 0;
 
                 foreach (var rule in Definitions)
                 {
@@ -50,7 +50,8 @@ namespace NoData.Internal.TreeParser.Tokenizer
 
                 if (matchedDefinition == null)
                 {
-                    throw new Exception(string.Format("Unrecognized symbol '{0}' at index {1} (line {2}, column {3}).", source[currentIndex], currentIndex, currentLine, currentColumn));
+                    throw new Exception(
+                        string.Format("Unrecognized symbol '{0}' at index {1} (line {2}, column {3}).", source[currentIndex], currentIndex, currentLine, currentColumn));
                 }
                 else
                 {

@@ -13,7 +13,7 @@ namespace NoData.Utility
     {
         public static int HashOfList<T>(this IEnumerable<T> source)
         {
-            int hash = 17;
+            var hash = 17;
             unchecked
             {
                 foreach (var item in source)
