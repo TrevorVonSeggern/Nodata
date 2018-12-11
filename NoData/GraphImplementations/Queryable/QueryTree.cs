@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Cache;
+using QuickCache;
 using Immutability;
 using Graph;
 using Graph.Interfaces;

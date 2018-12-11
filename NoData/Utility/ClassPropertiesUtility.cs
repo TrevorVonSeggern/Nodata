@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Cache;
+using QuickCache;
 using Immutability;
 using Graph;
 using IBaseList = System.Collections.IEnumerable;

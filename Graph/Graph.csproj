@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Immutability" Version="0.0.1" />
+    <PackageReference Include="QuickCache" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

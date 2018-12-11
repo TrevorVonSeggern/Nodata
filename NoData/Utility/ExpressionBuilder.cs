@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using Cache;
+using QuickCache;
 using NoData.GraphImplementations.Queryable;
 using NoData.GraphImplementations.Schema;
 
