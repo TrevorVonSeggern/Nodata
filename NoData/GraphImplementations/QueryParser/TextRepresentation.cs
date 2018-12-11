@@ -3,7 +3,7 @@ namespace NoData.GraphImplementations.QueryParser
     public class RollingCharacterRegexRepresentation
     {
         private int index = 0;
-        public char EscapeCharacter = '<';
+        private char EscapeCharacter { get; } = '<';
         private static char[] possibleChars = new char[]
         {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -14,73 +14,73 @@ namespace NoData.GraphImplementations.QueryParser
         };
         public string NextRep()
         {
-            int remainder = index % possibleChars.Length;
-            int tenColumn = index / possibleChars.Length;
+            var remainder = index % possibleChars.Length;
+            var tenColumn = index / possibleChars.Length;
             ++index;
             var littleChar = possibleChars[remainder];
             if (tenColumn == 0)
                 return $"{EscapeCharacter}{littleChar}";
             return $"{EscapeCharacter}{possibleChars[tenColumn - 1]}{littleChar}";
         }
-        // public string NextRep(string regex) => Regex.Escape(regex); // more human readable, but slower, way of getting text representation.
-        public string NextRep(string regex) => NextRep();
+        public string NextRep(string regex) => regex is null ? null : NextRep();
+        // public string NextRep(string regex) => System.Text.RegularExpressions.Regex.Escape(regex); // more human readable, but slower, way of getting text representation.
     }
 
     public static class TextRepresentation
     {
-        private static readonly RollingCharacterRegexRepresentation ConstRep = new RollingCharacterRegexRepresentation();
+        private static RollingCharacterRegexRepresentation ConstRep { get; } = new RollingCharacterRegexRepresentation();
 
         // value types
-        public static readonly string RawTextRepresentation = ConstRep.NextRep("<raw_text>");
-        public static readonly string ClassProperty = ConstRep.NextRep("<class_property>");
-        public static readonly string TextValue = ConstRep.NextRep("<text>");
-        public static readonly string BooleanValue = ConstRep.NextRep("<bool>");
-        public static readonly string NumberValue = ConstRep.NextRep("<number>");
-        public static readonly string DateValue = ConstRep.NextRep("<date>");
+        public static string RawTextRepresentation { get; } = ConstRep.NextRep("<raw_text>");
+        public static string ClassProperty { get; } = ConstRep.NextRep("<class_property>");
+        public static string TextValue { get; } = ConstRep.NextRep("<text>");
+        public static string BooleanValue { get; } = ConstRep.NextRep("<bool>");
+        public static string NumberValue { get; } = ConstRep.NextRep("<number>");
+        public static string DateValue { get; } = ConstRep.NextRep("<date>");
 
         // grouping
-        public static readonly string LogicalComparison = ConstRep.NextRep("<and_or>");
-        public static readonly string ValueComparison = ConstRep.NextRep("<value_comparison>");
-        public static readonly string Add = ConstRep.NextRep("<add>");
-        public static readonly string MathSymbols = ConstRep.NextRep("<math_operator>");
-        public static readonly string Inverse = ConstRep.NextRep("<inverse_operator>");
+        public static string LogicalComparison { get; } = ConstRep.NextRep("<and_or>");
+        public static string ValueComparison { get; } = ConstRep.NextRep("<value_comparison>");
+        public static string Add { get; } = ConstRep.NextRep("<add>");
+        public static string MathSymbols { get; } = ConstRep.NextRep("<math_operator>");
+        public static string Inverse { get; } = ConstRep.NextRep("<inverse_operator>");
 
         // Expansion
-        public static readonly string ExpandProperty = ConstRep.NextRep("<expandProperty>");
-        public static readonly string ListOfExpands = ConstRep.NextRep("<list_of_expand>");
+        public static string ExpandProperty { get; } = ConstRep.NextRep("<expandProperty>");
+        public static string ListOfExpands { get; } = ConstRep.NextRep("<list_of_expand>");
 
         // Sorting
-        public static readonly string SortProperty = ConstRep.NextRep("<sort_property>");
-        public static readonly string ListOfSortings = ConstRep.NextRep("<list_of_sort>");
-        public static readonly string SortOrder = ConstRep.NextRep("<sort_order>");
+        public static string SortProperty { get; } = ConstRep.NextRep("<sort_property>");
+        public static string ListOfSortings { get; } = ConstRep.NextRep("<list_of_sort>");
+        public static string SortOrder { get; } = ConstRep.NextRep("<sort_order>");
 
         // text symbols
-        public static readonly string SemiColin = ConstRep.NextRep("<semi_colin>");
-        public static readonly string ForwardSlash = ConstRep.NextRep("<forward_slash>");
-        public static readonly string Comma = ConstRep.NextRep("<comma>");
-        public static readonly string OpenParenthesis = ConstRep.NextRep("<open_grouping>");
-        public static readonly string CloseParenthesis = ConstRep.NextRep("<close_grouping>");
+        public static string SemiColin { get; } = ConstRep.NextRep("<semi_colin>");
+        public static string ForwardSlash { get; } = ConstRep.NextRep("<forward_slash>");
+        public static string Comma { get; } = ConstRep.NextRep("<comma>");
+        public static string OpenParenthesis { get; } = ConstRep.NextRep("<open_grouping>");
+        public static string CloseParenthesis { get; } = ConstRep.NextRep("<close_grouping>");
 
         // sub-parameters
-        public static readonly string SelectClause = ConstRep.NextRep("<select_clause>");
-        public static readonly string ExpandClause = ConstRep.NextRep("<expand_clause>");
-        public static readonly string FilterClause = ConstRep.NextRep("<filter_clause>");
-        public static readonly string SelectExpression = ConstRep.NextRep("<select_expr>");
-        public static readonly string ExpandExpression = ConstRep.NextRep("<expand_expr>");
-        public static readonly string FilterExpression = ConstRep.NextRep("<filter_expr>");
-        public static readonly string ListOfClause = ConstRep.NextRep("<list_of_clause>");
+        public static string SelectClause { get; } = ConstRep.NextRep("<select_clause>");
+        public static string ExpandClause { get; } = ConstRep.NextRep("<expand_clause>");
+        public static string FilterClause { get; } = ConstRep.NextRep("<filter_clause>");
+        public static string SelectExpression { get; } = ConstRep.NextRep("<select_expr>");
+        public static string ExpandExpression { get; } = ConstRep.NextRep("<expand_expr>");
+        public static string FilterExpression { get; } = ConstRep.NextRep("<filter_expr>");
+        public static string ListOfClause { get; } = ConstRep.NextRep("<list_of_clause>");
 
         // String functions
-        public static readonly string StrLength = ConstRep.NextRep("<str_length>");
-        public static readonly string StrSubString = ConstRep.NextRep("<str_substring>");
-        public static readonly string StrStartsWith = ConstRep.NextRep("<str_starts_with>");
-        public static readonly string StrEndsWith = ConstRep.NextRep("<str_ends_with>");
-        public static readonly string StrConcat = ConstRep.NextRep("<str_concat>");
-        public static readonly string StrContains = ConstRep.NextRep("<str_contains>");
-        public static readonly string StrIndexOf = ConstRep.NextRep("<str_index_of>");
-        public static readonly string StrToLower = ConstRep.NextRep("<str_to_lower>");
-        public static readonly string StrToUpper = ConstRep.NextRep("<str_to_upper>");
-        public static readonly string StrTrim = ConstRep.NextRep("<str_trim>");
-        public static readonly string StrReplace = ConstRep.NextRep("<str_replace>");
+        public static string StrLength { get; } = ConstRep.NextRep("<str_length>");
+        public static string StrSubString { get; } = ConstRep.NextRep("<str_substring>");
+        public static string StrStartsWith { get; } = ConstRep.NextRep("<str_starts_with>");
+        public static string StrEndsWith { get; } = ConstRep.NextRep("<str_ends_with>");
+        public static string StrConcat { get; } = ConstRep.NextRep("<str_concat>");
+        public static string StrContains { get; } = ConstRep.NextRep("<str_contains>");
+        public static string StrIndexOf { get; } = ConstRep.NextRep("<str_index_of>");
+        public static string StrToLower { get; } = ConstRep.NextRep("<str_to_lower>");
+        public static string StrToUpper { get; } = ConstRep.NextRep("<str_to_upper>");
+        public static string StrTrim { get; } = ConstRep.NextRep("<str_trim>");
+        public static string StrReplace { get; } = ConstRep.NextRep("<str_replace>");
     }
 }

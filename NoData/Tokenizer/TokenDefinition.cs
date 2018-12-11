@@ -9,7 +9,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
         public Regex Regex { get; }
         public string Type { get; }
 
-        public TokenDefinition(string pattern, TokenTypes type)
+        public TokenDefinition(string pattern, TokenType type)
         {
             Regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.Singleline);
             Type = type.ToString();

@@ -96,7 +96,7 @@ namespace NoData.QueryParser.ParsingTools
                 return new QueueItem(source.Root, childrenWithEdges);
             }
 
-            private IEnumerable<SchemaPath> CombinePathWithChildren(IEnumerable<SchemaEdge> current, IEnumerable<SchemaPath> childrenPaths)
+            private static IEnumerable<SchemaPath> CombinePathWithChildren(IEnumerable<SchemaEdge> current, IEnumerable<SchemaPath> childrenPaths)
             {
                 if (!childrenPaths.Any())
                     yield return new SchemaPath(current);

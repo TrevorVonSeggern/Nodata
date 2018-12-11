@@ -22,7 +22,7 @@ namespace NoData.Tests.ParserTests.Parsers
 
         private void SetFilter(string filterString)
         {
-            Filter = new FilterClauseParser<Dto>(x => _GetTokens(x), filterString, _TermHelper.FilterTerms);
+            Filter = new FilterClauseParser<Dto>(x => _GetTokens(x), filterString, TermHelper.FilterTerms);
         }
 
         private IList<QueueItem> _GetTokens(string parameter)

@@ -17,7 +17,7 @@ namespace NoData.QueryParser.ParsingTools
                             tree.Root.Value.Representation == TextRepresentation.ExpandProperty
                             || tree.Root.Value.Representation == TextRepresentation.ClassProperty;
         public static bool IsDirectPropertyAccess(this Tree tree) => tree.IsPropertyAccess() && !tree.Children.Any();
-        public static bool IsCollectionPropertyAccess(this Tree tree, GraphSchema graph) => tree.IsPropertyAccess();
+        public static bool IsCollectionPropertyAccess(this Tree tree) => tree.IsPropertyAccess();
         public static bool IsFakeExpandProperty(this Tree tree) => tree.IsPropertyAccess() && tree.Root.Value.Type == typeof(TextInfo);
 
         private static string[] _StrFunctions = new string[]{
@@ -48,30 +48,23 @@ namespace NoData.QueryParser.ParsingTools
     [Immutable]
     public class FilterTreeExpressionBuilder
     {
-        public FilterTreeExpressionBuilder(GraphSchema graph)
+        public FilterTreeExpressionBuilder()
         {
-
         }
 
-        static readonly IReadOnlyDictionary<Type, int> NumberDictionary;
-        static FilterTreeExpressionBuilder()
-        {
-            int index = 1;
-            var nDict = new Dictionary<Type, int>
+        private static IReadOnlyDictionary<Type, int> NumberDictionary { get; } = new Dictionary<Type, int>
             {
-                { typeof(short), index++ },
-                { typeof(int), index++ },
-                { typeof(long), index++ },
-                { typeof(float), index++ },
-                { typeof(double), index++ },
-                { typeof(decimal), index++ },
+                { typeof(short), 0 },
+                { typeof(int), 1 },
+                { typeof(long), 2 },
+                { typeof(float), 3 },
+                { typeof(double), 4 },
+                { typeof(decimal), 5 },
             };
-            NumberDictionary = nDict;
-        }
 
-        private bool IsNumberType(Type type) => NumberDictionary.ContainsKey(type);
-        private int IndexFromType(Type type) => NumberDictionary[type];
-        private Type TypeFromIndex(int i) => NumberDictionary.ToList().FirstOrDefault(x => x.Value == i).Key;
+        private static bool IsNumberType(Type type) => NumberDictionary.ContainsKey(type);
+        private static int IndexFromType(Type type) => NumberDictionary[type];
+        private static Type TypeFromIndex(int i) => NumberDictionary.ToList().FirstOrDefault(x => x.Value == i).Key;
 
         private Expression ComparisonExpression(Tree tree, Expression dto, IClassCache cache)
         {
@@ -84,9 +77,9 @@ namespace NoData.QueryParser.ParsingTools
 
             if (left.Type != right.Type && IsNumberType(left.Type) && IsNumberType(right.Type))
             {
-                int lIndex = IndexFromType(left.Type);
-                int rIndex = IndexFromType(right.Type);
-                int largerIndex = Math.Max(lIndex, rIndex);
+                var lIndex = IndexFromType(left.Type);
+                var rIndex = IndexFromType(right.Type);
+                var largerIndex = Math.Max(lIndex, rIndex);
                 if (lIndex != largerIndex)
                     left = Expression.Convert(left, TypeFromIndex(largerIndex));
                 if (rIndex != largerIndex)
@@ -96,19 +89,19 @@ namespace NoData.QueryParser.ParsingTools
             Expression doComparison()
             {
                 var compareText = tree.Children.ToList()[1].Item2.Root.Value.Text.ToLower();
-                bool compare(string expected) => compareText == expected.ToLower();
+                bool Compare(string expected) => compareText == expected.ToLower();
                 // eq, ne, gt, ge, lt ,le
-                if (compare("eq"))
+                if (Compare("eq"))
                     return Expression.Equal(left, right);
-                else if (compare("ne"))
+                else if (Compare("ne"))
                     return Expression.NotEqual(left, right);
-                else if (compare("gt"))
+                else if (Compare("gt"))
                     return Expression.GreaterThan(left, right);
-                else if (compare("ge"))
+                else if (Compare("ge"))
                     return Expression.GreaterThanOrEqual(left, right);
-                else if (compare("lt"))
+                else if (Compare("lt"))
                     return Expression.LessThan(left, right);
-                else if (compare("le"))
+                else if (Compare("le"))
                     return Expression.LessThanOrEqual(left, right);
                 throw new NotImplementedException();
             }
@@ -167,7 +160,7 @@ namespace NoData.QueryParser.ParsingTools
             throw new NotImplementedException();
         }
 
-        private Expression BoolExpression(Tree tree)
+        private static Expression BoolExpression(Tree tree)
         {
             if (tree.Root.Value.Text.Equals("true", StringComparison.OrdinalIgnoreCase))
                 return Expression.Constant(true);
@@ -198,7 +191,7 @@ namespace NoData.QueryParser.ParsingTools
                 if (child1Expression.Type != typeof(string))
                     throw new ArgumentException("Can't check function endswith with argument of a non-string type.");
 
-                string methodName = "";
+                var methodName = "";
 
                 if (strFunction == TextRepresentation.StrToUpper)
                     methodName = nameof(string.ToUpper);
@@ -207,7 +200,7 @@ namespace NoData.QueryParser.ParsingTools
                 else if (strFunction == TextRepresentation.StrTrim)
                     methodName = nameof(string.Trim);
 
-                MethodInfo method = typeof(string).GetMethod(methodName, new Type[] { });
+                var method = typeof(string).GetMethod(methodName, Array.Empty<Type>());
 
                 return Expression.Call(child1Expression, method);
             }
@@ -223,7 +216,7 @@ namespace NoData.QueryParser.ParsingTools
                 if (child1Expression.Type != typeof(string) || child2Expression.Type != typeof(string))
                     throw new ArgumentException("Can't check function endswith with argument of a non-string type.");
 
-                string methodName = "";
+                var methodName = "";
 
                 if (strFunction == TextRepresentation.StrEndsWith)
                     methodName = nameof(string.EndsWith);
@@ -234,7 +227,7 @@ namespace NoData.QueryParser.ParsingTools
                 else if (strFunction == TextRepresentation.StrContains)
                     methodName = nameof(string.Contains);
 
-                MethodInfo method = typeof(string).GetMethod(methodName, new[] { typeof(string) });
+                var method = typeof(string).GetMethod(methodName, new[] { typeof(string) });
 
                 return Expression.Call(child1Expression, method, child2Expression);
             }
@@ -249,9 +242,9 @@ namespace NoData.QueryParser.ParsingTools
                 if (child1Expression.Type != typeof(string) || child2Expression.Type != typeof(string) || child3Expression.Type != typeof(string))
                     throw new ArgumentException("Can't check function endswith with argument of a non-string type.");
 
-                string methodName = nameof(string.Replace);
+                var methodName = nameof(string.Replace);
 
-                MethodInfo method = typeof(string).GetMethod(methodName, new[] { typeof(string), typeof(string) });
+                var method = typeof(string).GetMethod(methodName, new[] { typeof(string), typeof(string) });
 
                 return Expression.Call(child1Expression, method, child2Expression, child3Expression);
             }
@@ -270,7 +263,7 @@ namespace NoData.QueryParser.ParsingTools
                 if (strFunction == TextRepresentation.StrConcat)
                     methodName = nameof(string.Concat);
 
-                MethodInfo method = typeof(string).GetMethod(methodName, new[] { typeof(string), typeof(string) });
+                var method = typeof(string).GetMethod(methodName, new[] { typeof(string), typeof(string) });
 
                 return Expression.Call(method, child1Expression, child2Expression);
             }
@@ -293,7 +286,7 @@ namespace NoData.QueryParser.ParsingTools
                 if (!integerArgs.All(x => x.Type == typeof(int) || x.Type == typeof(long)))
                     throw new ArgumentException("Argument not an integer for substring function.");
 
-                MethodInfo method = typeof(string).GetMethod(nameof(string.Substring), integerArgs.Select(x => x.Type).ToArray());
+                var method = typeof(string).GetMethod(nameof(string.Substring), integerArgs.Select(x => x.Type).ToArray());
 
                 return Expression.Call(child1Expression, method, integerArgs);
             }

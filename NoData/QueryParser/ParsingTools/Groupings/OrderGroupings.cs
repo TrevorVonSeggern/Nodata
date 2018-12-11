@@ -14,7 +14,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
     {
         private static TGrouping Create(string pattern, Func<IList<QueueItem>, ITuple<QueueItem, int>> addFunc) => ITuple.Create(pattern, addFunc);
 
-        public static TGrouping SortOrderProperty =
+        public static readonly TGrouping SortOrderProperty =
             Create($"{TextRepresentation.ExpandProperty}({TextRepresentation.SortOrder})?", list =>
             {
                 var root = new Vertex(TInfo.FromRepresentation(TextRepresentation.SortProperty));
@@ -34,7 +34,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 }), list.Count - 1);
             });
 
-        public static IEnumerable<TGrouping> ListOfSorting = new TGrouping[] {
+        public static readonly IEnumerable<TGrouping> ListOfSorting = new TGrouping[] {
             Create($"{TextRepresentation.SortProperty}({TextRepresentation.Comma}{TextRepresentation.SortProperty})*", list =>
             {
                 var filtered = list.Where(x => x.Representation == TextRepresentation.SortProperty).ToList();

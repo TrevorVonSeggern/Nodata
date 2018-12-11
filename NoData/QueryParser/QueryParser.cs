@@ -31,12 +31,12 @@ namespace NoData.QueryParser
         private SelectClauseParser<TRootVertex> Select { get; set; }
         private OrderByClauseParser<TRootVertex> OrderBy { get; set; }
 
-        private readonly IEnumerable<string> ClassProperties;
-        private readonly GraphSchema _Graph;
+        private IEnumerable<string> ClassProperties { get; }
+        private GraphSchema _Graph { get; }
 
         private IList<QueueItem> _GetTokens(string parameter)
         {
-            int hash = ClassProperties.HashOfList().AndHash(parameter);
+            var hash = ClassProperties.HashOfList().AndHash(parameter);
             var tokens = tokenizerCache.GetOrAdd(hash, () =>
             {
                 return new Tokenizer(ClassProperties).Tokenize(parameter).ToList();
@@ -53,10 +53,10 @@ namespace NoData.QueryParser
                 .SelectMany(x => x).Select(x => x.Name)
                 .Distinct();
 
-            OrderBy = new OrderByClauseParser<TRootVertex>(x => _GetTokens(x), parameters.OrderBy, graph, _TermHelper.OrderByTerms);
-            Select = new SelectClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Select, graph, _TermHelper.SelectTerms);
-            Filter = new FilterClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Filter, _TermHelper.FilterTerms);
-            Expand = new ExpandClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph, Select, Filter, _TermHelper.ExpandTerms);
+            OrderBy = new OrderByClauseParser<TRootVertex>(x => _GetTokens(x), parameters.OrderBy, graph, TermHelper.OrderByTerms);
+            Select = new SelectClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Select, graph, TermHelper.SelectTerms);
+            Filter = new FilterClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Filter, TermHelper.FilterTerms);
+            Expand = new ExpandClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph, Select, Filter, TermHelper.ExpandTerms);
 
             _Graph = graph;
             Cache = cache;
@@ -138,11 +138,11 @@ namespace NoData.QueryParser
             _AssertParsed();
             if (Filter.Result is null)
                 return null;
-            return new FilterTreeExpressionBuilder(_Graph).FilterExpression(Filter.Result, parameter, Cache);
+            return new FilterTreeExpressionBuilder().FilterExpression(Filter.Result, parameter, Cache);
         }
     }
 
-    public static class _TermHelper
+    public static class TermHelper
     {
         private static TGrouping[] _parseGrouping(Func<ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>>> termFunc) => _parseGrouping(termFunc());
         private static TGrouping[] _parseGrouping(IEnumerable<ITuple<string, Func<IList<QueueItem>, ITuple<QueueItem, int>>>> terms)
@@ -160,24 +160,24 @@ namespace NoData.QueryParser
             return new[] { ITuple.Create(regex, func) };
         }
 
-        public static TTermDict OrderByTerms = new List<TGrouping[]>{
+        public static readonly TTermDict OrderByTerms = new List<TGrouping[]>{
                 _parseGrouping(ExpandGroupings.ExpandProperty),
                 _parseGrouping(OrderGroupings.SortOrderProperty),
                 _parseGrouping(OrderGroupings.ListOfSorting),
             }.SelectMany(x => x).ToDictionary(x => x.Item1, x => x.Item2);
 
-        public static TTermDict SelectTerms = new List<TGrouping[]>{
+        public static readonly TTermDict SelectTerms = new List<TGrouping[]>{
                 _parseGrouping(ExpandGroupings.ExpandProperty),
                 _parseGrouping(ExpandGroupings.ListOfExpand),
             }.SelectMany(x => x).ToDictionary(x => x.Item1, x => x.Item2);
 
-        public static TTermDict FilterTerms = new List<TGrouping[]>
+        public static readonly TTermDict FilterTerms = new List<TGrouping[]>
             {
                 _parseGrouping(ExpandGroupings.ExpandProperty),
                 _parseGrouping(FilterGroupings.AddTermsForFilter()),
             }.SelectMany(x => x).ToDictionary(x => x.Item1, x => x.Item2);
 
-        public static TTermDict ExpandTerms = new List<TGrouping[]>
+        public static readonly TTermDict ExpandTerms = new List<TGrouping[]>
             {
                 _parseGrouping(ExpandGroupings.ExpandProperty),
                 _parseGrouping(FilterGroupings.AddTermsForFilter()),

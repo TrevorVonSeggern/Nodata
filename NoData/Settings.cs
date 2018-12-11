@@ -32,9 +32,8 @@ namespace NoData
             left.AllowCount = right.AllowCount;
         }
 
-
-        public int MaxExpandDepth = -1; // negative to have no max expand. 0 for root properties only (no navigation), and positive numbers for expand depth limits.
-        public bool AllowCount = true;
+        public uint? MaxExpandDepth { get; set; } = 3; // negative to have no max expand. 0 for root properties only (no navigation), and positive numbers for expand depth limits.
+        public bool AllowCount { get; set; } = true;
     }
 
     public class SettingsForType<T> : Settings

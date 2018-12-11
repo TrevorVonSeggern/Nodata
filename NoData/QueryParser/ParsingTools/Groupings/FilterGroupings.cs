@@ -1,5 +1,6 @@
 ﻿using Graph;
 using System;
+using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Linq;
 using NoData.GraphImplementations.QueryParser;
@@ -7,6 +8,7 @@ using NoData.GraphImplementations.QueryParser;
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 using TGrouping = Graph.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, Graph.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
+using System.Text;
 
 namespace NoData.QueryParser.ParsingTools.Groupings
 {
@@ -65,8 +67,8 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             // property to property
             yield return Create(valueComparisonPattern(TextRepresentation.ExpandProperty, TextRepresentation.ExpandProperty), valueItemValue);
 
-            string anyValueTypeRegex = $"({TextRepresentation.BooleanValue}|{TextRepresentation.NumberValue}|{TextRepresentation.TextValue}|{TextRepresentation.DateValue}|{TextRepresentation.ExpandProperty})";
-            string strTypeRegex = $"({TextRepresentation.TextValue}|{TextRepresentation.ExpandProperty})";
+            var anyValueTypeRegex = $"({TextRepresentation.BooleanValue}|{TextRepresentation.NumberValue}|{TextRepresentation.TextValue}|{TextRepresentation.DateValue}|{TextRepresentation.ExpandProperty})";
+            var strTypeRegex = $"({TextRepresentation.TextValue}|{TextRepresentation.ExpandProperty})";
 
             // string functions
             // length(x)
@@ -84,14 +86,16 @@ namespace NoData.QueryParser.ParsingTools.Groupings
             string StringFunctionRegexHelper(string fctn, int argCount)
             {
                 var result = $"{fctn}{TextRepresentation.OpenParenthesis}";
+                var sb = new StringBuilder(result);
                 for (int i = 0; i < argCount; ++i)
                 {
                     if (i == argCount - 1)
-                        result += strTypeRegex;
+                        sb.Append(strTypeRegex);
                     else
-                        result += $"{strTypeRegex}{TextRepresentation.Comma}";
+                        sb.Append($"{strTypeRegex}{TextRepresentation.Comma}");
                 }
-                return result + $"{TextRepresentation.CloseParenthesis}";
+                sb.Append($"{TextRepresentation.CloseParenthesis}");
+                return sb.ToString();
             }
 
             ITuple<QueueItem, int> strFunctionHelper(IList<QueueItem> list, string rootText, string rootRepresentation)
@@ -146,18 +150,19 @@ namespace NoData.QueryParser.ParsingTools.Groupings
 
             string StringFunctionRegexHelperWithIntArgs(string fctn, int argCount)
             {
-                var result = $"{fctn}{TextRepresentation.OpenParenthesis}";
+                var sb = new StringBuilder($"{fctn}{TextRepresentation.OpenParenthesis}");
                 for (int i = 0; i < argCount; ++i)
                 {
                     if (i == 0)
-                        result += strTypeRegex;
+                        sb.Append(strTypeRegex);
                     else
-                        result += TextRepresentation.NumberValue;
+                        sb.Append(TextRepresentation.NumberValue);
 
                     if (i != argCount - 1)
-                        result += TextRepresentation.Comma;
+                        sb.Append(TextRepresentation.Comma);
                 }
-                return result + $"{TextRepresentation.CloseParenthesis}";
+                sb.Append(TextRepresentation.CloseParenthesis);
+                return sb.ToString();
             }
 
             var substring1Regex = StringFunctionRegexHelperWithIntArgs(TextRepresentation.StrSubString, 2);

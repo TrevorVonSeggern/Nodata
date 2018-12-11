@@ -17,9 +17,9 @@ namespace NoData.GraphImplementations.Schema
 
         public static class Cache<TDto>
         {
-            public static readonly GraphSchema Graph = CreateFromGeneric<TDto>(_Cache);
+            public static GraphSchema Graph { get; } = CreateFromGeneric<TDto>(CacheInstance);
         }
-        public static readonly IClassCache _Cache = new ClassCache();
+        public static readonly IClassCache CacheInstance = new ClassCache();
 
         private static GraphSchema CreateFromGeneric<TDto>(IClassCache cache)
         {
@@ -31,7 +31,7 @@ namespace NoData.GraphImplementations.Schema
             // get the class info from type via the cache.
             ClassInfoUtility GetClassInfoFromType(Type t)
             {
-                int hash = t.GetHashCode();
+                var hash = t.GetHashCode();
                 if (cache.HasKey(hash))
                     return cache.Get(hash);
                 return cache.GetOrAdd(t);

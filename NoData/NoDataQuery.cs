@@ -28,7 +28,7 @@ namespace NoData
         protected IQueryable<TDto> Source { get; }
 
         // Properties that are a result of parsing.
-        protected IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath { get; }
+        internal IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath { get; }
         private ParameterExpression DtoExpression { get; }
         private Expression FilterExpression { get; }
         private Expression SelectExpandExpression { get; }
@@ -85,7 +85,7 @@ namespace NoData
         private IQueryable<TDto> ApplyFilter(IQueryable<TDto> query)
         {
             if (FilterExpression != null || !string.IsNullOrWhiteSpace(Parameters.Filter))
-                query = Utility.ExpressionBuilder.ApplyFilter(SelectionTree, query, DtoExpression, FilterExpression);
+                query = Utility.ExpressionBuilder.ApplyFilter(query, DtoExpression, FilterExpression);
             return query;
         }
 

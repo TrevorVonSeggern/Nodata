@@ -21,49 +21,49 @@ namespace NoData.Internal.TreeParser.Tokenizer
             var definitions = new List<TokenDefinition>(30);
             definitions.AddRange(
                 new[]{
-                    _DefinitionCache.Token(TokenTypes.quotedString, @"([\""'])(?:\\\1|.)*?\1"),
-                    _DefinitionCache.Token(TokenTypes.parenthesis, @"\("),
-                    _DefinitionCache.Token(TokenTypes.parenthesis, @"\)"),
-                    _DefinitionCache.Token(TokenTypes.whitespace, @"\s+"),
-                    _DefinitionCache.Token(TokenTypes.not, "!"),
-                    _DefinitionCache.Token(TokenTypes.add, @"\+"),
-                    _DefinitionCache.Token(TokenTypes.subtract, @"\-"),
-                    _DefinitionCache.Token(TokenTypes.number, @"[-+]?[0-9]*\.?[0-9]+"),
+                    _DefinitionCache.Token(TokenType.quotedString, @"([\""'])(?:\\\1|.)*?\1"),
+                    _DefinitionCache.Token(TokenType.parenthesis, @"\("),
+                    _DefinitionCache.Token(TokenType.parenthesis, @"\)"),
+                    _DefinitionCache.Token(TokenType.whitespace, @"\s+"),
+                    _DefinitionCache.Token(TokenType.not, "!"),
+                    _DefinitionCache.Token(TokenType.add, @"\+"),
+                    _DefinitionCache.Token(TokenType.subtract, @"\-"),
+                    _DefinitionCache.Token(TokenType.number, @"[-+]?[0-9]*\.?[0-9]+"),
 
-                    _DefinitionCache.Token(TokenTypes.truth, "[Tt]rue"),
-                    _DefinitionCache.Token(TokenTypes.falsey, "[Ff]alse"),
-                    _DefinitionCache.Token(TokenTypes.forwardSlash, "/"),
-                    _DefinitionCache.Token(TokenTypes.semiColin, ";"),
-                    _DefinitionCache.Token(TokenTypes.comma, ","),
-                    _DefinitionCache.Token(TokenTypes.ascending, "asc"),
-                    _DefinitionCache.Token(TokenTypes.descending, "desc"),
-                    _DefinitionCache.Token(TokenTypes.filterClause, filterString),
-                    _DefinitionCache.Token(TokenTypes.expandClause, expandString),
-                    _DefinitionCache.Token(TokenTypes.selectClause, selectString),
+                    _DefinitionCache.Token(TokenType.truth, "[Tt]rue"),
+                    _DefinitionCache.Token(TokenType.falsey, "[Ff]alse"),
+                    _DefinitionCache.Token(TokenType.forwardSlash, "/"),
+                    _DefinitionCache.Token(TokenType.semiColin, ";"),
+                    _DefinitionCache.Token(TokenType.comma, ","),
+                    _DefinitionCache.Token(TokenType.ascending, "asc"),
+                    _DefinitionCache.Token(TokenType.descending, "desc"),
+                    _DefinitionCache.Token(TokenType.filterClause, filterString),
+                    _DefinitionCache.Token(TokenType.expandClause, expandString),
+                    _DefinitionCache.Token(TokenType.selectClause, selectString),
 
                     // string functions.
-                    _DefinitionCache.Token(TokenTypes.str_length, "length"),
-                    _DefinitionCache.Token(TokenTypes.str_substring, "substring"),
-                    _DefinitionCache.Token(TokenTypes.str_starts_with, "startswith"),
-                    _DefinitionCache.Token(TokenTypes.str_ends_with, "endswith"),
-                    _DefinitionCache.Token(TokenTypes.str_concat, "concat"),
-                    _DefinitionCache.Token(TokenTypes.str_contains, "contains"),
-                    _DefinitionCache.Token(TokenTypes.str_index_of, "indexof"),
-                    _DefinitionCache.Token(TokenTypes.str_to_lower, "tolower"),
-                    _DefinitionCache.Token(TokenTypes.str_to_upper, "toupper"),
-                    _DefinitionCache.Token(TokenTypes.str_trim, "trim"),
-                    _DefinitionCache.Token(TokenTypes.str_replace, "replace"),
+                    _DefinitionCache.Token(TokenType.strLength, "length"),
+                    _DefinitionCache.Token(TokenType.strSubstring, "substring"),
+                    _DefinitionCache.Token(TokenType.strStartsWith, "startswith"),
+                    _DefinitionCache.Token(TokenType.strEndsWith, "endswith"),
+                    _DefinitionCache.Token(TokenType.strConcat, "concat"),
+                    _DefinitionCache.Token(TokenType.strContains, "contains"),
+                    _DefinitionCache.Token(TokenType.strIndexOf, "indexof"),
+                    _DefinitionCache.Token(TokenType.strToLower, "tolower"),
+                    _DefinitionCache.Token(TokenType.strToUpper, "toupper"),
+                    _DefinitionCache.Token(TokenType.strTrim, "trim"),
+                    _DefinitionCache.Token(TokenType.strReplace, "replace"),
 
                     // Logical functions
-                    _DefinitionCache.Token(TokenTypes.equals, "eq"),
-                    _DefinitionCache.Token(TokenTypes.notEquals, "ne"),
-                    _DefinitionCache.Token(TokenTypes.not, "not"),
-                    _DefinitionCache.Token(TokenTypes.and, "and"),
-                    _DefinitionCache.Token(TokenTypes.or, "or"),
-                    _DefinitionCache.Token(TokenTypes.greaterThan, "gt"),
-                    _DefinitionCache.Token(TokenTypes.lessThan, "lt"),
-                    _DefinitionCache.Token(TokenTypes.greaterThanOrEqual, "ge"),
-                    _DefinitionCache.Token(TokenTypes.lessThanOrEqual, "le"),
+                    _DefinitionCache.Token(TokenType.equals, "eq"),
+                    _DefinitionCache.Token(TokenType.notEquals, "ne"),
+                    _DefinitionCache.Token(TokenType.not, "not"),
+                    _DefinitionCache.Token(TokenType.and, "and"),
+                    _DefinitionCache.Token(TokenType.or, "or"),
+                    _DefinitionCache.Token(TokenType.greaterThan, "gt"),
+                    _DefinitionCache.Token(TokenType.lessThan, "lt"),
+                    _DefinitionCache.Token(TokenType.greaterThanOrEqual, "ge"),
+                    _DefinitionCache.Token(TokenType.lessThanOrEqual, "le"),
                 }
             );
 
@@ -72,7 +72,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
                 // if (!Regex.IsMatch(prop, "^[a-zA-Z_]+$"))
                 //     throw new ArgumentException($"class property {prop}, contains an invaild character.");
 
-                definitions.Add(_DefinitionCache.Token(TokenTypes.classProperties, $"(?<![^\\W]){prop}(?![^\\W])"));
+                definitions.Add(_DefinitionCache.Token(TokenType.classProperties, $"(?<![^\\W]){prop}(?![^\\W])"));
             }
 
             lexer.AddDefinitions(definitions);
@@ -84,7 +84,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
             var result = new List<Token>();
             foreach (var token in Lexer.Tokenize(source))
             {
-                if (token.Type == TokenTypes.whitespace.ToString())
+                if (token.Type == TokenType.whitespace.ToString())
                     continue;
                 result.Add(token);
             }

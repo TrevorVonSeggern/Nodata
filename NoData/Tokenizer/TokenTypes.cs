@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NoData.Internal.TreeParser.Tokenizer
 {
-    public enum TokenTypes
+    public enum TokenType
     {
         classProperties,
 
@@ -45,16 +45,16 @@ namespace NoData.Internal.TreeParser.Tokenizer
         descending,
 
         // string functions
-        str_length,
-        str_substring,
-        str_starts_with,
-        str_ends_with,
-        str_concat,
-        str_contains,
-        str_index_of,
-        str_to_lower,
-        str_to_upper,
-        str_trim,
-        str_replace,
+        strLength,
+        strSubstring,
+        strStartsWith,
+        strEndsWith,
+        strConcat,
+        strContains,
+        strIndexOf,
+        strToLower,
+        strToUpper,
+        strTrim,
+        strReplace,
     }
 }
