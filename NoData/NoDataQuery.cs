@@ -14,6 +14,7 @@ using Immutability;
 using NoData.GraphImplementations.Queryable;
 using System.IO;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace NoData
 {
@@ -178,11 +179,33 @@ namespace NoData
             });
         }
 
+        private Stream StreamValue()
+        {
+            return new StreamOfStreams(new Stream[]{
+                new MemoryStream(Encoding.ASCII.GetBytes("\"value\":")),
+                EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]")
+            });
+        }
+        private Stream StreamCount()
+        {
+            return new StreamOfStreams(new[]{
+                new MemoryStream(Encoding.ASCII.GetBytes(",\"@odata.count\":" + this.Source.Count())),
+            });
+        }
+
         public Stream Stream()
         {
-            if (!Parameters.Count)
-                return EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]");
-            throw new NotImplementedException("Count is not implemented.");
+            var streams = new List<Stream>()
+            {
+                new MemoryStream(Encoding.ASCII.GetBytes("{")),
+                StreamValue()
+            };
+
+            if (Parameters.Count)
+                streams.Add(StreamCount());
+
+            streams.Add(new MemoryStream(Encoding.ASCII.GetBytes("} ")));
+            return new StreamOfStreams(streams);
         }
     }
 }

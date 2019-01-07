@@ -5,7 +5,7 @@
     <Version>0.1.1</Version>
     <Authors>Trevor Von Seggern</Authors>
     
-    <NoWarn>CA1034;CA1710;CA1724;CA1716;CA2007;CA2119;CC0031;RS0002;CA1304;CA1000;CA1305</NoWarn>
+    <NoWarn>CA1034;CA1710;CA1724;CA1716;CA2007;CA2119;CC0031;RS0002;CA1304;CA1000;CA1305;CC0022</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Immutability" Version="0.0.1" />

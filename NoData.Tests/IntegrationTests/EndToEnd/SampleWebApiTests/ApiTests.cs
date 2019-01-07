@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Newtonsoft.Json;
 using SampleWebApi.Models;
 using Xunit;
 
@@ -42,7 +43,8 @@ namespace NoData.Tests.IntegrationTests.EndToEnd.SampleWebApiTests
 
             // When
             response.EnsureSuccessStatusCode();
-            var result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Dto>>(await response.Content.ReadAsStringAsync());
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<NoDataSerializedResultList<Dto>>(content)?.Value;
 
             // Then
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

@@ -25,13 +25,15 @@ namespace NoData.Utility
         private readonly Func<T, IEnumerable<byte>> _serializer;
         private readonly List<byte> end;
         private readonly Queue<byte> _buf = new Queue<byte>();
+        private List<byte> Between { get; }
+        private long bytesRead = 0;
 
         private bool firstItem = true;
         private bool _canRead = true;
         public override bool CanRead { get => _canRead; }
         public override bool CanSeek => false;
         public override bool CanWrite => false;
-        public override long Length => -1;
+        public override long Length => bytesRead + (CanRead ? 1 : 0);
 
         /// <summary>
         /// Creates a new instance of <code>EnumerableStream</code>
@@ -80,6 +82,7 @@ namespace NoData.Utility
 
         private byte? NextByte()
         {
+            ++bytesRead;
             if (_buf.Any() || SerializeNext())
             {
                 return _buf.Dequeue();
@@ -87,6 +90,7 @@ namespace NoData.Utility
             if (_buf.Any())
                 return _buf.Dequeue();
 
+            --bytesRead;
             _canRead = false;
             return null;
         }
@@ -107,16 +111,15 @@ namespace NoData.Utility
         }
 
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-        public override void Flush() => throw new NotSupportedException();
+        public override void Flush() { }
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
 
         public override long Position
         {
-            get { throw new NotSupportedException(); }
+            get => bytesRead;
             set { throw new NotSupportedException(); }
         }
 
-        public List<byte> Between { get; }
     }
 }
