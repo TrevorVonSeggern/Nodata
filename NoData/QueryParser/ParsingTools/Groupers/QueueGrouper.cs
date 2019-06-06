@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Graph;
 using NoData.QueryParser.ParsingTools.Groupers;
@@ -12,14 +13,14 @@ namespace NoData.QueryParser.ParsingTools
         public QueueGrouper() : base() { }
         public QueueGrouper(IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms) : base(terms) { }
 
-        private int GetListIndexInRepString(int stringIndex, IList<T> list)
+        private static int GetListIndexInRepString(int stringIndex, IList<T> list)
         {
             if (stringIndex == 0) return 0;
-            var currentRep = "";
+            var sb = new StringBuilder();
             for (var i = 0; i < list.Count; ++i)
             {
-                currentRep += list[i].Representation;
-                if (stringIndex < currentRep.Length)
+                sb.Append(list[i].Representation);
+                if (stringIndex < sb.Length)
                     return i;
             }
             return -1;

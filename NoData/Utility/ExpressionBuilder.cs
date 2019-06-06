@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using Cache;
+using QuickCache;
 using NoData.GraphImplementations.Queryable;
 using NoData.GraphImplementations.Schema;
 
@@ -59,7 +59,7 @@ namespace NoData.Utility
             return query.Provider.CreateQuery<TDto>(selectExpr);
         }
 
-        public static IQueryable<TDto> ApplyFilter<TDto>(QueryTree tree, IQueryable<TDto> query, ParameterExpression parameter, Expression filterExpression) where TDto : class, new()
+        public static IQueryable<TDto> ApplyFilter<TDto>(IQueryable<TDto> query, ParameterExpression parameter, Expression filterExpression) where TDto : class, new()
         {
             if (filterExpression is null) return query;
 
@@ -128,7 +128,7 @@ namespace NoData.Utility
                     childrenParameter, GetExpandExpression(childrenParameter, navigationTree, cache));
                 var list = Expression.Condition(
                     Expression.Equal(childrenProperty, Expression.Constant(null)),
-                    Expression.New(listType.GetConstructor(new Type[] { }), new Expression[] { }),
+                    Expression.New(listType.GetConstructor(Array.Empty<Type>()), Array.Empty<Expression>()),
                     Expression.New(listType.GetConstructor(new Type[] { listType }), select)
                     );
                 yield return (Expression.Bind(propertyInfo, list));

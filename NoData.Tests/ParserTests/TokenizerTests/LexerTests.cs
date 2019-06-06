@@ -10,10 +10,10 @@ namespace NoData.Tests.ParserTests.TokenizerTests
         public void TestABC()
         {
             var lexer = new Lexer();
-            lexer.AddDefinition(new TokenDefinition("a", TokenTypes.classProperties));
-            lexer.AddDefinition(new TokenDefinition("b", TokenTypes.classProperties));
-            lexer.AddDefinition(new TokenDefinition("c", TokenTypes.classProperties));
-            lexer.AddDefinition(new TokenDefinition(@"\s+", TokenTypes.whitespace));
+            lexer.AddDefinition(new TokenDefinition("a", TokenType.classProperties));
+            lexer.AddDefinition(new TokenDefinition("b", TokenType.classProperties));
+            lexer.AddDefinition(new TokenDefinition("c", TokenType.classProperties));
+            lexer.AddDefinition(new TokenDefinition(@"\s+", TokenType.whitespace));
 
             var result = new List<Token>();
             result.AddRange(lexer.Tokenize("abc"));
@@ -28,10 +28,10 @@ namespace NoData.Tests.ParserTests.TokenizerTests
         public void TestABC_WithSpaces()
         {
             var lexer = new Lexer();
-            lexer.AddDefinition(new TokenDefinition("a", TokenTypes.classProperties));
-            lexer.AddDefinition(new TokenDefinition("b", TokenTypes.classProperties));
-            lexer.AddDefinition(new TokenDefinition("c", TokenTypes.classProperties));
-            lexer.AddDefinition(new TokenDefinition(@"\s+", TokenTypes.whitespace));
+            lexer.AddDefinition(new TokenDefinition("a", TokenType.classProperties));
+            lexer.AddDefinition(new TokenDefinition("b", TokenType.classProperties));
+            lexer.AddDefinition(new TokenDefinition("c", TokenType.classProperties));
+            lexer.AddDefinition(new TokenDefinition(@"\s+", TokenType.whitespace));
 
             var result = new List<Token>();
             result.AddRange(lexer.Tokenize("a  b   c"));

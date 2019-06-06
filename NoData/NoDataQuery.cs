@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using NoData.Utility;
 using Graph;
-using CodeTools;
+using Immutability;
 using NoData.GraphImplementations.Queryable;
 using System.IO;
 using System.Threading.Tasks;
@@ -21,14 +21,14 @@ namespace NoData
     public class NoDataQuery<TDto> : INoDataQuery<TDto>
         where TDto : class, new()
     {
-        public FilterSecurityTypes FilterSecurity { get; } = FilterSecurityTypes.AllowOnlyVisibleValues;
+        // public FilterSecurityTypes FilterSecurity { get; } = FilterSecurityTypes.AllowOnlyVisibleValues;
 
         // Properties that represent the object model. Ie setup operations
         public Parameters Parameters { get; }
         protected IQueryable<TDto> Source { get; }
 
         // Properties that are a result of parsing.
-        protected IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath { get; }
+        internal IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath { get; }
         private ParameterExpression DtoExpression { get; }
         private Expression FilterExpression { get; }
         private Expression SelectExpandExpression { get; }
@@ -85,7 +85,7 @@ namespace NoData
         private IQueryable<TDto> ApplyFilter(IQueryable<TDto> query)
         {
             if (FilterExpression != null || !string.IsNullOrWhiteSpace(Parameters.Filter))
-                query = Utility.ExpressionBuilder.ApplyFilter(SelectionTree, query, DtoExpression, FilterExpression);
+                query = Utility.ExpressionBuilder.ApplyFilter(query, DtoExpression, FilterExpression);
             return query;
         }
 
@@ -164,10 +164,8 @@ namespace NoData
                         {
                             var str = System.Text.Encoding.Default.GetString(buffer, 0, b);
                             sw.Write(str);
-                            Console.WriteLine(str);
                         }
 
-                        Console.WriteLine(counter);
                         if (++counter > flushAfter)
                         {
                             sw.Flush();
@@ -182,7 +180,9 @@ namespace NoData
 
         public Stream Stream()
         {
-            return EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]");
+            if (!Parameters.Count)
+                return EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]");
+            throw new NotImplementedException("Count is not implemented.");
         }
     }
 }

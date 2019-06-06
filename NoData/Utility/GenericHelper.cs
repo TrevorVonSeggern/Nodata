@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace NoData.Utility
@@ -12,7 +13,7 @@ namespace NoData.Utility
     {
         public static int HashOfList<T>(this IEnumerable<T> source)
         {
-            int hash = 17;
+            var hash = 17;
             unchecked
             {
                 foreach (var item in source)

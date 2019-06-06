@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Cache;
-using CodeTools;
+using QuickCache;
+using Immutability;
 using Graph;
 using Graph.Interfaces;
 using Newtonsoft.Json;
@@ -21,7 +21,6 @@ namespace NoData.GraphImplementations.Queryable
         public QueryTree(IEnumerable<IEnumerable<QueryEdge>> expandPaths) : base(expandPaths, ePaths => new QueryTree(ePaths), v => new QueryTree(v))
         {
         }
-
 
         // Serialization code
         public string AsJson<T>(T item) => this.ObjectAsJson(item);
@@ -48,7 +47,7 @@ namespace NoData.GraphImplementations.Queryable
 
                 foreach (var property in Root.Value.Properties.Where(p => p.IsNavigationProperty))
                 {
-                    var childTree = Children.Where(c => c.Item1.Value == property).First().Item2;
+                    var childTree = Children.First(c => c.Item1.Value == property).Item2;
                     writer.WritePropertyName(property.Name);
                     var value = accessor[item, property.Name];
                     writer.WriteRawValue(childTree.ObjectAsJson(value)); // { child object }
@@ -56,7 +55,7 @@ namespace NoData.GraphImplementations.Queryable
 
                 foreach (var property in Root.Value.Properties.Where(p => p.IsCollection))
                 {
-                    var childTree = Children.Where(c => c.Item1.Value == property).First().Item2;
+                    var childTree = Children.First(c => c.Item1.Value == property).Item2;
                     var childList = (IEnumerable<object>)accessor[item, property.Name];
                     writer.WritePropertyName(property.Name);
                     writer.WriteStartArray();

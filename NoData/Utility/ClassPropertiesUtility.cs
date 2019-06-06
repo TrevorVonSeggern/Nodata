@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Cache;
-using CodeTools;
+using QuickCache;
+using Immutability;
 using Graph;
 using IBaseList = System.Collections.IEnumerable;
 
@@ -91,26 +91,26 @@ namespace NoData.Utility
                 .ToDictionary(x => x.Item1, x => x.Item2);
         }
 
-        public readonly Type Type;
-        public readonly IReadOnlyDictionary<string, Func<object, object>> AccessProperties;
-        public readonly IReadOnlyList<PropertyInfo> Properties;
-        public readonly IReadOnlyDictionary<string, Type> PropertyAndType;
-        public readonly IReadOnlyList<PropertyInfo> ExpandableProperties;
-        public readonly IReadOnlyList<PropertyInfo> NonExpandableProperties;
-        public readonly IReadOnlyList<PropertyInfo> Collections;
-        public readonly IReadOnlyList<PropertyInfo> NavigationProperties;
+        public Type Type { get; }
+        public IReadOnlyDictionary<string, Func<object, object>> AccessProperties { get; }
+        public IReadOnlyList<PropertyInfo> Properties { get; }
+        public IReadOnlyDictionary<string, Type> PropertyAndType { get; }
+        public IReadOnlyList<PropertyInfo> ExpandableProperties { get; }
+        public IReadOnlyList<PropertyInfo> NonExpandableProperties { get; }
+        public IReadOnlyList<PropertyInfo> Collections { get; }
+        public IReadOnlyList<PropertyInfo> NavigationProperties { get; }
 
-        public readonly IReadOnlyList<string> PropertyNames;
-        public readonly IReadOnlyList<string> ExpandablePropertyNames;
-        public readonly IReadOnlyList<string> NonExpandablePropertyNames;
-        public readonly IReadOnlyList<string> CollectionNames;
-        public readonly IReadOnlyList<string> NavigationPropertyNames;
+        public IReadOnlyList<string> PropertyNames { get; }
+        public IReadOnlyList<string> ExpandablePropertyNames { get; }
+        public IReadOnlyList<string> NonExpandablePropertyNames { get; }
+        public IReadOnlyList<string> CollectionNames { get; }
+        public IReadOnlyList<string> NavigationPropertyNames { get; }
     }
 
 
     public static class ClassPropertiesUtility<TDto>
     {
-        private static readonly ClassInfoUtility Info = new ClassInfoUtility(typeof(TDto));
+        private static ClassInfoUtility Info { get; } = new ClassInfoUtility(typeof(TDto));
 
         public static IReadOnlyList<PropertyInfo> GetProperties => Info.Properties;
         public static IReadOnlyDictionary<string, Type> GetPropertiesAndType => Info.PropertyAndType;

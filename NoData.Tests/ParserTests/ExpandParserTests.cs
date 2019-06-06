@@ -53,7 +53,7 @@ namespace NoData.Tests.ParserTests
             var queryString = $"{nameof(Dto.partner)}($expand={nameof(Dto.partner)}($expand={nameof(Dto.partner)}))";
             var tokens = _GetTokens(queryString);
 
-            var grouper = new OrderdGrouper<QueueItem>(_TermHelper.ExpandTerms);
+            var grouper = new OrderdGrouper<QueueItem>(TermHelper.ExpandTerms);
 
             var parsed = grouper.ParseToSingle(tokens);
 

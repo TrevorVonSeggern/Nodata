@@ -10,7 +10,26 @@ namespace SampleEFCoreApi
         {
             var mapConfig = new MapperConfiguration(config =>
             {
-                config.CreateMap<Models.DtoPerson, Database.Person>()
+                config.CreateMap<Models.DtoPersonCreate, Database.Person>()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
+                    .ForMember(dest => dest.Partner, opt => opt.Ignore())
+                    .ForMember(dest => dest.Favorite, opt => opt.Ignore())
+                    .ForMember(dest => dest.Children, opt => opt.Ignore());
+
+                config.CreateMap<Models.DtoPersonModify, Database.Person>()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
+                    .ForMember(dest => dest.Partner, opt => opt.Ignore())
+                    .ForMember(dest => dest.Favorite, opt => opt.Ignore())
+                    .ForMember(dest => dest.Children, opt => opt.Ignore());
+
+                config.CreateMap<Models.DtoChildCreate, Database.Child>()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
+                    .ForMember(dest => dest.Partner, opt => opt.Ignore())
+                    .ForMember(dest => dest.Favorite, opt => opt.Ignore())
+                    .ForMember(dest => dest.Children, opt => opt.Ignore());
+
+                config.CreateMap<Models.DtoChildModify, Database.Child>()
+                    .ForMember(dest => dest.Id, opt => opt.Ignore())
                     .ForMember(dest => dest.Partner, opt => opt.Ignore())
                     .ForMember(dest => dest.Favorite, opt => opt.Ignore())
                     .ForMember(dest => dest.Children, opt => opt.Ignore());

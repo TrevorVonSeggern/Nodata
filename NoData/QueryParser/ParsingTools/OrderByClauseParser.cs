@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Graph;
+using NoData.GraphImplementations.QueryParser;
 using NoData.GraphImplementations.Schema;
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
@@ -38,21 +39,21 @@ namespace NoData.QueryParser.ParsingTools
 
             if (clause is null)
                 throw new ArgumentException(invalidQueryText);
-            else if (clause.Representation == TInfo.ListOfExpands || clause.Representation == TInfo.ListOfSortings)
+            else if (clause.Representation == TextRepresentation.ListOfExpands || clause.Representation == TextRepresentation.ListOfSortings)
             {
                 foreach (var child in clause.Children.Select(x => x.Item2))
                     AddToClause(child);
             }
-            else if (clause.Representation == TInfo.SortProperty)
+            else if (clause.Representation == TextRepresentation.SortProperty)
             {
-                var direction = clause.Children.Last().Item2.Root.Value.Value == "asc" ? SortDirection.Ascending : SortDirection.Descending;
+                var direction = clause.Children.Last().Item2.Root.Value.Text == "asc" ? SortDirection.Ascending : SortDirection.Descending;
                 var child = clause.Children.First().Item2;
                 ResultList.Add(ITuple.Create(SelectClauseParser<TRootQueryType>.PathAndPropertyFromExpandItem(child, Graph, RootQueryType), direction));
             }
-            else if (clause.Representation == TInfo.ExpandProperty)
+            else if (clause.Representation == TextRepresentation.ExpandProperty)
                 ResultList.Add(ITuple.Create(SelectClauseParser<TRootQueryType>.PathAndPropertyFromExpandItem(clause, Graph, RootQueryType), SortDirection.Ascending));
             else
-                throw new ArgumentException($"{invalidQueryText} - Unrecognized term: {clause.Root.Value.Value}");
+                throw new ArgumentException($"{invalidQueryText} - Unrecognized term: {clause.Root.Value.Text}");
         }
 
         public override void Parse()
@@ -66,7 +67,7 @@ namespace NoData.QueryParser.ParsingTools
             if (!orderByDefinitions.Any())
                 return query;
 
-            bool first = true;
+            var first = true;
             foreach (var sort in orderByDefinitions)
             {
                 if (first)
@@ -83,7 +84,7 @@ namespace NoData.QueryParser.ParsingTools
     {
         public static Expression GetOrderByExpression(Expression dto, PathToProperty sortPath)
         {
-            Expression memberExpression = dto;
+            var memberExpression = dto;
             sortPath.Traverse(x => memberExpression = Expression.PropertyOrField(memberExpression, x.Value.Name));
 
             var property = memberExpression.Type.GetProperty(sortPath.Property.Name);
@@ -96,7 +97,7 @@ namespace NoData.QueryParser.ParsingTools
         {
             var orderByExp = Expression.Lambda(propertyAccess, parameter);
             var typeArguments = new Type[] { typeof(TDto), propertyAccess.Type };
-            var methodName = sortOrder == SortDirection.Ascending ? "OrderBy" : "OrderByDescending";
+            var methodName = sortOrder == SortDirection.Ascending ? nameof(Enumerable.OrderBy) : nameof(Enumerable.OrderByDescending);
             var resultExp = Expression.Call(typeof(Queryable), methodName, typeArguments, source.Expression, Expression.Quote(orderByExp));
 
             return source.Provider.CreateQuery<TDto>(resultExp);

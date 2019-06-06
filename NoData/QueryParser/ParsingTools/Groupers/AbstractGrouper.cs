@@ -8,10 +8,10 @@ namespace NoData.QueryParser.ParsingTools.Groupers
 {
     public abstract class AbstractGrouper<T> : IGrouper<T> where T : IRepresent
     {
-        protected readonly IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> GroupingTerms;
+        protected IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> GroupingTerms { get; }
 
-        public AbstractGrouper() { }
-        public AbstractGrouper(IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms)
+        protected AbstractGrouper() { }
+        protected AbstractGrouper(IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms)
         {
             GroupingTerms = terms;
         }

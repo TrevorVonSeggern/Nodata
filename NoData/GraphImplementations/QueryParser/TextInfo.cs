@@ -1,7 +1,9 @@
-﻿using CodeTools;
+﻿using Immutability;
 using Graph.Interfaces;
 using NoData.Internal.TreeParser.Tokenizer;
 using System;
+using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace NoData.GraphImplementations.QueryParser
@@ -10,226 +12,139 @@ namespace NoData.GraphImplementations.QueryParser
     public class TextInfo
     {
         public string Text { get; }
-        public string Value { get; }
-        public readonly string Representation;
+        public string Representation { get; }
+
+        // Type and Parsed should be deleted
         public Type Type { get; }
         public object Parsed { get; }
 
-        public override string ToString() => $"{Value}: {Representation}";
-
-        public TextInfo(string text, string value, string representation)
+        public TextInfo(string text, string representation)
         {
             Text = text;
-            Value = value;
             Representation = representation;
         }
-        public TextInfo(string text, string value, string representation, Type type) : this(text, value, representation)
+        public TextInfo(string text, string representation, Type type) : this(text, representation)
         {
             Type = type;
         }
 
-        public static TextInfo FromRepresentation(string representation) => new TextInfo(null, null, representation);
-        public static TextInfo FromRepresentation(string representation, Type type) => new TextInfo(null, null, representation, type);
+        public static TextInfo FromRepresentation(string representation) => new TextInfo(null, representation);
+        public static TextInfo FromRepresentation(string representation, Type type) => new TextInfo(null, representation, type);
 
-        static class ConstRep
+        private static string GetRepresentationFromTokenType(TokenType type)
         {
-            private static int index = 0;
-            private static char[] possibleChars = new char[]
-            {
-                '0',
-                '1',
-                '2',
-                '3',
-                '4',
-                '5',
-                '6',
-                '7',
-                '8',
-                '9',
-                'a',
-                'b',
-                'c',
-                'd',
-                'e',
-                'f',
-                'g',
-                'h',
-                'i',
-                'j',
-                'k',
-                'l',
-                'm',
-                'n',
-                'o',
-                'p',
-                'q',
-                'r',
-                's',
-                't',
-                'u',
-                'v',
-                'w',
-                'x',
-                'y',
-                'z',
-                'A',
-                'B',
-                'C',
-                'D',
-                'E',
-                'F',
-                'G',
-                'H',
-                'I',
-                'J',
-                'K',
-                'L',
-                'M',
-                'N',
-                'O',
-                'P',
-                'Q',
-                'R',
-                'S',
-                'T',
-                'U',
-                'V',
-                'W',
-                'X',
-                'Y',
-                'Z',
-            };
-            public static string NextRep() => possibleChars[index++].ToString();
-            // public static string NextRep(string regex) => Regex.Escape(regex);
-            public static string NextRep(string regex) => NextRep();
+            if (type == TokenType.classProperties)
+                return TextRepresentation.ClassProperty;
+
+            // value compare.
+            if (new[] {
+                        TokenType.greaterThan,
+                        TokenType.greaterThanOrEqual,
+                        TokenType.lessThan,
+                        TokenType.lessThanOrEqual,
+                        TokenType.equals,
+                        TokenType.notEquals
+                    }.Contains(type)
+                )
+                return TextRepresentation.ValueComparison;
+
+            if (type == TokenType.not)
+                return TextRepresentation.Inverse;
+
+            // formatting
+            if (type == TokenType.forwardSlash)
+                return TextRepresentation.ForwardSlash;
+            if (type == TokenType.semiColin)
+                return TextRepresentation.SemiColin;
+            if (type == TokenType.comma)
+                return TextRepresentation.Comma;
+
+            // logical compare
+            if (type == TokenType.and || type == TokenType.or)
+                return TextRepresentation.LogicalComparison;
+
+            // const values
+            if (type == TokenType.truth || type == TokenType.falsey)
+                return TextRepresentation.LogicalComparison;
+            if (type == TokenType.quotedString)
+                return TextRepresentation.TextValue;
+
+            // odata clauses.
+            if (type == TokenType.filterClause)
+                return TextRepresentation.FilterClause;
+            if (type == TokenType.selectClause)
+                return TextRepresentation.SelectClause;
+            if (type == TokenType.expandClause)
+                return TextRepresentation.ExpandClause;
+
+            // sort direction
+            if (type == TokenType.ascending || type == TokenType.descending)
+                return TextRepresentation.SortOrder;
+            if (type == TokenType.ascending || type == TokenType.descending)
+                return TextRepresentation.SortOrder;
+
+            // str functions
+            if (type == TokenType.strLength)
+                return TextRepresentation.StrLength;
+            if (type == TokenType.strEndsWith)
+                return TextRepresentation.StrEndsWith;
+            if (type == TokenType.strStartsWith)
+                return TextRepresentation.StrStartsWith;
+            if (type == TokenType.strIndexOf)
+                return TextRepresentation.StrIndexOf;
+            if (type == TokenType.strContains)
+                return TextRepresentation.StrContains;
+            if (type == TokenType.strReplace)
+                return TextRepresentation.StrReplace;
+            if (type == TokenType.strToUpper)
+                return TextRepresentation.StrToUpper;
+            if (type == TokenType.strToLower)
+                return TextRepresentation.StrToLower;
+            if (type == TokenType.strTrim)
+                return TextRepresentation.StrTrim;
+            if (type == TokenType.strConcat)
+                return TextRepresentation.StrConcat;
+            if (type == TokenType.strSubstring)
+                return TextRepresentation.StrSubString;
+
+            throw new ArgumentException("Can't map the token type to a textual representation.");
         }
-
-        // value types
-        public static readonly string RawTextRepresentation = ConstRep.NextRep("<raw_text>");
-        public static readonly string ClassProperty = ConstRep.NextRep("<class_property>");
-        public static readonly string TextValue = ConstRep.NextRep("<text>");
-        public static readonly string BooleanValue = ConstRep.NextRep("<bool>");
-        public static readonly string NumberValue = ConstRep.NextRep("<number>");
-        public static readonly string DateValue = ConstRep.NextRep("<date>");
-
-        // grouping
-        public static readonly string LogicalComparison = ConstRep.NextRep("<and_or>");
-        public static readonly string ValueComparison = ConstRep.NextRep("<value_comparison>");
-        public static readonly string BooleanFunction = ConstRep.NextRep("<func_bool>");
-        public static readonly string IntFunction = ConstRep.NextRep("<func_int>");
-        public static readonly string Add = ConstRep.NextRep("<add>");
-        public static readonly string MathSymbols = ConstRep.NextRep("<math_operator>");
-        public static readonly string Inverse = ConstRep.NextRep("<inverse_operator>");
-
-        // Expansion
-        public static readonly string ExpandProperty = ConstRep.NextRep("<expandProperty>");
-        public static readonly string ListOfExpands = ConstRep.NextRep("<list_of_expand>");
-
-        // Sorting
-        public static readonly string SortProperty = ConstRep.NextRep("<sort_property>");
-        public static readonly string ListOfSortings = ConstRep.NextRep("<list_of_sort>");
-        public static readonly string SortOrder = ConstRep.NextRep("<sort_order>");
-
-        // text symbols
-        public static readonly string SemiColin = ConstRep.NextRep("<semi_colin>");
-        public static readonly string ForwardSlash = ConstRep.NextRep("<forward_slash>");
-        public static readonly string Comma = ConstRep.NextRep("<comma>");
-        public static readonly string OpenParenthesis = ConstRep.NextRep("<open_grouping>");
-        public static readonly string CloseParenthesis = ConstRep.NextRep("<close_grouping>");
-
-        // sub-parameters
-        public static readonly string SelectClause = ConstRep.NextRep("<select_clause>");
-        public static readonly string ExpandClause = ConstRep.NextRep("<expand_clause>");
-        public static readonly string FilterClause = ConstRep.NextRep("<filter_clause>");
-        public static readonly string SelectExpression = ConstRep.NextRep("<select_expr>");
-        public static readonly string ExpandExpression = ConstRep.NextRep("<expand_expr>");
-        public static readonly string FilterExpression = ConstRep.NextRep("<filter_expr>");
-        public static readonly string ListOfClause = ConstRep.NextRep("<list_of_clause>");
-
 
         public TextInfo(Token token)
         {
-            Value = token.Value;
-            Text = Value;
-            if (!Enum.TryParse(token.Type, out TokenTypes type))
-                Representation = RawTextRepresentation;
+            Text = token.Value;
+            if (!Enum.TryParse(token.Type, out TokenType type))
+                Representation = TextRepresentation.RawTextRepresentation;
             else
             {
-                switch (type)
+                if (type == TokenType.number)
                 {
-                    case TokenTypes.classProperties:
-                        Representation = ClassProperty;
-                        break;
-                    case TokenTypes.forwardSlash:
-                        Representation = ForwardSlash;
-                        break;
-                    case TokenTypes.semiColin:
-                        Representation = SemiColin;
-                        break;
-                    case TokenTypes.comma:
-                        Representation = Comma;
-                        break;
-                    case TokenTypes.not:
-                        Representation = Inverse;
-                        break;
-                    case TokenTypes.greaterThan:
-                    case TokenTypes.greaterThanOrEqual:
-                    case TokenTypes.lessThan:
-                    case TokenTypes.lessThanOrEqual:
-                    case TokenTypes.equals:
-                    case TokenTypes.notEquals:
-                        Representation = ValueComparison;
-                        break;
-                    case TokenTypes.and:
-                    case TokenTypes.or:
-                        Representation = LogicalComparison;
-                        break;
-                    case TokenTypes.truth:
-                    case TokenTypes.falsey:
-                        Representation = BooleanValue;
-                        break;
-                    case TokenTypes.quotedString:
-                        Representation = TextValue;
-                        break;
-                    case TokenTypes.filterClause:
-                        Representation = FilterClause;
-                        break;
-                    case TokenTypes.selectClause:
-                        Representation = SelectClause;
-                        break;
-                    case TokenTypes.expandClause:
-                        Representation = ExpandClause;
-                        break;
-                    case TokenTypes.ascending:
-                    case TokenTypes.descending:
-                        Representation = SortOrder;
-                        break;
-                    case TokenTypes.parenthesis:
-                        if (Text == "(")
-                            Representation = OpenParenthesis;
-                        else if (Text == ")")
-                            Representation = CloseParenthesis;
-                        else
-                            Representation = RawTextRepresentation;
-                        break;
-                    case TokenTypes.number:
-                        if (Text.Contains("."))
-                        {
-                            Type = typeof(double);
-                            Parsed = double.Parse(Text);
-                        }
-                        else
-                        {
-                            Type = typeof(long);
-                            Parsed = long.Parse(Text);
-                        }
-                        Representation = NumberValue;
-                        break;
-                    default:
-                        Representation = RawTextRepresentation;
-                        break;
+                    if (long.TryParse(Text, NumberStyles.Integer, CultureInfo.CurrentCulture.NumberFormat, out var longParsed))
+                    {
+                        Type = typeof(long);
+                        Parsed = longParsed;
+                    }
+                    else
+                    {
+                        Type = typeof(double);
+                        Parsed = double.Parse(Text, CultureInfo.CurrentCulture.NumberFormat);
+                    }
+                    Representation = TextRepresentation.NumberValue;
                 }
+                else if (type == TokenType.parenthesis)
+                {
+                    if (Text == "(")
+                        Representation = TextRepresentation.OpenParenthesis;
+                    else if (Text == ")")
+                        Representation = TextRepresentation.CloseParenthesis;
+                    else
+                        Representation = TextRepresentation.RawTextRepresentation;
+                }
+                else
+                    Representation = GetRepresentationFromTokenType(type);
             }
         }
+
+        public override string ToString() => $"{Text}: {Representation}";
     }
 }

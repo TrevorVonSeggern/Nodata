@@ -10,8 +10,8 @@ namespace NoData.QueryParser.ParsingTools
 {
     public class OrderdGrouper<T> : AbstractGrouper<T>, IGrouper<T> where T : IRepresent
     {
-        public string OpenGroupingValue { get; set; } = TextInfo.OpenParenthesis;
-        public string CloseGroupingValue { get; set; } = TextInfo.CloseParenthesis;
+        public string OpenGroupingValue { get; set; } = TextRepresentation.OpenParenthesis;
+        public string CloseGroupingValue { get; set; } = TextRepresentation.CloseParenthesis;
 
         public OrderdGrouper(IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms) : base(terms) { }
 
