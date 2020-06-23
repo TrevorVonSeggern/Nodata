@@ -1,15 +1,12 @@
 ﻿using Immutability;
-using Graph;
 using NoData.QueryParser.ParsingTools.Groupers;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+using GraphLibrary;
 
 namespace NoData.GraphImplementations.QueryParser
 {
     [Immutable]
-    public class Tree : Tree<Tree, Vertex, Edge, TextInfo, EdgeInfo>, IRepresent
+    public class Tree : GraphLibrary.Tree<Tree, Vertex, Edge, TextInfo, EdgeInfo>, IRepresent
     {
         public string Representation => Root.Value.Representation;
 

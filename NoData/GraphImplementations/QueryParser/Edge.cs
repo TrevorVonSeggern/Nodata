@@ -1,8 +1,4 @@
 ﻿using Immutability;
-using Graph.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NoData.GraphImplementations.QueryParser
 {
@@ -13,7 +9,7 @@ namespace NoData.GraphImplementations.QueryParser
     }
 
     [Immutable]
-    public class Edge : Graph.Edge<EdgeInfo, Vertex, TextInfo>
+    public class Edge : GraphLibrary.Edge<EdgeInfo, Vertex, TextInfo>
     {
         public Edge(Vertex from, Vertex to) : base(from, to) { }
     }

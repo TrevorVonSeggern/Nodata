@@ -3,16 +3,14 @@ using System.IO;
 using System.Linq;
 using QuickCache;
 using Immutability;
-using Graph;
-using Graph.Interfaces;
 using Newtonsoft.Json;
-using NoData.GraphImplementations.Schema;
 using Property = NoData.GraphImplementations.Schema.Property;
+using GraphLibrary;
 
 namespace NoData.GraphImplementations.Queryable
 {
     [Immutable]
-    public class QueryTree : Graph.Tree<QueryTree, QueryVertex, QueryEdge, QueryClass, Property>
+    public class QueryTree : GraphLibrary.Tree<QueryTree, QueryVertex, QueryEdge, QueryClass, Property>
     {
         public QueryTree(QueryVertex root, IEnumerable<ITuple<QueryEdge, QueryTree>> children = null) : base(root, children)
         {

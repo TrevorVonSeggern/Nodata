@@ -1,5 +1,6 @@
 namespace NoData.GraphImplementations.QueryParser
 {
+	// The purpose of this class is to give a specific character (alpha numeric) which represents the key to a regular expression.
     public class RollingCharacterRegexRepresentation
     {
         private int index = 0;
