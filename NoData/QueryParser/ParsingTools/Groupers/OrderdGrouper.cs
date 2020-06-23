@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Graph;
 using NoData.GraphImplementations.QueryParser;
 using NoData.QueryParser.ParsingTools.Groupers;
+using GraphLibrary;
 
 namespace NoData.QueryParser.ParsingTools
 {

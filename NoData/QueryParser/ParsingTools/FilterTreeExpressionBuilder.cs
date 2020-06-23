@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using Immutability;
 using NoData.GraphImplementations.QueryParser;
 using NoData.Utility;
-using GraphSchema = NoData.GraphImplementations.Schema.GraphSchema;
+using GraphLibrary;
 
 namespace NoData.QueryParser.ParsingTools
 {
@@ -68,7 +67,7 @@ namespace NoData.QueryParser.ParsingTools
 
         private Expression ComparisonExpression(Tree tree, Expression dto, IClassCache cache)
         {
-            var children = new List<Graph.ITuple<Edge, Tree>>(tree.Children);
+            var children = new List<ITuple<Edge, Tree>>(tree.Children);
             if (children.Count != 3)
                 return null;
 
@@ -143,7 +142,7 @@ namespace NoData.QueryParser.ParsingTools
 
         private Expression LogicalExpression(Tree tree, Expression dto, IClassCache cache)
         {
-            var children = new List<Graph.ITuple<Edge, Tree>>(tree.Children);
+            var children = new List<ITuple<Edge, Tree>>(tree.Children);
             if (children.Count != 3) return null;
 
             var left = FilterExpression(children[0].Item2, dto, cache);

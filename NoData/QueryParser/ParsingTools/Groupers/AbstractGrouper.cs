@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using Graph;
+using GraphLibrary;
 
 namespace NoData.QueryParser.ParsingTools.Groupers
 {

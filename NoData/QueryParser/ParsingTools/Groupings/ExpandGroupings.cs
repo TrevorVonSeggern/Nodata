@@ -1,12 +1,12 @@
-﻿using Graph;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using NoData.GraphImplementations.QueryParser;
+using GraphLibrary;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
-using TGrouping = Graph.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, Graph.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
+using TGrouping = GraphLibrary.ITuple<string, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, GraphLibrary.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
 
 
 namespace NoData.QueryParser.ParsingTools.Groupings

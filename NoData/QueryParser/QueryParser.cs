@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Graph;
 using System.Linq.Expressions;
 using NoData.Internal.TreeParser.Tokenizer;
 using NoData.QueryParser.ParsingTools;
@@ -12,8 +11,8 @@ using QuickCache;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using ParserVertex = NoData.GraphImplementations.QueryParser.Vertex;
-using TGrouping = Graph.ITuple<System.Text.RegularExpressions.Regex, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, Graph.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
-using TTermDict = System.Collections.Generic.IReadOnlyDictionary<System.Text.RegularExpressions.Regex, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, Graph.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
+using TGrouping = GraphLibrary.ITuple<System.Text.RegularExpressions.Regex, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, GraphLibrary.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
+using TTermDict = System.Collections.Generic.IReadOnlyDictionary<System.Text.RegularExpressions.Regex, System.Func<System.Collections.Generic.IList<NoData.GraphImplementations.QueryParser.Tree>, GraphLibrary.ITuple<NoData.GraphImplementations.QueryParser.Tree, int>>>;
 using System.Text.RegularExpressions;
 
 namespace NoData.QueryParser

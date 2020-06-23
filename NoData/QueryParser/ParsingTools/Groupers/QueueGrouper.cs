@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Graph;
 using NoData.QueryParser.ParsingTools.Groupers;
+using GraphLibrary;
 
 namespace NoData.QueryParser.ParsingTools
 {

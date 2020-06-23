@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Graph;
-using NoData.GraphImplementations;
+using GraphLibrary;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;

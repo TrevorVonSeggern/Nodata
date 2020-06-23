@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Graph;
-using NoData.GraphImplementations;
 using NoData.QueryParser.ParsingTools.Groupers;
+using GraphLibrary;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
-using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
