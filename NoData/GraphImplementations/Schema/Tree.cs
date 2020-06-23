@@ -1,16 +1,11 @@
 ﻿using Immutability;
-using Graph;
-using Graph.Interfaces;
-using NoData.Utility;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+using GraphLibrary;
 
 namespace NoData.GraphImplementations.Schema
 {
     [Immutable]
-    public class Tree : Graph.Tree<Tree, Vertex, Edge, ClassInfo, Property>
+    public class Tree : GraphLibrary.Tree<Tree, Vertex, Edge, ClassInfo, Property>
     {
         public Tree(Vertex root) : base(root, new List<ITuple<Edge, Tree>>()) { }
         public Tree(Vertex root, IEnumerable<ITuple<Edge, Tree>> children) : base(root, children) { }

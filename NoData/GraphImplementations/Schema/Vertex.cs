@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using Immutability;
-using Graph.Interfaces;
-using NoData.Utility;
+﻿using Immutability;
 
 namespace NoData.GraphImplementations.Schema
 {
@@ -13,7 +6,7 @@ namespace NoData.GraphImplementations.Schema
     /// A class representation in a graph context.
     /// </summary>
     [Immutable]
-    public class Vertex : Graph.Vertex<ClassInfo>
+    public class Vertex : GraphLibrary.Vertex<ClassInfo>
     {
         public Vertex(ClassInfo value) : base(value) { }
     }

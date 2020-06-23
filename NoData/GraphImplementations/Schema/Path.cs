@@ -4,7 +4,7 @@ using Immutability;
 namespace NoData.GraphImplementations.Schema
 {
     [Immutable]
-    public class Path : Graph.Path<Edge, Vertex, Property, ClassInfo>
+    public class Path : GraphLibrary.Path<Edge, Vertex, Property, ClassInfo>
     {
         public Path(IEnumerable<Edge> edges) : base(edges) { }
 

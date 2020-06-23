@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Immutability;
-using Graph;
 using NoData.Utility;
+using GraphLibrary;
 
 namespace NoData.GraphImplementations.Schema
 {
     [Immutable]
-    public class GraphSchema : Graph.Graph<Vertex, Edge, ClassInfo, Property>
+    public class GraphSchema : GraphLibrary.Graph<Vertex, Edge, ClassInfo, Property>
     {
         public GraphSchema(IEnumerable<Vertex> vertices, IEnumerable<Edge> edges) : base(vertices, edges) { }
 
