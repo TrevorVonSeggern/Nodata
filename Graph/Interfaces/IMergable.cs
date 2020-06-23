@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Graph.Interfaces
+﻿namespace Graph.Interfaces
 {
     /// <summary>
     /// A class representation in a graph context.

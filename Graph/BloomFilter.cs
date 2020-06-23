@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Graph
+﻿namespace Graph
 {
     using System.Diagnostics.Contracts;
     using Interfaces;
