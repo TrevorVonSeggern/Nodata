@@ -8,6 +8,7 @@ using NoData.QueryParser.ParsingTools.Groupings;
 using NoData.GraphImplementations.Schema;
 using NoData.Utility;
 using QuickCache;
+using GraphLibrary;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using ParserVertex = NoData.GraphImplementations.QueryParser.Vertex;

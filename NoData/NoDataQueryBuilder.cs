@@ -1,16 +1,11 @@
 using System.Linq;
-using Newtonsoft.Json;
 using NoData.QueryParser;
 using System.Linq.Expressions;
 using System.Collections.Generic;
-using NoData.QueryParser.ParsingTools;
 using NoData.GraphImplementations.Schema;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using System;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using NoData.Utility;
 using System.Text;
 
 namespace NoData

@@ -1,7 +1,6 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using Immutability;
 using Microsoft.AspNetCore.Http;
 

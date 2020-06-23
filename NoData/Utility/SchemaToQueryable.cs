@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using Graph;
-using NoData.GraphImplementations;
 using NoData.GraphImplementations.Queryable;
+using GraphLibrary;
 // Sorry for the confusing names between the three types of graph type classes.
 
 using Property = NoData.GraphImplementations.Schema.Property;
