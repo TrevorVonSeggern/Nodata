@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Graph;
-using NoData.GraphImplementations;
 using NoData.QueryParser.ParsingTools.Groupers;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
-using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
     public abstract class AbstractClaseParser<TRootQueryType, TResult> : IQueryClauseParser<TResult>
+		where TResult : class
     {
         protected string QueryString { get; set; }
         private readonly IReadOnlyDictionary<Regex, Func<IList<QueueItem>, ITuple<QueueItem, int>>> GroupingTerms;
@@ -29,10 +25,10 @@ namespace NoData.QueryParser.ParsingTools
 
         public bool IsFinished { get; protected set; }
         public Type RootQueryType => typeof(TRootQueryType);
-        public virtual TResult Result { get; protected set; }
+        public virtual TResult? Result { get; protected set; } = null;
 
-        private IEnumerable<QueueItem> _tokenList { get; set; }
-        public IGrouper<QueueItem> Grouper { get; private set; }
+        private IEnumerable<QueueItem> _tokenList { get; set; } = new List<QueueItem>();
+        public IGrouper<QueueItem>? Grouper { get; private set; } = null;
         protected bool SetupParsing()
         {
             IsFinished = true;

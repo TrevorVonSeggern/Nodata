@@ -22,7 +22,7 @@ namespace NoData.GraphImplementations.QueryParser
                 return $"{EscapeCharacter}{littleChar}";
             return $"{EscapeCharacter}{possibleChars[tenColumn - 1]}{littleChar}";
         }
-        public string NextRep(string regex) => regex is null ? null : NextRep();
+        public string NextRep(string regex) => regex is null ? throw new NullReferenceException(nameof(regex)) : NextRep();
         // public string NextRep(string regex) => System.Text.RegularExpressions.Regex.Escape(regex); // more human readable, but slower, way of getting text representation.
     }
 

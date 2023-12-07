@@ -1,4 +1,3 @@
-using System;
 using Immutability;
 
 namespace NoData.GraphImplementations.Queryable

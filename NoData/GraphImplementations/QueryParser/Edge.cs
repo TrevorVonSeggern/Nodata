@@ -1,15 +1,11 @@
 ﻿using Immutability;
-using Graph.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NoData.GraphImplementations.QueryParser
 {
     [Immutable]
     public class EdgeInfo
     {
-        public string PropertyName { get; }
+        public string PropertyName { get; } = "";
     }
 
     [Immutable]

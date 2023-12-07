@@ -1,18 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using SampleEFCoreApi.Models;
-using AutoMapper;
+﻿using AutoMapper;
 using NoData;
-using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Http;
-using System.IO;
-using System.Net;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System.Linq.Expressions;
 
 namespace SampleEFCoreApi.Controllers
 {

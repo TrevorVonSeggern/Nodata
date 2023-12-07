@@ -1,7 +1,4 @@
 ﻿using Graph;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using NoData.GraphImplementations.QueryParser;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
@@ -39,7 +36,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                // build from linear list, the tree
                for (vertex = itemList.Any() ? itemList.Peek() : null; itemList.Count != 0; vertex = itemList.Pop())
                {
-                   vertex = new Vertex(new TextInfo(vertex.Value.Text, TextRepresentation.ExpandProperty));
+                   vertex = new Vertex(new TextInfo(vertex?.Value.Text ?? "", TextRepresentation.ExpandProperty));
                    var edge = new Edge(vertex, propertyTree.Root);
                    propertyTree = new QueueItem(vertex, new[] { ITuple.Create(edge, propertyTree) });
                }

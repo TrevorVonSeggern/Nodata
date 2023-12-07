@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace NoData.Internal.TreeParser.Tokenizer
 {
@@ -8,7 +6,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
     {
         private static Regex endOfLineRegex = new Regex(@"(\r\n|\r|\n)", RegexOptions.Compiled | RegexOptions.Singleline);
 
-        public Queue<Token> Tokens { get; }
+        public Queue<Token> Tokens { get; } = new();
         public List<TokenDefinition> Definitions { get; } = new List<TokenDefinition>(); // 29 just for normal parsing.
 
         public Lexer()
@@ -33,7 +31,7 @@ namespace NoData.Internal.TreeParser.Tokenizer
 
             while (currentIndex < source.Length)
             {
-                TokenDefinition matchedDefinition = null;
+                TokenDefinition? matchedDefinition = null;
                 var matchLength = 0;
 
                 foreach (var rule in Definitions)

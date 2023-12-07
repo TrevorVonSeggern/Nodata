@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
 namespace NoData.Utility
 {
     // Thanks to https://ryandavis.io/a-lazily-evaluated-stream-wrapper-for-ienumerable/
@@ -38,7 +33,7 @@ namespace NoData.Utility
         /// </summary>
         /// <param name="source">The source enumerable for the EnumerableStream</param>
         /// <param name="serializer">A function that converts an instance of <code>T</code> to IEnumerable<byte></param>
-        public EnumerableStream(IEnumerable<T> source, Func<T, IEnumerable<byte>> serializer, List<byte> between = null, List<byte> start = null, List<byte> end = null)
+        public EnumerableStream(IEnumerable<T> source, Func<T, IEnumerable<byte>> serializer, List<byte>? between = null, List<byte>? start = null, List<byte>? end = null)
         {
             _source = source.GetEnumerator();
             _serializer = serializer;
@@ -62,7 +57,7 @@ namespace NoData.Utility
             }
 
             // add content from current to queue.
-            if (!EqualityComparer<T>.Default.Equals(_source.Current, default(T)))
+            if (!EqualityComparer<T?>.Default.Equals(_source.Current, default(T)))
             {
                 if (!firstItem && Between.Any())
                 {

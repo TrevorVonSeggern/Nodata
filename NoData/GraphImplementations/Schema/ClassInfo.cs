@@ -1,9 +1,4 @@
-﻿using Graph.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using NoData.Utility;
+﻿using NoData.Utility;
 using Immutability;
 
 namespace NoData.GraphImplementations.Schema
@@ -95,6 +90,8 @@ namespace NoData.GraphImplementations.Schema
             if (obj is ClassInfo)
             {
                 var other = obj as ClassInfo;
+				if(other is null)
+					return false;
                 return TypeId == other.TypeId;
             }
             return false;

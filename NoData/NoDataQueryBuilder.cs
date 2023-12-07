@@ -1,16 +1,8 @@
-using System.Linq;
-using Newtonsoft.Json;
 using NoData.QueryParser;
 using System.Linq.Expressions;
-using System.Collections.Generic;
-using NoData.QueryParser.ParsingTools;
 using NoData.GraphImplementations.Schema;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using System;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using NoData.Utility;
 using System.Text;
 
 namespace NoData
@@ -30,10 +22,10 @@ namespace NoData
         }
 
         public NoDataBuilder(
-            string expand,
-            string filter = null,
-            string select = null,
-            string orderBy = null,
+            string? expand,
+            string? filter = null,
+            string? select = null,
+            string? orderBy = null,
             int? top = null,
             int? skip = null,
             bool count = false) : this(new Parameters(expand, filter, select, orderBy, top, skip, count), new SettingsForType<TDto>())
@@ -55,7 +47,7 @@ namespace NoData
         private static readonly ParameterExpression ParameterDtoExpression = Expression.Parameter(typeof(TDto), "Dto");
         private INoDataQuery<TDto> buildQuery(IQueryable<TDto> sourceQueryable, QueryParser<TDto> parser)
         {
-            var filterExpr = parser.ApplyFilterExpression(ParameterDtoExpression);
+            var filterExpr = parser.ApplyFilterExpression(ParameterDtoExpression)!;
             var selectionTree = Utility.SchemaToQueryable.TranslateTree2(parser.SelectionTree, parser.SelectPaths);
 
             // security: check max expand

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Graph;
 using NoData.GraphImplementations.QueryParser;
 using NoData.GraphImplementations.Schema;
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
-using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 
 namespace NoData.QueryParser.ParsingTools
 {
@@ -33,7 +29,7 @@ namespace NoData.QueryParser.ParsingTools
                 QueryString += "," + clause;
         }
 
-        public void AddToClause(QueueItem clause)
+        public void AddToClause(QueueItem? clause)
         {
             const string invalidQueryText = "invalid query";
 
@@ -58,7 +54,7 @@ namespace NoData.QueryParser.ParsingTools
 
         public override void Parse()
         {
-            if (SetupParsing())
+            if (SetupParsing() && Grouper is not null)
                 AddToClause(Grouper.ParseToSingle(TokenFunc(QueryString)));
         }
 

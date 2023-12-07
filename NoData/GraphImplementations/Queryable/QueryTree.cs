@@ -1,12 +1,7 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using QuickCache;
 using Immutability;
 using Graph;
-using Graph.Interfaces;
 using Newtonsoft.Json;
-using NoData.GraphImplementations.Schema;
 using Property = NoData.GraphImplementations.Schema.Property;
 
 namespace NoData.GraphImplementations.Queryable
@@ -14,7 +9,7 @@ namespace NoData.GraphImplementations.Queryable
     [Immutable]
     public class QueryTree : Graph.Tree<QueryTree, QueryVertex, QueryEdge, QueryClass, Property>
     {
-        public QueryTree(QueryVertex root, IEnumerable<ITuple<QueryEdge, QueryTree>> children = null) : base(root, children)
+        public QueryTree(QueryVertex root, IEnumerable<ITuple<QueryEdge, QueryTree>>? children = null) : base(root, children)
         {
         }
 
@@ -26,7 +21,7 @@ namespace NoData.GraphImplementations.Queryable
         public string AsJson<T>(T item) => this.ObjectAsJson(item);
 
         private static ICacheForever<int, FastMember.TypeAccessor> AccessorCache = new DictionaryCache<int, FastMember.TypeAccessor>();
-        private string ObjectAsJson(object item)
+        private string ObjectAsJson(object? item)
         {
             if (item is null)
                 return "null";

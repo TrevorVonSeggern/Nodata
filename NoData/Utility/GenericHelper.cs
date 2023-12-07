@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
-
-namespace NoData.Utility
+﻿namespace NoData.Utility
 {
 
     internal static class GenericHelper
@@ -25,7 +17,7 @@ namespace NoData.Utility
         {
             unchecked
             {
-                hash = hash * 31 + source.GetHashCode();
+                hash = hash * 31 + source?.GetHashCode() ?? 0;
             }
             return hash;
         }

@@ -1,8 +1,4 @@
 ﻿using Graph;
-using System;
-using System.Collections.Specialized;
-using System.Collections.Generic;
-using System.Linq;
 using NoData.GraphImplementations.QueryParser;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
@@ -26,7 +22,7 @@ namespace NoData.QueryParser.ParsingTools.Groupings
                 return ITuple.Create(new QueueItem(root, new[] { ITuple.Create(edge, new QueueItem(child.Root)) }), 1);
             });
 
-            ITuple<QueueItem, int> valueSomethingValue(IList<QueueItem> list, string rootText = null)
+            ITuple<QueueItem, int> valueSomethingValue(IList<QueueItem> list, string? rootText = null)
             {
                 if (rootText is null)
                     rootText = TextRepresentation.ValueComparison;

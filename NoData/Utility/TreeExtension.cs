@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Graph.Interfaces;
-using NoData.GraphImplementations.Schema;
+﻿using NoData.GraphImplementations.Schema;
 namespace NoData.Utility
 {
     public static class TreeUtility

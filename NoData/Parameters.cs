@@ -1,16 +1,12 @@
 ﻿using Immutability;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace NoData
 {
     [Immutable]
     public class Parameters
     {
-        public Parameters(string expand = null, string filter = null, string select = null, string orderBy = null, int? top = null, int? skip = null, bool count = false)
+        public Parameters(string? expand = null, string? filter = null, string? select = null, string? orderBy = null, int? top = null, int? skip = null, bool count = false)
         {
             Count = count;
             Top = top;
@@ -31,13 +27,13 @@ namespace NoData
             OrderBy = other.OrderBy;
         }
 
-        public bool Count { get; }
+        public bool? Count { get; }
         public int? Top { get; }
         public int? Skip { get; }
-        public string Filter { get; }
-        public string Select { get; }
-        public string Expand { get; }
-        public string OrderBy { get; }
+        public string? Filter { get; }
+        public string? Select { get; }
+        public string? Expand { get; }
+        public string? OrderBy { get; }
     }
     internal static class ParametersHelper
     {

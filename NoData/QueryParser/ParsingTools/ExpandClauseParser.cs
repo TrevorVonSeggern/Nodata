@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Graph;
-using NoData.GraphImplementations;
+﻿using Graph;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
@@ -42,12 +38,12 @@ namespace NoData.QueryParser.ParsingTools
 
         public void AddToResult(IEnumerable<SchemaEdge> edgePath)
         {
-            Result.Add(new SchemaPath(edgePath));
+            Result?.Add(new SchemaPath(edgePath));
         }
 
         public override void Parse()
         {
-            if (!SetupParsing())
+            if (!SetupParsing() || Grouper is null)
                 return;
 
             var queueGrouper = Grouper;
@@ -62,7 +58,7 @@ namespace NoData.QueryParser.ParsingTools
 
             foreach (var expansion in groupOfExpansions.Select(x => x.Item2))
                 foreach (var path in ExpandPropertyToEdgeList(expansion))
-                    Result.Add(path);
+                    Result?.Add(path);
         }
 
         // class to contain functions specific to parsing.
@@ -108,7 +104,7 @@ namespace NoData.QueryParser.ParsingTools
                 }
             }
 
-            public IEnumerable<SchemaPath> Traverse(SchemaVertex from, QueueItem tree, IEnumerable<SchemaEdge> currentPath = null)
+            public IEnumerable<SchemaPath> Traverse(SchemaVertex from, QueueItem tree, IEnumerable<SchemaEdge>? currentPath = null)
             {
                 if (currentPath == null)
                     currentPath = new List<SchemaEdge>();

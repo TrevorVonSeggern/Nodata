@@ -1,29 +1,25 @@
 ﻿using Immutability;
-using Graph.Interfaces;
 using NoData.Internal.TreeParser.Tokenizer;
-using System;
 using System.Globalization;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace NoData.GraphImplementations.QueryParser
 {
     [Immutable]
     public class TextInfo
     {
-        public string Text { get; }
+        public string? Text { get; }
         public string Representation { get; }
 
         // Type and Parsed should be deleted
-        public Type Type { get; }
-        public object Parsed { get; }
+        public Type? Type { get; } = null;
+        public object? Parsed { get; } = null;
 
-        public TextInfo(string text, string representation)
+        public TextInfo(string? text, string representation)
         {
             Text = text;
             Representation = representation;
         }
-        public TextInfo(string text, string representation, Type type) : this(text, representation)
+        public TextInfo(string? text, string representation, Type type) : this(text, representation)
         {
             Type = type;
         }

@@ -1,7 +1,4 @@
 ﻿using Graph;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using NoData.GraphImplementations.QueryParser;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;

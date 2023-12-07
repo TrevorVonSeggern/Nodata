@@ -1,11 +1,8 @@
-using System.Collections.Generic;
+namespace SampleEFCoreApi.Database;
 
-namespace SampleEFCoreApi.Database
+public class GrandChild
 {
-	public class GrandChild
-	{
-		public int Id { get; set; }
-		public string Name { get; set; }
-		public string Region_code { get; set; }
-	}
+	public int Id { get; set; }
+	public string Name { get; set; }
+	public string Region_code { get; set; }
 }

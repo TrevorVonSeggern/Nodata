@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 using Graph;
 using NoData.QueryParser.ParsingTools.Groupers;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    public class QueueGrouper<T> : AbstractGrouper<T>, IGrouper<T> where T : IRepresent
+    public class QueueGrouper<T> : AbstractGrouper<T>, IGrouper<T> where T : class, IRepresent
     {
         public QueueGrouper() : base() { }
         public QueueGrouper(IReadOnlyDictionary<Regex, Func<IList<T>, ITuple<T, int>>> terms) : base(terms) { }

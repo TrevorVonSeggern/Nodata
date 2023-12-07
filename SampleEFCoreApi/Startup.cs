@@ -1,74 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.InMemory;
+﻿using Microsoft.EntityFrameworkCore;
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging.Console;
 using NoData;
 
-namespace SampleEFCoreApi
+namespace SampleEFCoreApi;
+
+public class Startup
 {
-    public class Startup
-    {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+	public Startup(IConfiguration configuration)
+	{
+		Configuration = configuration;
+	}
 
-        public IConfiguration Configuration { get; }
-        public IContainer ApplicationContainer { get; private set; }
+	public IConfiguration Configuration { get; }
 
-        public static readonly LoggerFactory MyLoggerFactory = new LoggerFactory(new[] { new ConsoleLoggerProvider((_, __) => true, true) });
+	public void ConfigureServices(IServiceCollection services)
+	{
+		services.AddOptions();
+		services.AddControllers();
+		services.AddNoData();
+	}
 
-        public IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            services.AddMvc().AddControllersAsServices();
+	public void ConfigureContainer(ContainerBuilder builder)
+	{
+		builder.Register(x => new DbContextOptionsBuilder<DataContext>()
+			// .UseSqlServer(@"Server=localhost;Database=MyDb;User=sa;Password=YourStrong!Passw0rd;")
+			.UseInMemoryDatabase(Guid.NewGuid().ToString())
+			// .UseLoggerFactory(MyLoggerFactory)
+			)
+			.As<DbContextOptionsBuilder<DataContext>>().As<DbContextOptionsBuilder>();
 
-            services.AddNoData();
+		builder.Register<DataContext>(x => new DataContext(x.Resolve<DbContextOptionsBuilder<DataContext>>().Options)).SingleInstance();
 
-            var builder = new ContainerBuilder();
+		AutoMapperConfig.DependencyInjection(builder);
+	}
 
-            builder.Populate(services);
-            ConfigureContainer(builder);
-
-            ApplicationContainer = builder.Build();
-            return new AutofacServiceProvider(ApplicationContainer);
-        }
-
-        public void ConfigureContainer(ContainerBuilder builder)
-        {
-            builder.Register(x => new DbContextOptionsBuilder<DataContext>()
-                // .UseSqlServer(@"Server=localhost;Database=MyDb;User=sa;Password=YourStrong!Passw0rd;")
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                // .UseLoggerFactory(MyLoggerFactory)
-                )
-                .As<DbContextOptionsBuilder<DataContext>>().As<DbContextOptionsBuilder>();
-
-            builder.Register<DataContext>(x => new DataContext(x.Resolve<DbContextOptionsBuilder<DataContext>>().Options)).SingleInstance();
-
-            AutoMapperConfig.DependencyInjection(builder);
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseMvc();
-        }
-    }
+	// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+	{
+		if (env.IsDevelopment())
+		{
+			app.UseDeveloperExceptionPage();
+		}
+		app.UseRouting();
+		app.UseEndpoints(x => x.MapControllers());
+	}
 }

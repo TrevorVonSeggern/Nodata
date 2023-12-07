@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Graph;
-using NoData.GraphImplementations;
+﻿using Graph;
 using NoData.GraphImplementations.QueryParser;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
@@ -26,13 +22,13 @@ namespace NoData.QueryParser.ParsingTools
                 QueryString = $"({QueryString}) and ({clause})";
         }
 
-        public void AddToClause(QueueItem clause)
+        public void AddToClause(QueueItem? clause)
         {
             if (Result is null)
             {
                 Result = clause;
             }
-            else
+            else if(clause is not null)
             {
                 var and = new TextInfo("and", TextRepresentation.LogicalComparison);
                 var rootAnd = new ParserVertex(and);
@@ -46,7 +42,7 @@ namespace NoData.QueryParser.ParsingTools
 
         public override void Parse()
         {
-            if (!SetupParsing())
+            if (!SetupParsing() || Grouper is null)
                 return;
 
             AddToClause(Grouper.ParseToSingle(TokenFunc(QueryString)));

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Immutability;
 
 namespace NoData.GraphImplementations.Schema

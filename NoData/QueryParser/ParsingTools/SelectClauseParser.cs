@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Graph;
 using NoData.GraphImplementations.Schema;
 
 using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
-using TInfo = NoData.GraphImplementations.QueryParser.TextInfo;
 using TextRepresentation = NoData.GraphImplementations.QueryParser.TextRepresentation;
 
 namespace NoData.QueryParser.ParsingTools
@@ -44,7 +39,7 @@ namespace NoData.QueryParser.ParsingTools
         {
             // add to path list.
             var edges = new List<Edge>();
-            Property propertyName = null;
+            Property? propertyName = null;
             void traverseExpandTree(Vertex from, QueueItem parsedSelection)
             {
                 if (parsedSelection?.Root?.Value.Representation != TextRepresentation.ExpandProperty) return;
@@ -64,10 +59,10 @@ namespace NoData.QueryParser.ParsingTools
             }
             var rootQueryVertex = graph.VertexContainingType(RootQueryType);
             traverseExpandTree(rootQueryVertex, addition);
-            return new PathToProperty(edges, propertyName);
+            return new PathToProperty(edges, propertyName!);
         }
 
-        public void AddToClause(QueueItem clause)
+        public void AddToClause(QueueItem? clause)
         {
             if (clause is null || (clause.Representation != TextRepresentation.ListOfExpands && clause.Representation != TextRepresentation.ExpandProperty))
                 throw new ArgumentException("invalid query");
@@ -82,7 +77,7 @@ namespace NoData.QueryParser.ParsingTools
 
         public override void Parse()
         {
-            if (SetupParsing())
+            if (SetupParsing() && Grouper is not null)
                 AddToClause(Grouper.ParseToSingle(TokenFunc(QueryString)));
         }
     }

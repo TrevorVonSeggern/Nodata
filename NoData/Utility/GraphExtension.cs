@@ -1,15 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-
-using NoData.GraphImplementations.Schema;
-
-namespace NoData.Utility
+﻿namespace NoData.Utility
 {
-    using Graph.Interfaces;
-
     public static class GraphExtension
     {
         /// <summary>

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Graph;
-using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
+﻿using QueueItem = NoData.GraphImplementations.QueryParser.Tree;
 
 namespace NoData.QueryParser.ParsingTools
 {
@@ -10,7 +7,7 @@ namespace NoData.QueryParser.ParsingTools
         bool IsFinished { get; }
         void Parse();
         Type RootQueryType { get; }
-        TResult Result { get; }
+        TResult? Result { get; }
         IList<QueueItem> GetTokens(string parmeter);
     }
 }

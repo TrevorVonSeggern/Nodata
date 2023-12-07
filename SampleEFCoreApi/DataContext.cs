@@ -1,27 +1,25 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using SampleEFCoreApi.Database;
 
-namespace SampleEFCoreApi
+namespace SampleEFCoreApi;
+
+public class DataContext : DbContext
 {
-    public class DataContext : DbContext
-    {
-        public DataContext(DbContextOptions<DataContext> options) : base(options)
-        {
-            Database.EnsureCreated();
+	public DataContext(DbContextOptions<DataContext> options) : base(options)
+	{
+		Database.EnsureCreated();
 
-            SaveChanges();
-        }
+		SaveChanges();
+	}
 
-        public DbSet<Person> People { get; set; }
-        public DbSet<Child> Children { get; set; }
-        public DbSet<GrandChild> GrandChildren { get; set; }
+	public DbSet<Person> People { get; set; }
+	public DbSet<Child> Children { get; set; }
+	public DbSet<GrandChild> GrandChildren { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Person>().HasOne(x => x.Partner);
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		modelBuilder.Entity<Person>().HasOne(x => x.Partner);
 
-            base.OnModelCreating(modelBuilder);
-        }
-    }
+		base.OnModelCreating(modelBuilder);
+	}
 }

@@ -1,10 +1,5 @@
 ﻿using Immutability;
 using NoData.Internal.TreeParser.Tokenizer;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace NoData.GraphImplementations.QueryParser
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Graph;
+﻿using Graph;
 using System.Linq.Expressions;
 using NoData.Internal.TreeParser.Tokenizer;
 using NoData.QueryParser.ParsingTools;
@@ -53,10 +50,10 @@ namespace NoData.QueryParser
                 .SelectMany(x => x).Select(x => x.Name)
                 .Distinct();
 
-            OrderBy = new OrderByClauseParser<TRootVertex>(x => _GetTokens(x), parameters.OrderBy, graph, TermHelper.OrderByTerms);
-            Select = new SelectClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Select, graph, TermHelper.SelectTerms);
-            Filter = new FilterClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Filter, TermHelper.FilterTerms);
-            Expand = new ExpandClauseParser<TRootVertex>(x => _GetTokens(x), parameters.Expand, graph, Select, Filter, TermHelper.ExpandTerms);
+            OrderBy = new OrderByClauseParser<TRootVertex>(x => _GetTokens(x), parameters?.OrderBy ?? "", graph, TermHelper.OrderByTerms);
+            Select = new SelectClauseParser<TRootVertex>(x => _GetTokens(x), parameters?.Select ?? "", graph, TermHelper.SelectTerms);
+            Filter = new FilterClauseParser<TRootVertex>(x => _GetTokens(x), parameters?.Filter ?? "", TermHelper.FilterTerms);
+            Expand = new ExpandClauseParser<TRootVertex>(x => _GetTokens(x), parameters?.Expand ?? "", graph, Select, Filter, TermHelper.ExpandTerms);
 
             _Graph = graph;
             Cache = cache;
@@ -86,7 +83,7 @@ namespace NoData.QueryParser
                 throw new Exception("Need to parse before the this is available.");
         }
 
-        private Tree _selectionTree { get; set; }
+        private Tree? _selectionTree { get; set; } = null;
         public Tree SelectionTree
         {
             get
@@ -107,7 +104,7 @@ namespace NoData.QueryParser
             }
         }
 
-        private IEnumerable<PathToProperty> _selectPaths { get; set; }
+        private IEnumerable<PathToProperty> _selectPaths { get; set; } = new List<PathToProperty>();
         public IEnumerable<PathToProperty> SelectPaths
         {
             get
@@ -121,7 +118,7 @@ namespace NoData.QueryParser
             }
         }
 
-        private List<ITuple<PathToProperty, SortDirection>> _orderByPath { get; set; }
+        private List<ITuple<PathToProperty, SortDirection>> _orderByPath { get; set; } = new();
         public IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath
         {
             get
@@ -133,7 +130,7 @@ namespace NoData.QueryParser
             }
         }
 
-        public Expression ApplyFilterExpression(ParameterExpression parameter)
+        public Expression? ApplyFilterExpression(ParameterExpression parameter)
         {
             _AssertParsed();
             if (Filter.Result is null)

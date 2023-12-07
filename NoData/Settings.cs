@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Immutability;
-
-namespace NoData
+﻿namespace NoData
 {
     // public enum FilterSecurityTypes
     // {
@@ -23,7 +18,7 @@ namespace NoData
         }
 
         public static Settings CreateFromOther(Settings other) => new Settings(other);
-        public static void CopyFromTo(Settings left, Settings right = null)
+        public static void CopyFromTo(Settings left, Settings? right = null)
         {
             if (right is null)
                 right = new Settings();

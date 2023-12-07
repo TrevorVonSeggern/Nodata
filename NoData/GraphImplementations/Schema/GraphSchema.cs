@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Immutability;
+﻿using Immutability;
 using Graph;
 using NoData.Utility;
 
@@ -40,7 +37,7 @@ namespace NoData.GraphImplementations.Schema
             bool VerticesContainType(Type type) => vertices.Any(v => v.Vertex.Value.TypeId == type.GetHashCode());
             StatefulVertex<ClassInfo> GetOrAddVertex(Type type)
             {
-                StatefulVertex<ClassInfo> vertex = null;
+                StatefulVertex<ClassInfo>? vertex = null;
                 if (VerticesContainType(type))
                     vertex = vertices.First(v => v.Vertex.Value.TypeId == type.GetHashCode());
                 else
@@ -65,7 +62,7 @@ namespace NoData.GraphImplementations.Schema
                 void EstablishConnection(Type connectionToType, Property property)
                 {
                     var toVertex = GetOrAddVertex(connectionToType);
-                    var edge = new Edge(vertex.Vertex as Vertex, toVertex.Vertex as Vertex, property);
+                    var edge = new Edge((vertex.Vertex as Vertex)!, (toVertex.Vertex as Vertex)!, property);
                     if (!edges.Contains(edge))
                         edges.Add(edge);
                 }
@@ -86,7 +83,7 @@ namespace NoData.GraphImplementations.Schema
                 vertex.Color = StatefulVertexStateType.Discovered;
             }
 
-            return new GraphSchema(vertices.Select(v => v.Vertex as Vertex), edges);
+            return new GraphSchema(vertices?.Select(v => (v.Vertex as Vertex)!) ?? new List<Vertex>().AsEnumerable(), edges);
         }
     }
 }

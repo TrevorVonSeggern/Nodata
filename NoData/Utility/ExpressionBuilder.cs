@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
-using QuickCache;
+﻿using System.Linq.Expressions;
 using NoData.GraphImplementations.Queryable;
-using NoData.GraphImplementations.Schema;
 
 namespace NoData.Utility
 {
@@ -32,12 +25,12 @@ namespace NoData.Utility
 
         public static Expression BuildSelectExpression(Type type, Expression enumerable, ParameterExpression parameter, Expression body)
         {
-            return GenericHelper.CreateAndCallMethodOnStaticClass(
+            return (GenericHelper.CreateAndCallMethodOnStaticClass(
                 typeof(ExpressionBuilder),
                 new[] { type },
                 nameof(BuildSelectExpression),
                 new[] { typeof(Expression), typeof(ParameterExpression), typeof(Expression) },
-                new object[] { enumerable, parameter, body }) as Expression;
+                new object[] { enumerable, parameter, body }) as Expression)!;
         }
 
         public static Expression BuildWhereExpression<TDto>(IQueryable<TDto> query, ParameterExpression parameter, Expression body)

@@ -1,19 +1,11 @@
-using System.Linq;
-using Newtonsoft.Json;
-using NoData.QueryParser;
 using System.Linq.Expressions;
-using System.Collections.Generic;
 using NoData.QueryParser.ParsingTools;
 using NoData.GraphImplementations.Schema;
-using System;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using NoData.Utility;
 using Graph;
 using Immutability;
 using NoData.GraphImplementations.Queryable;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace NoData
 {
@@ -30,8 +22,8 @@ namespace NoData
         // Properties that are a result of parsing.
         internal IEnumerable<ITuple<PathToProperty, SortDirection>> OrderByPath { get; }
         private ParameterExpression DtoExpression { get; }
-        private Expression FilterExpression { get; }
-        private Expression SelectExpandExpression { get; }
+        private Expression? FilterExpression { get; }
+        private Expression? SelectExpandExpression { get; }
         private QueryTree SelectionTree { get; }
 
         private IClassCache Cache { get; }
@@ -41,8 +33,8 @@ namespace NoData
             Parameters parameters,
             IClassCache cache,
             IEnumerable<ITuple<PathToProperty, SortDirection>> orderBy,
-            Expression selectExpandExpression,
-            Expression filterExpression,
+            Expression? selectExpandExpression,
+            Expression? filterExpression,
             ParameterExpression dtoParameterExpression,
             QueryTree selectionTree)
         {
@@ -85,7 +77,7 @@ namespace NoData
         private IQueryable<TDto> ApplyFilter(IQueryable<TDto> query)
         {
             if (FilterExpression != null || !string.IsNullOrWhiteSpace(Parameters.Filter))
-                query = Utility.ExpressionBuilder.ApplyFilter(query, DtoExpression, FilterExpression);
+                query = Utility.ExpressionBuilder.ApplyFilter(query, DtoExpression, FilterExpression!);
             return query;
         }
 
@@ -95,7 +87,8 @@ namespace NoData
         /// <remarks>May require that Apply Expand is called first.</remarks>
         private IQueryable<TDto> ApplySelect(IQueryable<TDto> query)
         {
-            query = Utility.ExpressionBuilder.ApplySelectExpand(DtoExpression, SelectExpandExpression, query);
+			if(SelectExpandExpression is not null)
+				query = Utility.ExpressionBuilder.ApplySelectExpand(DtoExpression, SelectExpandExpression, query);
             return query;
         }
 
@@ -180,7 +173,7 @@ namespace NoData
 
         public Stream Stream()
         {
-            if (!Parameters.Count)
+            if (!Parameters.Count ?? false)
                 return EnumerableStream.Create(Apply(), this.SelectionTree.AsJson, ",", "[", "]");
             throw new NotImplementedException("Count is not implemented.");
         }

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Immutability;
 using Property = NoData.GraphImplementations.Schema.Property;
 

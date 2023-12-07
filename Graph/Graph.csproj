@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Immutability" Version="0.0.1" />
-    <PackageReference Include="QuickCache" Version="1.0.0" />
+    <PackageReference Include="Immutability" Version="0.0.3" />
+    <PackageReference Include="QuickCache" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Graph;
 using NoData.GraphImplementations.QueryParser;
@@ -8,7 +5,7 @@ using NoData.QueryParser.ParsingTools.Groupers;
 
 namespace NoData.QueryParser.ParsingTools
 {
-    public class OrderdGrouper<T> : AbstractGrouper<T>, IGrouper<T> where T : IRepresent
+    public class OrderdGrouper<T> : AbstractGrouper<T>, IGrouper<T> where T : class, IRepresent
     {
         public string OpenGroupingValue { get; set; } = TextRepresentation.OpenParenthesis;
         public string CloseGroupingValue { get; set; } = TextRepresentation.CloseParenthesis;

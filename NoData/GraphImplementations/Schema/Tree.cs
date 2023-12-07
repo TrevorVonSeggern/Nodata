@@ -1,11 +1,5 @@
 ﻿using Immutability;
 using Graph;
-using Graph.Interfaces;
-using NoData.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 
 namespace NoData.GraphImplementations.Schema
 {
